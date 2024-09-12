@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Dependencies } from "../../libs/entities/interfaces";
 import Token from "../../libs/utils/token";
+import { BadRequestError } from "@muhammednajinnprosphere/common";
 
 const verifyOTPController = (dependencies: Dependencies) => {
   const {
@@ -12,12 +13,16 @@ const verifyOTPController = (dependencies: Dependencies) => {
       const { otp, userId } = req.body;
       console.log(req.body);
       // change: take userId from cokiee or token
-      const verifyOTP = await verifyOtpUseCase(dependencies).execute({
+      const { message } = await verifyOtpUseCase(dependencies).execute({
         userId,
         otp,
       });
-      if (!verifyOTP) {
-        throw new Error("otp not verified");
+
+
+      if (message === "expired") {
+        throw new BadRequestError("Otp expired, resent otp");
+      } else if(message === "invalid") {
+        throw new BadRequestError("Invalid otp, enter valid otp")
       }
 
       const verified = await verifyUserUseCase(dependencies).execute(userId);
@@ -30,9 +35,14 @@ const verifyOTPController = (dependencies: Dependencies) => {
         id: verified._id,
         username: verified.username,
         email: verified.email,
+        role: "user" as "user"
       };
-      const token = Token.generateJwtToken(payload);
-      res.cookie("jwt", token, {
+      const { accessToken, refreshToken} = Token.generateJwtToken(payload);
+      res.cookie("accessToken", accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+      });
+      res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
       });
@@ -41,6 +51,7 @@ const verifyOTPController = (dependencies: Dependencies) => {
       
     } catch (error) {
       console.log(error);
+      next(error)
     }
   };
 

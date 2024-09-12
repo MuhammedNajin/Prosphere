@@ -1,4 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import developerRoles from "../../data/Jobrole";
+import CircleLoader from "react-spinners/BarLoader";
+
+import { z } from "zod";
+
+// Define the schema using Zod
+const formSchema = z.object({
+  email: z.string().email("Invalid email address").optional(),
+  phone: z.string().min(10, "Phone number should be at least 10 digits").optional(),
+  jobRole: z.string().min(1, "Please select a job role"),
+});
 
 interface FormProps {
   email: string;
@@ -10,7 +21,9 @@ interface FormProps {
   setJobRole: React.Dispatch<React.SetStateAction<string>>;
   setCompany: React.Dispatch<React.SetStateAction<string>>;
   handleSubmit: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  firstInput: React.MutableRefObject<HTMLInputElement | null>; 
+  firstInput: React.MutableRefObject<HTMLInputElement | null>;
+  loader: boolean,
+  serLoader: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const NextComponent: React.FC<FormProps> = ({
@@ -22,19 +35,44 @@ const NextComponent: React.FC<FormProps> = ({
   setEmail,
   handleSubmit,
   setJobRole,
-
   setCompany,
+  loader,
+  serLoader,
 }) => {
+  const firstInput = useRef<HTMLInputElement | null>(null);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  useEffect(() => {
+    firstInput.current?.focus();
+  }, []);
 
-    const firstInput = useRef<HTMLInputElement | null>(null)
+  const validateForm = () => {
+    try {
+      formSchema.parse({ email, phone, jobRole });
+      setErrors({}); // Clear errors if validation passes
+      handleSubmit();  // Proceed to the form submission
+    } catch (err) {
+      const formattedErrors: { [key: string]: string } = {};
+      if (err instanceof z.ZodError) {
+        err.errors.forEach(error => {
+          formattedErrors[error.path[0]] = error.message;
+        });
+      }
+      setErrors(formattedErrors);
+    }
+  };
 
-    useEffect(() => {
-        firstInput.current?.focus()
-    })
-    
+  const handleChange = (field: string, value: string) => {
+    // Update field value and clear the error for that specific field
+    if (field === "email") setEmail(value);
+    if (field === "phone") setPhone(value);
+    if (field === "jobRole") setJobRole(value);
+
+    setErrors((prev) => ({ ...prev, [field]: "" }));
+  };
+
   return (
-    <form className=" w-[23.657rem] ">
+    <form className="w-[23.657rem]">
       <div className="mb-4">
         <label
           htmlFor="email"
@@ -47,9 +85,9 @@ const NextComponent: React.FC<FormProps> = ({
             ref={firstInput}
             type="text"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => handleChange("phone", e.target.value)}
             id="phone"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className={`w-full px-3 py-2 border ${errors.phone ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500`}
             placeholder="+919085027632"
           />
         ) : (
@@ -57,54 +95,62 @@ const NextComponent: React.FC<FormProps> = ({
             ref={firstInput}
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => handleChange("email", e.target.value)}
             color="text-zinc-500"
             id="email"
-            className="w-full  px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className={`w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500`}
             placeholder="mikeforen96@gmail.com"
           />
         )}
+        {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+        {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
       </div>
+
       <div className="mb-4">
         <label
-          htmlFor="fullName"
+          htmlFor="jobRole"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          JobRole
+          Job Role
         </label>
-        <input
-          type="text"
+        <select
           id="jobRole"
-          onChange={(e) => setJobRole(e.target.value)}
-          value={jobRole}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-          placeholder="Software Developer"
-        />
-      </div>
-      <div className="mb-4">
-        <label
-          htmlFor="fullName"
-          className="block text-sm font-medium text-gray-700 mb-1"
+          onChange={(e) => handleChange("jobRole", e.target.value)}
+          className={`w-full px-3 py-2 border ${errors.jobRole ? 'border-red-500' : 'border-gray-300'} bg-white rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500`}
         >
-          Company name
-        </label>
-        <input
-         
-          type="text"
-          id="companyName"
-          value={companyName}
-          onChange={(e) => setCompany(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
-          placeholder="Google"
-        />
+          <option value="">Select a role</option>
+          {developerRoles &&
+            developerRoles.map((job, index) => (
+              <option key={index} value={job}>
+                {job}
+              </option>
+            ))}
+        </select>
+        {errors.jobRole && <p className="text-red-500 text-sm">{errors.jobRole}</p>}
       </div>
 
       <button
-        onClick={handleSubmit}
+        onClick={validateForm}
         type="button"
         className="w-full tracking-wide bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
       >
-        SignUp
+       { loader ? (
+         <CircleLoader
+         color="#ffffff"
+         loading={true}
+         cssOverride={{
+           display: "block",
+           margin: ".7rem auto",
+           borderColor: "red",
+         }}
+         size={20}
+         aria-label="Loading Spinner"
+         data-testid="loader"
+       />
+       ) : (
+        "SignUp"
+       )
+      }
       </button>
     </form>
   );

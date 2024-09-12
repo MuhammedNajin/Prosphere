@@ -28,11 +28,15 @@ const otpSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    expiresAt: {
+      type: Date,
+      default: Date.now() + 60 * 60 * 1000
+    }
   },
   { timestamps: true }
 );
 
-otpSchema.index({ createdAt: 1 }, { expireAfterSeconds: 10000 });
+otpSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 10000 });
 
 otpSchema.statics.build = async (attrs: otpAttrs) => {
   const newOtp = new Otp(attrs);

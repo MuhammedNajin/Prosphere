@@ -1,5 +1,6 @@
 
 
+import { AxiosError } from "axios";
 import createAxios, { AxiosInstance } from "./config"
 
 
@@ -14,12 +15,12 @@ class AdminApi {
             return response.data
         } catch (error) {
            console.log(error);
-            return [];
+            return error;
         }
 
     }
 
-    static signIn = async ({ email, password }: { email: string, password: string}) => {
+    static signIn = async ({ email, password }: { email: string, password: string}, { rejectWithValue } ) => {
         try {
             const response = await this.axios.post('/api/v1/auth/admin', { email, password});
             if(response.status === 200) {
@@ -28,7 +29,12 @@ class AdminApi {
             }
         } catch (error) {
             console.log(error)
-            return false;
+            if(error instanceof AxiosError) {
+                const { errors } = error?.response.data;
+                console.log(errors);
+                
+                return rejectWithValue(errors[0].message)
+            }
         }
     }
 
@@ -60,6 +66,24 @@ class AdminApi {
             return response.data;
         } catch (error) {
             console.log(error)
+        }
+    }
+
+    static blockUser = async (email: string) => {
+        try {
+            const response = await this.axios.patch(`/api/v1/admin/block/${email}`,);
+            return response.data
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    static logout = async () => {
+        try {
+            const response = await this.axios.post("/api/v1/admin/logout");
+            return response.data
+        } catch (error) {
+            
         }
     }
 

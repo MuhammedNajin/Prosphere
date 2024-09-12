@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Dependencies } from '../../libs/entities/interfaces';
 import Token from '../../libs/utils/token';
+import { BadRequestError } from '@muhammednajinnprosphere/common';
 
 
 
@@ -25,7 +26,7 @@ import Token from '../../libs/utils/token';
             console.log("userCredential", userCredential);
 
             if(!userCredential) {
-                throw new Error("invalid credentials");
+                throw new BadRequestError("Invalid credential, please try again.")
             }
 
             
@@ -35,18 +36,25 @@ import Token from '../../libs/utils/token';
                 email: userCredential.email,
                 role: "user" as "user"
               };
-            const token = Token.generateJwtToken(payload);
-            console.log("token", token);
-            
-            res.cookie("jwt", token, {
-              httpOnly: true,
-              secure: process.env.NODE_ENV === "production",
-            });
+
+              const { accessToken, refreshToken } = Token.generateJwtToken(payload);
+
+              res.cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+              });
+
+              res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+              });
 
             res.status(200).json(userCredential);
             
         } catch (error) {
+            console.log(error);
             
+            next(error)
         }
     }
 

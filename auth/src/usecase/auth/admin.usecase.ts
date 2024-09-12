@@ -9,23 +9,24 @@ export const adminUseCase = (dependencies: Dependencies) => {
     throw new Error("dependency required, missing dependency");
   }
 
-  const execute = async ({ email, password }: Pick<IUser, "email" | "password">) => {
-       const adminEmail = process.env.ADMIN_EMAIL;
-       const adminPassword = process.env.ADMIN_PASS;
+  const execute = async ({
+    email,
+    password,
+  }: Pick<IUser, "email" | "password">) => {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASS;
 
-       if(adminEmail === email && adminPassword === password) {
-          
-           return { status: true, message: "Successfully logined"}
+    if (adminEmail === email && adminPassword === password) {
+      return true;
+    }
 
-       }
-       
-       const admin = await userRepository.adminLogin({email, password});
+    const admin = await userRepository.adminLogin({ email, password });
 
-       if(!admin) {
-         return { status: false, message: "Invalid credential"}
-       }
-      
-       return { status: true, message: "Successfully logined" }
+    if (!admin) {
+      return false;
+    }
+
+    return true;
   };
 
   return {

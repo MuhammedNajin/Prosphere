@@ -1,9 +1,12 @@
 import { Request, Response, NextFunction } from "express";
 import { Dependencies } from "../../libs/entities/interfaces";
+import OTP from "src/libs/utils/otp";
+import { generateOTPEmail, getMessage } from "src/libs/utils/genarateMail";
 
 const resentOTPController = (dependencies: Dependencies) => {
   const {
-    useCases: { sentMailUseCase },
+    useCases: { sentMailUseCase,  },
+    repository: { otpRepository}
   } = dependencies;
 
   const resentOtp = async (req: Request, res: Response, next: NextFunction) => {
@@ -11,10 +14,11 @@ const resentOTPController = (dependencies: Dependencies) => {
       const { email, userId } = req.body;
       console.log("resent-otp contoller: ", req.body);
 
-      const sentotp = await sentMailUseCase(dependencies).execute(
-        { to: email, subject: "OTP verification", userId: userId },
-        true
-      );
+      const otp = OTP.generate(6);
+      await otpRepository.saveOtp({ userId: userId, otp });
+      const mail = generateOTPEmail(email, otp, "minute");
+      const message = getMessage({ userEmail: email , subject:"Verification code", mail });
+      const sentotp = await sentMailUseCase(dependencies).execute(message);
 
       console.log(sentotp);
 

@@ -1,26 +1,65 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaEyeSlash, FaEye } from "react-icons/fa";
+import { z } from 'zod';
 
+// Define the schema using Zod, excluding phone validation in Form component
+const formSchema = z.object({
+  userName: z.string().min(1, "Username is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter")
+    .regex(/[0-9]/, "Password must contain at least 1 number"),
+});
 
 interface UserFormProps {
-    firstInput: React.MutableRefObject<HTMLInputElement | null>
-    userName: string;
-    setUserName: React.Dispatch<React.SetStateAction<string>>;
-    otpType: boolean;
-    phone: string;
-    setPhone: React.Dispatch<React.SetStateAction<string>>;
-    email: string;
-    setEmail: React.Dispatch<React.SetStateAction<string>>;
-    otpTypeHandler: (event: React.MouseEvent<HTMLParagraphElement>) => void
-    showPassword: boolean;
-    password: string;
-    setPassword: React.Dispatch<React.SetStateAction<string>>;
-    setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
-    nextHandler: (event: React.MouseEvent<HTMLButtonElement>) => void;
-  }
-  
+  firstInput: React.MutableRefObject<HTMLInputElement | null>
+  userName: string;
+  setUserName: React.Dispatch<React.SetStateAction<string>>;
+  otpType: boolean;
+  phone: string;
+  setPhone: React.Dispatch<React.SetStateAction<string>>;
+  email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  otpTypeHandler: (event: React.MouseEvent<HTMLParagraphElement>) => void
+  showPassword: boolean;
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  setShowPassword: React.Dispatch<React.SetStateAction<boolean>>;
+  nextHandler: (event: React.MouseEvent<HTMLButtonElement>) => void;
+}
 
-const FormComponent:React.FC<UserFormProps> = ({firstInput, setUserName, userName, otpType, phone,setPhone, email, setEmail, otpTypeHandler, showPassword, password, setPassword, setShowPassword, nextHandler  }) => {
+const FormComponent: React.FC<UserFormProps> = ({
+  firstInput, setUserName, userName, otpType, phone, setPhone, email, setEmail,
+  otpTypeHandler, showPassword, password, setPassword, setShowPassword, nextHandler
+}) => {
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const handleValidation = () => {
+    try {
+      formSchema.parse({ userName, email, password });
+      setErrors({}); // Clear errors if validation passes
+      nextHandler();  // Call nextHandler if validation is successful
+    } catch (err) {
+      const formattedErrors: { [key: string]: string } = {};
+      if (err instanceof z.ZodError) {
+        err.errors.forEach(error => {
+          formattedErrors[error.path[0]] = error.message;
+        });
+      }
+      setErrors(formattedErrors);
+    }
+  };
+
+  const handleChange = (field: string, value: string) => {
+    // Update field value and clear error for the specific field
+    if (field === "userName") setUserName(value);
+    if (field === "email") setEmail(value);
+    if (field === "password") setPassword(value);
+
+    setErrors(prev => ({ ...prev, [field]: "" }));
+  };
+
   return (
     <form>
       <div className="mb-4">
@@ -32,13 +71,14 @@ const FormComponent:React.FC<UserFormProps> = ({firstInput, setUserName, userNam
         </label>
         <input
           ref={firstInput}
-          onChange={(e) => setUserName(e.target.value)}
+          onChange={(e) => handleChange("userName", e.target.value)}
           value={userName}
           type="text"
           id="fullName"
-          className="w-full caret-orange-500 cur px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+          className={`w-full px-3 py-2 border ${errors.userName ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500`}
           placeholder="Mike Foren"
         />
+        {errors.userName && <p className="text-red-500 text-sm">{errors.userName}</p>}
       </div>
 
       <div className="mb-4">
@@ -61,22 +101,15 @@ const FormComponent:React.FC<UserFormProps> = ({firstInput, setUserName, userNam
           <input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            color="text-zinc-500"
+            onChange={(e) => handleChange("email", e.target.value)}
             id="email"
-            className="w-full  px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className={`w-full px-3 py-2 border ${errors.email ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500`}
             placeholder="mikeforen96@gmail.com"
           />
         )}
+        {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
       </div>
-      <div className="mb-4 flex justify-end cursor-pointer transition transform active:scale-95">
-        <p
-          onClick={otpTypeHandler}
-          className="text-orange-500 hover:underline select-none"
-        >
-          {otpType ? "Use email instead" : "Use phone instead"}
-        </p>
-      </div>
+
       <div className="mb-6">
         <label
           htmlFor="password"
@@ -88,9 +121,9 @@ const FormComponent:React.FC<UserFormProps> = ({firstInput, setUserName, userNam
           <input
             type={showPassword ? "text" : "password"}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => handleChange("password", e.target.value)}
             id="password"
-            className="w-full px-3 py-2 border border-orange-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className={`w-full px-3 py-2 border ${errors.password ? 'border-red-500' : 'border-orange-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500`}
           />
           <button
             type="button"
@@ -107,10 +140,11 @@ const FormComponent:React.FC<UserFormProps> = ({firstInput, setUserName, userNam
         <p className="mt-1 text-sm text-gray-500">
           Must contain 1 uppercase letter, 1 number, min 8 characters.
         </p>
+        {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
       </div>
 
       <button
-        onClick={nextHandler}
+        onClick={handleValidation}
         type="button"
         disabled={false}
         className="w-full bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
@@ -119,6 +153,6 @@ const FormComponent:React.FC<UserFormProps> = ({firstInput, setUserName, userNam
       </button>
     </form>
   );
-}
+};
 
 export default FormComponent;

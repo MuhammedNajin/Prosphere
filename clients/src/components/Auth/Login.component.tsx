@@ -1,37 +1,52 @@
-import React from "react";
-import SocialAuth from "../utils/SocialAuth";
-import { FaFacebookF, FaGithub } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ApiService } from "../../api";
+import { GoogleLogin } from "@react-oauth/google";
+import { useDispatch } from "react-redux";
+import { googleAuth } from "../../redux";
 
 interface Login {
   setModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const LoginComponent: React.FC<Login> = ({ setModal }) => {
+const navigate = useNavigate()
+const location = useLocation();
+const dispatch = useDispatch();
+useEffect(() => {
+  console.log("location", location);
+  
+   if(location.state) {
+      setModal((state) => !state);
+   }
+},[])
+
+  async function handle(credentialResponse: any) {
+    const token = credentialResponse.credential
+   const { status, user } = await ApiService.googleAuth(token);
+   console.log("user from google auth", user)
+   if(status === 'new') {
+       navigate('/google/auth/flow', { state: user });
+   } else if(status === "exsist")
+      dispatch(googleAuth(user))
+      navigate('/');
+   }
+  
   return (
     <div className="col-span-2 bg-white mb-20 items-center justify-center p-8 shadow rounded-xl border border-zinc-300">
       <form>
+        
+        
         <div className="mb-3">
-          <SocialAuth
-            handler={() => {}}
-            Icon={<FaFacebookF className="size-6 text-blue-600" />}
-            text="SignIn with facebook"
-          />
-        </div>
-        <div className="mb-3">
-          <SocialAuth
-            handler={() => {}}
-            Icon={<FcGoogle className="size-6 text-black" />}
-            text="SignIn with google"
-          />
-        </div>
-        <div className="mb-3">
-          <SocialAuth
-            handler={() => {}}
-            Icon={<FaGithub className="size-6 text-black" />}
-            text="SignIn with github"
-          />
+        <GoogleLogin
+          onSuccess={handle}
+          width="330"
+          size="large"
+          text="signup_with"
+          onError={() => {
+            console.log("Login Failed");
+          }}
+        />
         </div>
         <div className="flex justify-between relative mt-6">
           <span className="w-36 h-px bg-zinc-400"></span>
@@ -53,7 +68,7 @@ const LoginComponent: React.FC<Login> = ({ setModal }) => {
           Don't have an account?{" "}
           <Link
             className="text-orange-500 hover:underline tracking-tight"
-            to="/"
+            to="/signup"
           >
             SignUp
           </Link>

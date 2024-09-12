@@ -1,108 +1,149 @@
-import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { z } from 'zod'; 
-import { adminLoginThunk } from '../../../redux';
-import { useNavigate } from 'react-router-dom';
-
+import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { z } from "zod";
+import { adminLoginThunk } from "../../../redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-const LoginPage: React.FC = () => {
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+const LoginPage = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const handleSubmit = () => {
     try {
-    
       loginSchema.parse({ email, password });
-      
       dispatch(adminLoginThunk({ email, password }))
-      .unwrap()
-      .then(() => {
-        navigate('/admin')
-      })
+        .unwrap()
+        .then(() => navigate("/admin"))
+        .catch((err) => toast.error(err, { duration: 1500 }));
     } catch (error) {
       if (error instanceof z.ZodError) {
-        
         const formattedErrors = error.issues.reduce((acc, issue) => {
-          acc[issue.path[0] as 'email' | 'password'] = issue.message;
+          acc[issue.path[0]] = issue.message;
           return acc;
-        }, {} as { email?: string; password?: string });
-        console.log(formattedErrors);
-        
+        }, {});
         setErrors(formattedErrors);
       }
     }
   };
 
   return (
-    <div className="flex h-screen">
-      <div className="m-auto rounded-lg flex">
-        {/* Left side */}
-        <div className="p-8 w-1/2">
-          <h2 className="text-2xl font-semibold text-blue-500 mb-2">Welcome to Application</h2>
-          <h2 className="text-2xl font-semibold text-blue-500 mb-4">Name</h2>
-          <p className="text-gray-600 mb-8">A platform of high technology potential to help youth</p>
-          
-          <div className="mb-8">
-            <div className="w-64 h-64 mx-auto rounded-full flex items-center justify-center object-cover">
-             <img className='' src="/Loginpage.image.png" alt="" />
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Welcome to Prosphere</h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            A platform of high technology potential to help youth
+          </p>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="email-address"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  className={`appearance-none rounded relative block w-full px-3 py-2 border ${
+                    errors.email ? 'border-red-300' : 'border-gray-300'
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    setErrors({ ...errors, email: "" });
+                  }}
+                />
+              </div>
+              {errors.email && (
+                <p className="mt-2 text-sm text-red-600">{errors.email}</p>
+              )}
+            </div>
+            <div>
+              <label htmlFor="password" className="sr-only">Password</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  className={`appearance-none rounded relative block w-full px-3 py-2  border ${
+                    errors.password ? 'border-red-300' : 'border-gray-300'
+                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setErrors({ ...errors, password: "" });
+                  }}
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-gray-400 hover:text-gray-500 "
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              {errors.password && (
+                <p className="mt-2 text-sm text-red-600">{errors.password}</p>
+              )}
             </div>
           </div>
-        </div>
-        
-      
-        <div className="p-8 w-1/2 flex flex-col justify-between">
-          <div>
-            <img src="/api/placeholder/100/50" alt="Intel logo" className="mb-8" />
-            
-            <p className="text-gray-600 mb-4">Enter your username and password / PIN</p>
-            
-           <div className='mb-2'>
-           <input
-              type="text"
-              value={email}
-              onChange={(e) => {
-                setErrors({...errors, email: ''})
-                setEmail(e.target.value)
-              }}
-              placeholder="USERNAME"
-              className={`w-full p-2 mb-4 border rounded ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
-            />
-           </div>
-            {errors.email && <p className="text-red-500 text-sm mb-2">{errors.email}</p>}
-            
-            <input
-              value={password}
-              onChange={(e) =>{
-                setErrors({...errors, password: ''})
-                setPassword(e.target.value)
-              }}
-              type="password"
-              placeholder="PASSWORD / PIN"
-              className={`w-full p-2 mb-4 border rounded ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
-            />
-            {errors.password && <p className="text-red-500 text-sm mb-2">{errors.password}</p>}
-            
-            <button onClick={handleSubmit} className="w-full bg-blue-500 text-white p-2 rounded mb-4">
-              LOGIN
-            </button>
-            
-            <div className="flex justify-between items-center">
-              <label className="flex items-center text-sm text-gray-600">
-                <input type="checkbox" className="mr-2" />
-                Keep me Logged In
+
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <input
+                id="remember-me"
+                name="remember-me"
+                type="checkbox"
+                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+              />
+              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                Remember me
               </label>
-              <a href="#" className="text-sm text-blue-500">Forgot Password?</a>
+            </div>
+
+            <div className="text-sm">
+              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                Forgot your password?
+              </a>
             </div>
           </div>
-        </div>
+
+          <div>
+            <button
+              type="submit"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+              Sign in
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

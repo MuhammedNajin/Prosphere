@@ -17,6 +17,7 @@ export interface UseCases {
   getUsersUseCase: any
   blockUserUseCase: any
   googleAuthUseCase: any
+  googleAuthFlowUseCase: any;
 }
 
 export interface Repository {

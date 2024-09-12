@@ -10,6 +10,7 @@ import { adminUseCase } from "./auth/admin.usecase";
 import { getUsersUseCase } from "./admin/getUsersUsecase";
 import { blockUserUseCase } from "./admin/blockUserUsecase";
 import { googleAuthUseCase } from "./auth/googleAuth.usecase";
+import { googleAuthFlowUseCase } from "./auth/googleAuthFlow.usecase";
 export {
   signupUseCase,
   loginUseCase,
@@ -22,5 +23,6 @@ export {
   adminUseCase,
   getUsersUseCase,
   blockUserUseCase,
-  googleAuthUseCase
+  googleAuthUseCase,
+  googleAuthFlowUseCase,
 };

@@ -2,11 +2,12 @@ import React from "react";
 import SocialAuth from "../utils/SocialAuth";
 import {FaLinkedinIn } from "react-icons/fa";
 import { useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin,} from "@react-oauth/google";
-import { googleAuthThunk } from "../../redux";
+import { googleAuth, googleAuthThunk } from "../../redux";
 import { LinkedIn } from "react-linkedin-login-oauth2";
 import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png';
+import { ApiService } from "../../api";
 
 interface SignUP {
   setModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -14,12 +15,18 @@ interface SignUP {
 
 const SignUpComponent: React.FC<SignUP> = ({ setModal }) => {
   const dispatch = useDispatch()
-  function handle(credentialResponse: any) {
-    console.log(credentialResponse);
-    
+  const navigate = useNavigate();
+ async function handle(credentialResponse: any) {
      const token = credentialResponse.credential
-    dispatch(googleAuthThunk(token))
-  }
+    const { status, user } = await ApiService.googleAuth(token);
+
+    if(status === 'new') {
+        navigate('/google/auth/flow', { state: user });
+    } else if(status === "exsist")
+      dispatch(googleAuth(user))
+      navigate('/');
+    }
+  
 
   function hangleLinkedIn(res: any) {
      console.log(res)
@@ -30,29 +37,13 @@ const SignUpComponent: React.FC<SignUP> = ({ setModal }) => {
   return (
     <div className="md:col-span-1 md:col-start-4 md:col-end-6 lg:col-span-2 col-span-1 bg-white items-center justify-center p-8 shadow rounded-xl border border-zinc-300">
       <form>
-        <LinkedIn
-         
-         clientId="86krujw8htl80w"
-         onSuccess={hangleLinkedIn}
-         onError={(error: any, msg: any) => console.log(error, msg)}
-         redirectUri={`${window.location.origin}/linkedin`}
-        >
-            {({ linkedInLogin }) => (
-        <img
-          onClick={linkedInLogin}
-          src={linkedin}
-          alt="Sign in with Linked In"
-          style={{ maxWidth: '180px', cursor: 'pointer' }}
-        />
-      )}
-        </LinkedIn>
-        <div className="mb-3">
+        {/* <div className="mb-3">
           <SocialAuth
             handler={() => {}}
             Icon={<FaLinkedinIn className="size-5 text-black" />}
             text="SignUp with github"
           />
-        </div>
+        </div> */}
         <GoogleLogin
           onSuccess={handle}
           width="330"

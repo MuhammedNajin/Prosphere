@@ -16,21 +16,21 @@ const forgotPasswordController = (dependencies: Dependencies) => {
     next: NextFunction
   ) => {
     try {
-      const { email, userId } = req.body;
+      const { email } = req.body;
       console.log("resent-otp contoller: ", req.body);
 
       const { user, token } = await forgetPasswordUseCase(dependencies).execute(
         email
       );
-
+      console.log(user, token);
       if (!user) {
-        throw new Error("token not stored in db");
+        throw new Error("user not exist");
       }
 
       
       const mail = generatePasswordResetEmail(
         email,
-        `${process.env.URL as string}/forget-password/${token}`
+        `${process.env.URL as string}/reset-password/${token}`
       );
 
       const message = getMessage({
@@ -39,8 +39,8 @@ const forgotPasswordController = (dependencies: Dependencies) => {
         mail,
       });
 
-      const sentotp = await sentMailUseCase(dependencies).execute(message);
-      console.log(sentotp);
+      const forgetPass = await sentMailUseCase(dependencies).execute(message);
+      console.log(forgetPass);
 
       res.status(201).json({
         status: "success",

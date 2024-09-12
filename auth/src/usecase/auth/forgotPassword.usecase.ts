@@ -9,9 +9,12 @@ const forgetPasswordUseCase = (dependencies: Dependencies) => {
   if (!userRepository) {
     throw new Error("userReponsitoy should be add")
   }
-  const execute = (email: string) => {
+  const execute = async (email: string) => {
     const token = Token.generateForgetPasswordToken();
-    const user = userRepository.forgetPassword({ email, token });
+    const user = await userRepository.forgetPassword({ email, token });
+    if(!user) {
+       return false;
+    }
     return { token, user};
   };
 

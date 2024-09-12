@@ -1,18 +1,45 @@
 import React from "react";
+import { adminLogoutThuck } from "../../../redux";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
-const Topbar: React.FC = () => {
+interface TopbarProps {
+  onMenuClick: () => void;
+}
+
+const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const logoutHandler = () => {
+    dispatch(adminLogoutThuck())
+      .unwrap()
+      .then(() => {
+        navigate('/admin/login');
+      });
+  };
+
   return (
-    <div className="bg-white p-4 shadow-md flex justify-between">
-      <div>
-        <p className="text-lg">Hello, Lekan</p>
+    <div className="bg-white p-4 shadow-md flex justify-between items-center">
+      <button
+        className="lg:hidden text-gray-600"
+        onClick={onMenuClick}
+        aria-label="Open menu"
+      >
+        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+      <div className="hidden sm:block">
+        <p className="text-lg">Hello, Admin</p>
         <p className="text-sm text-gray-500">Have a nice day</p>
       </div>
       <div className="flex items-center space-x-4">
-        <div className="text-sm">
-          <p>Lekan Okeowo</p>
+        <div className="text-sm hidden sm:block">
+          <p>Admin123@gmail.com</p>
           <p className="text-gray-400">Admin</p>
         </div>
-        <div className="h-10 w-10 rounded-full bg-gray-300" />
+        <button onClick={logoutHandler} className="bg-red-600 text-white px-4 py-2 rounded-md text-sm">Logout</button>
       </div>
     </div>
   );

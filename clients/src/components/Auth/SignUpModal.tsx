@@ -8,6 +8,8 @@ import { useDispatch } from "react-redux";
 import { verifyOtpThunk } from "../../redux";
 import NextComponent from "./Next.component";
 import FormComponent from "./FormComponent";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 interface Modal {
   closeModal: () => void;
@@ -16,6 +18,7 @@ interface Modal {
 
 export const SignUpModal: React.FC<Modal> = ({ closeModal }) => {
   const [loading, setLoading] = useState(true);
+  const [loader, setLoader ] = useState(false)
   const [otpType, setOtpType] = useState(false);
   const [otpPage, setOtpPage] = useState(false);
   const [next, setNext] = useState(false);
@@ -31,7 +34,7 @@ export const SignUpModal: React.FC<Modal> = ({ closeModal }) => {
   const [user, setUser] = useState({id:''});
   const firstInput = useRef<HTMLInputElement | null>(null);
   const dispatch = useDispatch();
-
+  const navigate = useNavigate()
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
@@ -69,22 +72,38 @@ export const SignUpModal: React.FC<Modal> = ({ closeModal }) => {
         jobRole,
         phone: phone,
       };
-      const response = await ApiService.signUp(user);
-      console.log("response", response._id);
+      setLoader(!loader)
+      ApiService.signUp(user)
+      .then((response) => {
+        console.log("response", response._id);
+        if (response) {
+          setLoader(!loader)
+          setUser({ id: response._id });
+          setOtpPage((state) => !state);
+          toast.success("otp sent successfully")
+        }
+      })
+      .catch((err) =>{
+        setLoader(false)
+        toast.error(err)
+      })
+      
 
-      if (response) {
-        setUser({ id: response._id });
-        setOtpPage((state) => !state);
-      }
+      
     }
   };
 
   const handleVerify = () => {
-    try {
-      dispatch(verifyOtpThunk({ userId: user.id, otp }));
-    } catch (error) {
-      console.log(error);
-    }
+  
+      dispatch(verifyOtpThunk({ userId: user.id, otp }))
+      .unwrap()
+      .then(() => {
+        navigate('/')
+      })
+      .catch((err) => {
+        toast.error(err)
+      })
+   
   };
 
   return (
@@ -142,6 +161,7 @@ export const SignUpModal: React.FC<Modal> = ({ closeModal }) => {
               phone={phone}
               setJobRole={setJobRole}
               setPhone={setPhone}
+              loader={loader}
             />
           ) : (
             <div className=" w-[23.657rem] ">

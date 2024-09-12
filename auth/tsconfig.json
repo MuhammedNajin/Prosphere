@@ -8,12 +8,15 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": "../../",
     "declaration": true,
     "resolveJsonModule": true,
-    
-  
+    "baseUrl": "./",
+
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "../../common/src/**/*"
+  ],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

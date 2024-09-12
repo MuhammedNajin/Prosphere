@@ -13,8 +13,8 @@ export const blockUserUseCase = (dependencies: Dependencies) => {
     }
 
     const execute = async (email: string) => {
-        const users = await userRepository.blockUser(email);
-        return users;
+        const bloked = await userRepository.blockUser(email);
+        return bloked;
     }
 
     return {

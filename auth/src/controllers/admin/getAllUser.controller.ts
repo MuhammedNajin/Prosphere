@@ -13,7 +13,8 @@ import Token from '../../libs/utils/token';
 
     const fetchUsers = async (req: Request, res: Response, next: NextFunction) => {
         try {
-
+            console.log("getAll users", req.cookies);
+            
             const users = await getUsersUseCase(dependencies).execute();
             res.status(200).json(users);
             

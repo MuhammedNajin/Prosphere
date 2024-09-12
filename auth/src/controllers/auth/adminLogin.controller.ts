@@ -1,10 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Dependencies } from '../../libs/entities/interfaces';
-import generateToken from '../../libs/utils/token';
 import Token from '../../libs/utils/token';
-
-
-
+import { BadRequestError } from '@muhammednajinnprosphere/common';
 
  const adminLoginController = (dependencies: Dependencies) => {
     const {
@@ -26,7 +23,7 @@ import Token from '../../libs/utils/token';
             console.log("adminCredential", adminCredential);
 
             if(!adminCredential) {
-                throw new Error("invalid credentials");
+                throw new BadRequestError("Invalid credentials, please try again.")
             }
 
             
@@ -36,18 +33,25 @@ import Token from '../../libs/utils/token';
                 email: adminCredential.email,
                 role: 'admin' as "admin" 
               };
-            const token = Token.generateJwtToken(payload);
-            console.log("token", token);
+            const { accessToken, refreshToken } = Token.generateJwtToken(payload, { createAdminToken: true });
+
+            console.log("token", accessToken, refreshToken);
             
-            res.cookie("jwt", token, {
+            res.cookie("adminAccess", accessToken, {
               httpOnly: true,
               secure: process.env.NODE_ENV === "production",
             });
 
+            res.cookie("adminRefresh", refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production"
+            })
+
             res.status(200).json(adminCredential);
             
         } catch (error) {
-            
+            console.log(error)
+            next(error)
         }
     }
 

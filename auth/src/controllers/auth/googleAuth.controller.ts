@@ -20,18 +20,30 @@ const googleAuthController = (dependencies: Dependencies) => {
       const { status, user } = await googleAuthUseCase(dependencies).execute(
         token
       );
-      const payload = {
-        id: user._id,
-        email: user.email,
-        username: user.username,
-        role: 'user' as 'user',
+
+      
+      if(status === 'exsist') {
+        const payload = {
+          id: user._id,
+          email: user.email,
+          username: user.username,
+          role: 'user' as 'user',
+        }
+        const { accessToken, refreshToken } = Token.generateJwtToken(payload);
+
+              res.cookie("accessToken", accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+              });
+
+              res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+              });
+
       }
-       const accessToken = Token.generateJwtToken(payload)
-       res.cookie('jwt', accessToken, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production'
-       })
-      res.status(200).json({ status, user });
+     
+      res.status(201).json({ status, user });
     } catch (error) {
       console.log(error);
     }

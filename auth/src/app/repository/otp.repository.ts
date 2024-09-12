@@ -24,14 +24,15 @@ export default {
   async verifyOtp({ otp, userId }: IOtp) {
     const now = Date.now();
     const existingOtp = await OTP.findOne({
-      userId,
-      otp,
+      userId: userId,
+      expiresAt: { $gt: now }
     });
     console.log(existingOtp);
 
     if (!existingOtp) {
-      throw new Error("Invalid OTP or expired.");
+       return { message: "expired"}
     }
+
 
     if (otp === existingOtp.otp) {
       await existingOtp.deleteOne();
@@ -39,6 +40,6 @@ export default {
     }
 
     // Delete the used OTP for security
-    return false;
+    return {message: "invalid" }
   },
 };

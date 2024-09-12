@@ -1,15 +1,20 @@
 import jwt from 'jsonwebtoken';
 import { TokenData } from '../entities/interfaces';
 import { v4 as uuidv4 } from 'uuid';
-import { OAuth2Client } from 'google-auth-library';
+import { OAuth2Client } from 'google-auth-library'; 
 
 class Token {
-  static  generateJwtToken(payload: TokenData) {
-      const secrect = process.env.TOKEN_SECRECT as string
-       const token = jwt.sign(payload, secrect, {
+  static  generateJwtToken(payload: TokenData, option?: { createAdminToken: boolean } = { createAdminToken: false}) {
+      const { createAdminToken: admin, } = option!
+      const accessSecrect = admin ? process.env.ADMIN_SECRECT! : process.env.TOKEN_SECRECT!
+      const refreshSecrect = admin ? process.env.ADMIN_REFRESH_SECRECT! : process.env.REFRESH_SECRECT!
+       const accessToken = jwt.sign(payload, accessSecrect, {
           expiresIn: "1h"
        } )
-       return token
+       const refreshToken = jwt.sign(payload, refreshSecrect, {
+        expiresIn: "2h"
+       })
+       return { accessToken, refreshToken }
   }
 
   static generateForgetPasswordToken() {

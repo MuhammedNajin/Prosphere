@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from "express";
 import OTP from "../../libs/utils/otp";
 import { generateOTPEmail, getMessage } from "../../libs/utils/genarateMail";
+import { BadRequestError } from "@muhammednajinnprosphere/common";
 
 export const signupController = (dependencies: any) => {
   console.log("signup");
@@ -35,7 +36,7 @@ export const signupController = (dependencies: any) => {
       console.log("userExsist",  userExsist);
 
       if(userExsist) {
-        throw new Error("user")
+        throw new BadRequestError("Email already exsist, try another.")
       }
        
       const user = await signupUseCase(dependencies).execute({
@@ -48,7 +49,7 @@ export const signupController = (dependencies: any) => {
         companyName
       });
       
-      console.log(user);
+      console.log("user", user);
       
       const otp = OTP.generate(6);
       await otpRepository.saveOtp({ userId: user._id, otp });
@@ -56,15 +57,12 @@ export const signupController = (dependencies: any) => {
       const message = getMessage({ userEmail: email , subject:"Verification code", mail });
       const sentotp = await sentMailUseCase(dependencies).execute(message);
 
-      console.log(sentotp)
-
-      // publish user created event here 
-
+      console.log(sentotp);
       res.status(201).json(user);
 
     } catch (error: any) {
       console.log(error);
-      throw new Error(error);
+      next(error)
     }
   };
 

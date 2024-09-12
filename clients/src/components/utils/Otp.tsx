@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ApiService } from "../../api";
+import toast from "react-hot-toast";
 interface OTPInput {
   handleVerify: () => void,
   otp: string;
@@ -15,6 +16,15 @@ const OTPInput: React.FC<OTPInput> = ({
   email,
   userId
 }: OTPInput) => {
+
+
+const handleResendOtp = async () => {
+   ApiService.resetOtp({email, userId})
+   .then(() => {
+     toast.success("Otp sent successfully")
+   })
+}
+
   return (
     <div className="">
       <div className="mb-4">
@@ -35,7 +45,7 @@ const OTPInput: React.FC<OTPInput> = ({
         />
         <p className="mt-1 flex justify-between">
           Didn't you receive.{" "}
-          <span onClick={() => ApiService.resetOtp({email, userId})} className=" text-orange-500 select-none  transition transform active:scale-95">
+          <span onClick={handleResendOtp} className=" text-orange-500 select-none  transition transform active:scale-95">
             Resend otp
           </span>
         </p>

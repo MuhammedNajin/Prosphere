@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Dependencies } from "../../libs/entities/interfaces";
+import { BadRequestError } from "@muhammednajinnprosphere/common";
 
 const resetPasswordController = (dependencies: Dependencies) => {
   const {
@@ -14,7 +15,7 @@ const resetPasswordController = (dependencies: Dependencies) => {
     try {
       const { token } = req.params;
       const { password } = req.body;
-      console.log("reset-password contoller: ", req.body);
+      console.log("reset-password contoller: ", req.body, token);
 
       const reset = await resetPasswordUseCase(dependencies).execute({
         token,
@@ -22,7 +23,7 @@ const resetPasswordController = (dependencies: Dependencies) => {
       });
 
       if (!reset) {
-        throw new Error("reset passowrd token is not valid");
+        throw new BadRequestError("Your link has been expired, try agian.");
       }
 
       res.status(201).json({

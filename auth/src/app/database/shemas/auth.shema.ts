@@ -92,15 +92,18 @@ const authSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-});
+},
+{ timestamps: true }
+);
 
 authSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) next();
-
-  const hashedPassword = (await Password.toHash(
-    this.get("password") as string
-  )) as string;
-  this.set("password", hashedPassword);
+  console.log(this.get("password"), this.isModified("password"));
+  if (this.isModified("password")) {
+    const hashedPassword = (await Password.toHash(
+      this.get("password") as string
+    )) as string;
+    this.set("password", hashedPassword);
+  }
 
   next();
 });
