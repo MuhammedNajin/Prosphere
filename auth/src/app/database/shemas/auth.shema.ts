@@ -34,7 +34,7 @@ export interface AuthDoc extends Document {
 const authSchema = new mongoose.Schema({
   username: {
     type: String,
-    requied: [true, "username is required"],
+    required: [true, "username is required"],
   },
 
   email: {

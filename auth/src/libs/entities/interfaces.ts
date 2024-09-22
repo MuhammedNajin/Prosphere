@@ -1,9 +1,17 @@
+import { KafkaProducer, UserCreatedEvent, KafkaClient } from '@muhammednajinnprosphere/common'
+import { UserCreatedProducer } from '../../events/producer/user-created-producer'
+
 export interface Dependencies {
   useCases: UseCases;
   repository: any;
   service: Service;
+  messageBroker: Producer
 }
 
+export interface Producer {
+   UserCreatedProducer: typeof UserCreatedProducer
+   kafka: KafkaClient
+}
 export interface UseCases {
   signupUseCase: any;
   loginUseCase: any;
@@ -27,6 +35,7 @@ export interface Repository {
 
 export interface Service {
   transporter: any;
+ 
 }
 
 export interface IUser {

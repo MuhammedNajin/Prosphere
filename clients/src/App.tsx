@@ -10,6 +10,7 @@ import GoogleAuth from "./pages/User/GoogleAuth";
 import { Toaster } from "react-hot-toast";
 import AdminRouteWrapper from "./AdminRouteWrapper";
 import UserRouteWrapper from "./userRouteWrapper";
+import Profile from "./components/profile/Profile";
 function App() {
   return (
     <>
@@ -25,7 +26,9 @@ function App() {
             path="/reset-password/:token"
             element={<ResetPasswordPage />}
           />
+          
           <Route path="/google/auth/flow" element={<GoogleAuth />} />
+          <Route path="/profile" element={<Profile />} />
         </Routes>
       </BrowserRouter>
     </>

@@ -1,14 +1,16 @@
 import { app } from './app';
 import { intPort } from './config/port';
 import { databaseConnection } from "./config/database";
+import { kafkaConnect } from './config/kafka';
 import 'dotenv/config';
 
 
 
 
-(function start() {
+( async function start() {
     try {
         databaseConnection();
+       await kafkaConnect();
     } catch (error) {
 
         console.log(error);

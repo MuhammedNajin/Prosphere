@@ -17,6 +17,7 @@ const Header: React.FC = () => {
              navigate('/login')
           })
      }
+     
 
     return (
         <header className="bg-white p-4 flex justify-between items-center border-b">
