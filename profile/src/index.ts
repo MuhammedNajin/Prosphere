@@ -1,6 +1,8 @@
 import { app } from './app';
 import { databaseConnection } from "./config/database";
-import 'dotenv/config';
+import { messageBrokerConnect } from './config/messageBroker'
+import dependencies from './config/dependencies'
+
 
 
 
@@ -8,6 +10,7 @@ import 'dotenv/config';
 (function start() {
     try {
         databaseConnection();
+        messageBrokerConnect(dependencies);
     } catch (error) {
 
         console.log(error);

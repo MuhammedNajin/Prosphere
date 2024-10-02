@@ -4,8 +4,10 @@ import dependecies from './config/dependencies'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { errorHandler, NotFoundError } from '@muhammednajinnprosphere/common';
+import dotenv from 'dotenv';
 
 
+dotenv.config();
 const app = express();
 app.use(cors({
     origin: ["http://localhost:5173"],
@@ -24,7 +26,7 @@ app.use("/api/v1", routes(dependecies));
 
 
 
-app.use("*", (req: Request, res: Response) => {
+app.use("*", () => {
     throw new NotFoundError()
 })
 
