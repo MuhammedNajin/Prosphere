@@ -1,12 +1,12 @@
 export interface ICompanyEntity {
-  readonly id?: string;
+  readonly _id?: string;
   name: string;
   owner: string;
   location: string;
 }
 
 export interface IUserEntity {
-  readonly id?: string;
+  _id: string;
   username: string;
   email: string;
   phone?: string;
