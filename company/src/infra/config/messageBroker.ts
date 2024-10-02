@@ -5,7 +5,7 @@ import { UserCreatedConsumer } from '../messageBroker/kafka';
 const kafka = new KafkaClient();
 
 const messageBrokerConnect = async (depedencies: any) => {
-    await kafka.connect('Profile-service', ['localhost:29092'], "company-service-group");  
+    await kafka.connect('company-service', ['localhost:29092'], "company-service-group");  
     new UserCreatedConsumer(kafka.consumer, depedencies).listen(); 
 }
 
