@@ -2,7 +2,7 @@ import { Award, Briefcase, Building, Home, MessageCircle, Users } from "lucide-r
 import SidebarItem from "./SidebarItem";
 
 const Sidebar: React.FC = () => (
-    <aside className="w-64 bg-white rounded-lg p-4 space-y-4">
+    <aside className="w-72 hidden md:block h-96 bg-white rounded-lg p-4 space-y-4">
       <div className="flex items-center space-x-2">
         <img src="Loginpage.image.png" alt="Muhammed Najin N" className="w-8 h-8 rounded-full" />
         <span className="font-medium">Muhammed Najin N</span>

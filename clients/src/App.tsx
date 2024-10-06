@@ -10,7 +10,10 @@ import GoogleAuth from "./pages/User/GoogleAuth";
 import { Toaster } from "react-hot-toast";
 import AdminRouteWrapper from "./AdminRouteWrapper";
 import UserRouteWrapper from "./userRouteWrapper";
-import Profile from "./components/profile/Profile";
+import CompanyPage from "./pages/company/MycompanyPage";
+import CompanyCreationPage from "./pages/company/CompanyCreationPage";
+import CompanyManagemnetPage from "./pages/company/CompanyManagementPage";
+import ProfilePage from "./pages/User/ProfilePage";
 function App() {
   return (
     <>
@@ -28,7 +31,10 @@ function App() {
           />
           
           <Route path="/google/auth/flow" element={<GoogleAuth />} />
-          <Route path="/profile" element={<Profile />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/company" element={<CompanyPage />} />
+          <Route path="/company/setup" element={<CompanyCreationPage />} />
+          <Route path="/company/management/:id" element={<CompanyManagemnetPage />} />
         </Routes>
       </BrowserRouter>
     </>
@@ -36,3 +42,5 @@ function App() {
 }
 
 export default App;
+
+
