@@ -14,7 +14,7 @@ class S3Operations {
     const accessKey = process.env.ACCESS_KEY as string;
     const bucketRegion = process.env.BUCKET_REGION as string;
     this.bucketName = process.env.BUCKET_NAME as string;
-     console.log("bucket details",secretKey, accessKey, bucketRegion, this.bucketName);
+    
     this.s3 = new S3Client({
       credentials: {
         accessKeyId: accessKey,

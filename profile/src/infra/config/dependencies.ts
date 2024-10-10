@@ -1,4 +1,4 @@
-import { profileRepository } from "../app/repository";
+import { profileRepository } from "@infra/repository";
 
 import {
  uploadProfilePhotoUseCase,
@@ -6,14 +6,16 @@ import {
  aboutUseCase,
  getProfileUseCase,
  updateProfileUseCase
-} from '../usecase'
+} from '@application/usecase'
 
-import s3Operation from '../app/service/aws-s3-bucker';
-import { resizeImage } from "../app/service/sharp";
+import s3Operation from '@infra/service/aws-s3-bucker';
+import { resizeImage } from "@infra/service/sharp";
+import { redisClient } from './database'
 
 const service = {
   s3Operation,
   resizeImage,
+  redisClient,
 }
 
 const useCases = {

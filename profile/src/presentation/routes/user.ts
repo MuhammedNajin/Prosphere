@@ -14,9 +14,9 @@ export const profileRoutes = (dependencies: any) => {
     updateProfileController
   } = profileController(dependencies);
     
-  router.post('/photo', upload.single('profilePhoto'), uploadProfilePhotoController);
+  router.post('/photo', upload.single('image'), uploadProfilePhotoController);
   router.put('/about', aboutController);
-  router.get('/profile/:email', getProfileController);
+  router.get('/:email', getProfileController);
   router.put('/:email', updateProfileController)
   return router;
 };

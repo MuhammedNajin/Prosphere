@@ -86,14 +86,6 @@ const profileSchema = new mongoose.Schema({
     type: String,
   },
 
-  coverImageUrl: {
-    type: String,
-  },
-
-  profilePhoto: {
-    type: String,
-  },
-
   profileImageKey: {
     type: String,
   },

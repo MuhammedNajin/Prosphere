@@ -1,6 +1,6 @@
 
 import { KafkaClient } from '@muhammednajinnprosphere/common'
-import { UserCreatedConsumer } from '../events/consumer/user-created-listener';
+import { UserCreatedConsumer } from '@infra/messageBroker/kafka/consumer/user-created-listener';
 
 const kafka = new KafkaClient();
 

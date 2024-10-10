@@ -1,14 +1,12 @@
 import { app } from './app';
-import { databaseConnection } from "./config/database";
-import { messageBrokerConnect } from './config/messageBroker'
-import dependencies from './config/dependencies'
-
-
-
+import { databaseConnection, redisConnection } from "@infra/config/database";
+import { messageBrokerConnect } from '@infra/config/messageBroker';
+import dependencies from '@infra/config/dependencies';
 
 
 (function start() {
     try {
+        redisConnection();
         databaseConnection();
         messageBrokerConnect(dependencies);
     } catch (error) {

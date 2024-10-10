@@ -1,10 +1,16 @@
 import Profile from "../database/shemas/profile.schema";
-import { UserProfile } from "../../entities/profile";
-import { IUserProfile } from "../../entities/interface";
+import { UserProfile } from "@domain/entities/profile";
+import { IUserProfile } from "@domain/entities/interface";
+import { redisClient } from '@infra/config/database'
 
+
+interface UploadProfilePhotoArgs {
+   email: string,
+   query: any,
+}
 export default {
-  uploadProfilePhoto: async ({ url, email, key }) => {
-    const updates = { $set: { profilePhoto: url, profileImageKey: key } };
+  uploadProfilePhoto: async ({email, query}: UploadProfilePhotoArgs) => {
+    const updates = { $set: query };
     const profile = await Profile.findOneAndUpdate({ email }, updates, {
       new: true,
     });
@@ -19,6 +25,14 @@ export default {
     });
     console.log(user);
     return user;
+  },
+   
+  setCache: async (key: string, url: string) => {
+     await redisClient.setEx(`image:${key}`, 36000, url)
+  },
+
+  getCache: async (key: string) => {
+    return await redisClient.get(`image:${key}`)
   },
 
   createProfile: async (user: IUserProfile) => {

@@ -13,9 +13,9 @@ export const uploadProfilePhotoController = (dependencies: any) => {
     next: NextFunction
   ) => {
     try {
-      console.log("body", req.body);
+      console.log("body", req.query);
       console.log("files", req.file);
-      const { email } = req.body;
+      const { key, email } = req.query;
 
       const profile = await getProfileUseCase(dependencies).execute({
         email,
@@ -25,6 +25,7 @@ export const uploadProfilePhotoController = (dependencies: any) => {
         file: req.file,
         profile,
         email,
+        key
       });
 
       res.status(201).json({ avatar });

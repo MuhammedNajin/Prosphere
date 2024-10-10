@@ -1,7 +1,7 @@
 
 export const uploadProfilePhotoUseCase = (dependencies: any) => {
   const {
-    repository: { profileRepository },
+    repository: { profileRepository, setCache },
     service: { s3Operation, resizeImage }
   } = dependencies;
 
@@ -9,10 +9,10 @@ export const uploadProfilePhotoUseCase = (dependencies: any) => {
     throw new Error("dependency required, missing dependency");
   }
 
-  const execute = async ({ file, profile, email }) => {
+  const execute = async ({ file, profile, email, key }) => {
 
-    if(profile.profilePhoto) {
-      await s3Operation.deleteImageFromBucket(profile.profileImageKey);
+    if(profile[key]) {
+      await s3Operation.deleteImageFromBucket(profile[key]);
    }
 
       const fileBufferCode = await resizeImage(file.buffer);
@@ -22,13 +22,17 @@ export const uploadProfilePhotoUseCase = (dependencies: any) => {
       console.log("fileName", fileName, "/n", "data", data);
    
       const imageUrl = await s3Operation.getImageUrlFromBucket(fileName);
-
-      await profileRepository.uploadProfilePhoto({
+       await profileRepository.setCache(fileName, imageUrl);
+      const query = {
+          [key]: fileName,
+      }
+      console.log("key", query)
+      const result = await profileRepository.uploadProfilePhoto({
         email,
-        url: imageUrl,
-        key: fileName,
+        query,
       })
-
+      console.log("result", result);
+      
       return imageUrl
   }
   return {
