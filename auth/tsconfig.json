@@ -12,6 +12,13 @@
     "declaration": true,
     "resolveJsonModule": true,
     "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@domain/*": ["src/domain/*"], // Alias for the domain folder
+      "@application/*": ["src/application/*"], // Alias for the application folder
+      "@infra/*": ["src/infra/*"], // Alias for the infra folder
+      "@presentation/*": ["src/presentation/*"]
+    }
 
   },
   "include": [

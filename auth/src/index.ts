@@ -1,23 +1,25 @@
 import { app } from './app';
-import { intPort } from './config/port';
-import { databaseConnection } from "./config/database";
-import { kafkaConnect } from './config/kafka';
+import { databaseConnection } from "@infra/config/database";
+import { kafkaConnect } from '@infra/config/kafka';
 import 'dotenv/config';
+import { redisConnection } from './infra/database/redis/connection';
 
 
 
 
 ( async function start() {
     try {
+        redisConnection();
         databaseConnection();
        await kafkaConnect();
     } catch (error) {
 
         console.log(error);
     }
-
-    app.listen(intPort, () => {
-        console.log(`auth service is running on port ::${intPort}`);
+    
+    const PORT = process.env.port || 7000
+    app.listen(PORT, () => {
+        console.log(`auth service is running on port ::${PORT}`);
     
     })
 

@@ -1,6 +1,6 @@
-import express from 'express';
-import { routes } from "./routes"
-import dependecies from './config/dependencies'
+import express, { Request, Response} from 'express';
+import { routes } from "@presentation/routes"
+import dependecies from '@infra/config/dependencies'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { errorHandler, NotFoundError } from '@muhammednajinnprosphere/common';
