@@ -1,12 +1,8 @@
 import React from "react";
-import SocialAuth from "../utils/SocialAuth";
-import {FaLinkedinIn } from "react-icons/fa";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin,} from "@react-oauth/google";
 import { googleAuth, googleAuthThunk } from "../../redux";
-import { LinkedIn } from "react-linkedin-login-oauth2";
-import linkedin from 'react-linkedin-login-oauth2/assets/linkedin.png';
 import { ApiService } from "../../api";
 
 interface SignUP {
@@ -26,16 +22,9 @@ const SignUpComponent: React.FC<SignUP> = ({ setModal }) => {
       dispatch(googleAuth(user))
       navigate('/');
     }
-  
-
-  function hangleLinkedIn(res: any) {
-     console.log(res)
-  }
-
  
-
   return (
-    <div className="md:col-span-1 md:col-start-4 md:col-end-6 lg:col-span-2 col-span-1 bg-white items-center justify-center p-8 shadow rounded-xl border border-zinc-300">
+    <div className="max-w-96 bg-white items-center justify-center p-8 shadow rounded-xl border border-zinc-300 mr-6">
       <form>
         {/* <div className="mb-3">
           <SocialAuth
@@ -53,12 +42,11 @@ const SignUpComponent: React.FC<SignUP> = ({ setModal }) => {
             console.log("Login Failed");
           }}
         />
-        
 
-        <div className="flex justify-between relative mt-6">
-          <span className="lg:w-36 h-px  bg-zinc-400"></span>
-          <p className="absolute left-40 -top-3">Or</p>
-          <span className="lg:w-36 h-px bg-zinc-400"></span>
+        <div className="flex  w-full justify-between relative mt-6">
+          <div className="w-36 h-px  bg-zinc-400"></div>
+          <p className="absolute left-[9.5rem] -top-3">Or</p>
+          <div className="w-36 h-px bg-zinc-400"></div>
         </div>
         <div className="mt-6">
           <button

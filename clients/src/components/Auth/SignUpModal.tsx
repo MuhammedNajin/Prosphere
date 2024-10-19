@@ -107,19 +107,16 @@ export const SignUpModal: React.FC<Modal> = ({ closeModal }) => {
   };
 
   return (
-    <div className="flex items-center justify-center bg-white absolute rounded-lg -top-10 transition-opacity duration-300 ">
+    <div className="  md:h-[31.25rem] md:w-[27.625rem] flex items-center justify-center bg-white absolute rounded-lg md:top-6z transition-opacity duration-300 ">
       {loading ? (
         <div
-          style={{
-            width: "27.625rem",
-            height: "31.25rem",
-          }}
+         
           className="flex justify-center items-center w- h-1/2 p-6 ms-4"
         >
           <Spinner />
         </div>
       ) : (
-        <div className="w-full max-w-md p-10 bg-white rounded-lg shadow-md transition-opacity duration-75">
+        <div className="max-w-sm md:max-w-md p-5 md:p-10 bg-white rounded-lg shadow-md transition-opacity duration-75">
           <div className="flex justify-between">
             <div>
               <h2 className="text-2xl font-semibold mb-1">

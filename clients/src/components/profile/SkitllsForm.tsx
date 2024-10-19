@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from '@/components/ui/input';
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
+import { popularSkills } from '../../data/popularSkill'
 import {
   Form,
   FormControl,
@@ -24,15 +25,7 @@ const skillSchema = z.object({
   })).min(1, "At least one skill is required")
 });
 
-// This is a mock list of skills. In a real application, you'd want to fetch this from a backend API.
-const popularSkills = [
-  "JavaScript", "Python", "Java", "C++", "React", "Node.js", "Angular", "Vue.js",
-  "AWS", "Docker", "Kubernetes", "Machine Learning", "Data Analysis", "SQL",
-  "GraphQL", "REST API", "Git", "Agile Methodologies", "Scrum", "DevOps",
-  "Cloud Computing", "Cybersecurity", "Artificial Intelligence", "Blockchain",
-  "UI/UX Design", "Product Management", "Digital Marketing", "SEO",
-  "Content Writing", "Project Management", "Leadership", "Communication"
-];
+
 
 interface SkillFormProps {
    skills?: string[]
@@ -45,7 +38,7 @@ function SkillForm({ skills }: SkillFormProps) {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionsRef = useRef(null);
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof skillSchema>>({
     resolver: zodResolver(skillSchema),
     defaultValues: {
       skills: skills || []

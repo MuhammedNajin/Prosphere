@@ -18,4 +18,5 @@ const developerRoles = [
     "UX (user experience) designer",
     "Web developer"
   ];
+  
 export default developerRoles;  

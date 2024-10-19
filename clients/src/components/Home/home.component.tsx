@@ -1,5 +1,5 @@
 
-import Header from "./Header";
+import Header from "../common/navBar/NavBar";
 import StorySection from "./Story";
 import Post from "./Post";
 import Suggestions from "./Suggetions";

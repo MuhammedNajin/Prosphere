@@ -11,9 +11,8 @@
 
 
 body {
-  background-color: #f2f3f4;
+  background-color: #ffffff;
 }
-
 
 
 @layer base {
@@ -81,6 +80,18 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+
+@font-face {
+  font-family: 'Clash Display';
+  src: url('/fonts/clash-display-variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+h1, h2, h3, h4 {
+   font-family: 'Clash Display', 'sans-serif';
 }
 
 

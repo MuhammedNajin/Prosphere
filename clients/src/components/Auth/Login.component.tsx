@@ -33,7 +33,7 @@ useEffect(() => {
    }
   
   return (
-    <div className="col-span-2 bg-white mb-20 items-center justify-center p-8 shadow rounded-xl border border-zinc-300">
+    <div className="bg-white mb-20 items-center justify-center p-8 shadow rounded-xl border border-zinc-300">
       <form>
         
         

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,14 +22,17 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { useFieldArray, useForm } from "react-hook-form";
+import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SecondModal from "./CreateJobModalTwo";
 import CreateJobModalThree from "./CreateJobModalThree";
-import { JobApi } from '../../api'
+import { JobApi } from "../../api";
 import { useParams } from "react-router-dom";
+import { popularSkills } from "@/data/popularSkill";
+import { X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface CreateJobModalProps {
   isOpen: boolean;
@@ -38,18 +41,17 @@ interface CreateJobModalProps {
 
 const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
   const [completion, setCompletion] = useState<1 | 2 | 3>(1);
+  const [inputSkill, setInputSkill] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const suggestionsRef = useRef(null);
 
   const [formStep] = useState([
-    [
       "Job information",
-      <PiShoppingBagLight key="job-info" className="size-6 text-white p-0" />,
-    ],
-    [
       "Job description",
-      <HiOutlineClipboardDocumentList key="job-desc" className="size-6 text-white p-0" />,
-    ],
-    ["Perks & benefits", <FaGift key="perks" className="size-6 text-white p-0" />],
+      "Perks & benefits",
   ]);
+
   const [employmentTypes] = useState([
     "Full-Time",
     "Part-Time",
@@ -58,7 +60,8 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
     "Contract",
   ]);
 
-  const formSchema = z.object({
+  const formSchema = z
+  .object({
     jobTitle: z.string().min(4, {
       message: "Job Title must be at least 4 characters",
     }),
@@ -74,16 +77,37 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
     maxSalary: z.number().min(1000, {
       message: "Maximum salary must be at least 1000",
     }),
-    skills: z.string(),
-    jobDescription: z.string(),
-    qualifications: z.array(z.string()),
-    niceToHave: z.array(z.string()),
-    responsibility: z.array(z.string()),
-    experience: z.string(),
-    vacancies: z.number(),
-    expiry: z.string(),
-    jobLocation: z.string(),
+    skills: z
+      .array(
+        z.object({
+          name: z.string().min(1, "Skill name is required"),
+          proficiency: z.enum([
+            "Beginner",
+            "Intermediate",
+            "Advanced",
+            "Expert",
+          ]),
+        })
+      )
+      .min(1, "At least one skill is required"),
+    jobDescription: z.string().min(10, "Job description must be at least 10 characters"),
+    qualifications: z.array(z.string()).optional(),
+    niceToHave: z.array(z.string()).optional(),
+    responsibility: z.array(z.string()).optional(),
+    experience: z.number({
+      required_error: "experience required",
+    }).min(0, "Experience must be a non-negative number").transform((val) => Number(val)),
+    vacancies: z.number().int().positive("Vacancies must be at least 1"),
+    expiry: z.string().refine((val) => new Date(val) > new Date(), {
+      message: "Expiry date must be a future date",
+    }),
+    jobLocation: z.string().min(1, "Job location is required"),
+  })
+  .refine((data) => data.minSalary <= data.maxSalary, {
+    message: "Minimum salary cannot be greater than maximum salary",
+    path: ["maxSalary"],
   });
+
 
   const [minSalary, setMinSalary] = React.useState([5000]);
   const [maxSalary, setMaxSalary] = useState([50000]);
@@ -95,15 +119,15 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
       employment: "Full-Time",
       minSalary: 5000,
       maxSalary: 50000,
-      skills: "",
+      skills: [],
       jobDescription: "",
       qualifications: [],
       niceToHave: [],
       responsibility: [],
-      experience: '',
+      experience: 1,
       vacancies: 0,
-      expiry: '',
-      jobLocation: '',
+      expiry: "",
+      jobLocation: "",
     },
     mode: "onChange",
   });
@@ -120,39 +144,115 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
         ]);
         if (isValid) setCompletion(2);
         break;
-      case 2: 
+      case 2:
         setCompletion(3);
-        break;  
+        break;
     }
   };
 
-  const { id } = useParams()
+  const { id } = useParams();
 
   const onSubmit = async (formData: z.infer<typeof formSchema>) => {
     console.log(formData);
     const response = await JobApi.postJob(formData, id);
-    
   };
 
-  
-  
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "skills",
+  });
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        suggestionsRef.current &&
+        !suggestionsRef.current.contains(event.target)
+      ) {
+        setShowSuggestions(false);
+      }
+      if (fields) {
+        console.log("hola", fields);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    console.log("value", value);
+
+    setInputSkill(value);
+    if (value.length > 0) {
+      const filtered = popularSkills.filter((skill) =>
+        skill.toLowerCase().startsWith(value.toLowerCase())
+      );
+      setSuggestions(filtered);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+    console.log("kerii", inputSkill);
+  };
+
+  const handleSuggestionClick = (skill) => {
+    console.log(skill, "skills");
+    setInputSkill(skill);
+    console.log("handle suggestions", inputSkill);
+    setSuggestions([]);
+    setShowSuggestions(false);
+  };
+
+  const handleAddSkill = () => {
+    if (
+      inputSkill.trim() &&
+      !fields.some(
+        (field) => field.name.toLowerCase() === inputSkill.trim().toLowerCase()
+      )
+    ) {
+      append({ name: inputSkill.trim(), proficiency: "Beginner" });
+      setInputSkill("");
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose} modal>
-      <DialogContent className="w-3/4 max-w-4xl top-[50%] border shadow-none rounded-sm max-h-[80vh] overflow-y-auto scrollbar-hide">
+      <DialogContent className="w-full max-w-4xl top-[50%] border shadow-none rounded-sm max-h-[90vh]  p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             Post a Job
           </DialogTitle>
           <DialogDescription>
-            <div className="flex p-3 gap-x-36 rounded-sm mt-2 mb-2 border">
+            <div className="flex flex-col  sm:flex-row p-3 gap-4 sm:gap-x-8 rounded-sm mt-2 mb-2 border">
               {formStep.map((el, index) => (
-                <div key={index} className="flex gap-4 justify-center items-center">
-                  <div className="rounded-full size-14 bg-orange-500 flex justify-center items-center">
-                    {el[1]}
+                <div
+                  key={index}
+                  className="flex flex-1 gap-4 justify-start items-center"
+                >
+                  <div className={`rounded-full size-12 sm:size-14 ${completion === index + 1 ? "bg-orange-500" : "bg-[#FFF8F3]"}  flex justify-center items-center`}>
+                    {index === 0 && (
+                      <PiShoppingBagLight key="job-info" className={`size-6 ${index + 1 === completion ? "text-white" : "text-gray-600"} p-0`} />
+                    )}
+                    {index === 1 && (
+                     <HiOutlineClipboardDocumentList
+                     key="job-desc"
+                     className={`size-6 ${index + 1 === completion ? "text-white" : "text-gray-600"} p-0`}
+                   />
+                    )}
+                    {index === 2 && (
+                      <PiShoppingBagLight key="job-info" className={`size-6 ${index + 1 === completion ? "text-white" : "text-gray-600"} p-0`} />
+                    )}
+
                   </div>
                   <div>
-                    <h1>Step {`${index + 1}/3`}</h1>
-                    <h2>{el[0]}</h2>
+                    <h1 className="text-sm sm:text-base">Step {`${index + 1}/3`}</h1>
+                    <h2 className="text-sm sm:text-base">{el}</h2>
                   </div>
                 </div>
               ))}
@@ -160,7 +260,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
           </DialogDescription>
         </DialogHeader>
 
-        <div className="">
+        <div className="overflow-y-auto scrollbar-hide max-h-[calc(90vh-200px)] px-2s">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               {completion === 1 && (
@@ -169,18 +269,18 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
                     control={form.control}
                     name="jobTitle"
                     render={({ field }) => (
-                      <FormItem className="flex gap-x-10 items-center border-t border-b py-8">
-                        <div className="flex flex-col gap-y-2">
+                      <FormItem className="flex flex-col sm:flex-row sm:gap-x-10 items-start sm:items-center border-t border-b py-4 sm:py-8">
+                        <div className="flex flex-col gap-y-2 mb-2 sm:mb-0">
                           <FormLabel className="font-medium text-md">
                             Job Title
                           </FormLabel>
-                          <FormDescription>
+                          <FormDescription className="text-sm">
                             Job titles must describe one position
                           </FormDescription>
                         </div>
                         <FormControl>
                           <Input
-                            className="w-80"
+                            className="w-full sm:w-80"
                             placeholder="e.g: Software Engineer"
                             {...field}
                           />
@@ -194,12 +294,12 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
                     control={form.control}
                     name="employment"
                     render={({ field }) => (
-                      <FormItem className="flex gap-x-10 items-center border-t border-b py-6">
-                        <div className="flex flex-col gap-y-2">
+                      <FormItem className="flex flex-col sm:flex-row sm:gap-x-10 items-start sm:items-center border-t border-b py-4 sm:py-6">
+                        <div className="flex flex-col gap-y-2 mb-2 sm:mb-0">
                           <FormLabel className="font-medium text-md">
                             Type of Employment
                           </FormLabel>
-                          <FormDescription>
+                          <FormDescription className="text-sm">
                             You can select multiple types of employment
                           </FormDescription>
                         </div>
@@ -207,14 +307,15 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
                           <RadioGroup
                             onValueChange={field.onChange}
                             value={field.value}
+                            className="grid grid-cols-2 sm:grid-cols-3 gap-2"
                           >
                             {employmentTypes.map((el) => (
                               <div
                                 key={el}
-                                className="flex items-center space-x-4"
+                                className="flex items-center space-x-2"
                               >
                                 <RadioGroupItem value={el} id={el} />
-                                <Label htmlFor={el}>{el}</Label>
+                                <Label htmlFor={el} className="text-sm">{el}</Label>
                               </div>
                             ))}
                           </RadioGroup>
@@ -228,18 +329,18 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
                     control={form.control}
                     name="minSalary"
                     render={({ field }) => (
-                      <FormItem className="flex gap-x-10 items-center border-t border-b py-6">
-                        <div className="flex flex-col gap-y-2">
+                      <FormItem className="flex flex-col sm:flex-row sm:gap-x-10 items-start sm:items-center border-t border-b py-4 sm:py-6">
+                        <div className="flex flex-col gap-y-2 mb-2 sm:mb-0">
                           <FormLabel className="font-medium text-md">
                             Minimum Salary
                           </FormLabel>
-                          <FormDescription>
+                          <FormDescription className="text-sm">
                             Specify the minimum salary for the role
                           </FormDescription>
                         </div>
                         <FormControl>
                           <Input
-                          className="w-80"
+                            className="w-full sm:w-80"
                             type="number"
                             {...field}
                             onChange={(e) => {
@@ -258,18 +359,18 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
                     control={form.control}
                     name="maxSalary"
                     render={({ field }) => (
-                      <FormItem className="flex gap-x-10 items-center border-t border-b py-6">
-                        <div className="flex flex-col gap-y-2">
+                      <FormItem className="flex flex-col sm:flex-row sm:gap-x-10 items-start sm:items-center border-t border-b py-4 sm:py-6">
+                        <div className="flex flex-col gap-y-2 mb-2 sm:mb-0">
                           <FormLabel className="font-medium text-md">
                             Maximum Salary
                           </FormLabel>
-                          <FormDescription>
+                          <FormDescription className="text-sm">
                             Specify the maximum salary for the role
                           </FormDescription>
                         </div>
                         <FormControl>
                           <Input
-                          className="w-80"
+                            className="w-full sm:w-80"
                             type="number"
                             {...field}
                             onChange={(e) => {
@@ -287,29 +388,84 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
                   <FormField
                     control={form.control}
                     name="skills"
-                    render={({ field }) => (
-                      <FormItem className="flex gap-x-14 items-center border-t border-b py-6">
-                        <div className="flex flex-col gap-y-2">
+                    render={() => (
+                      <FormItem className="flex flex-col sm:flex-row sm:gap-x-10 border-t border-b py-4 sm:py-6">
+                        <div className="flex flex-col gap-y-2 mb-2 sm:mb-0">
                           <FormLabel className="font-medium text-md">
-                            Required Skills
+                            Skills
                           </FormLabel>
-                          <FormDescription>
+                          <FormDescription className="text-sm">
                             Add required skills for the job
                           </FormDescription>
                         </div>
+
+                        <div className="flex flex-col w-full sm:w-auto">
                         <FormControl>
-                          <Input
-                            className="w-80"
-                            placeholder="e.g: JavaScript, React, Node.js"
-                            {...field}
-                          />
+                          <div className="flex gap-2 mb-2 relative">
+                            <Input
+                              value={inputSkill}
+                              onChange={handleInputChange}
+                              onFocus={() => setShowSuggestions(true)}
+                              placeholder="Enter a skill"
+                              className="flex-grow"
+                            />
+                            <Button
+                              className="bg-white text-orange-500 border border-orange-500 hover:bg-orange-500 hover:text-white"
+                              type="button"
+                              onClick={handleAddSkill}
+                            >
+                              Add
+                            </Button>
+                            {showSuggestions && suggestions.length > 0 && (
+                              <div
+                                ref={suggestionsRef}
+                                className="absolute z-10 w-full bg-white border border-gray-300 mt-12 rounded-md shadow-lg"
+                              >
+                                {suggestions.map((skill, index) => (
+                                  <div
+                                    key={index}
+                                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                                    onClick={() => handleSuggestionClick(skill)}
+                                  >
+                                    {skill}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         </FormControl>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {fields.map((field, index) => (
+                            <Badge
+                              key={field.id}
+                              variant="secondary"
+                              className="text-xs sm:text-sm text-orange-500 border border-orange-500 py-[5px]"
+                            >
+                              {field.name}
+                              <select
+                                value={field.proficiency}
+                                onChange={(e) => form.setValue(`skills.${index}.proficiency`, e.target.value)}
+                                className="ml-2 bg-transparent border-none text-xs sm:text-sm"
+                              >
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                                <option value="Expert">Expert</option>
+                              </select>
+                              <X
+                                className="ml-2 h-3 w-3 sm:h-4 sm:w-4 cursor-pointer"
+                                onClick={() => remove(index)}
+                              />
+                            </Badge>
+                          ))}
+                        </div>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <DialogFooter>
-                    <Button value="1" onClick={handleNext} type="button">
+                  <DialogFooter className="pt-4 pr-2">
+                    <Button value="1" onClick={handleNext} type="button" className="w-full sm:w-auto px-8">
                       Next
                     </Button>
                   </DialogFooter>
@@ -318,9 +474,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({ isOpen, onClose }) => {
               {completion === 2 && (
                 <SecondModal handleNext={handleNext} form={form} />
               )}
-              {completion === 3 && (
-                <CreateJobModalThree form={form} />
-              )}
+              {completion === 3 && <CreateJobModalThree form={form} />}
             </form>
           </Form>
         </div>

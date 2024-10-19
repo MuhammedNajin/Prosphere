@@ -1,6 +1,6 @@
 import React from "react";
 import CompanyComponent from "@/components/company/Mycompany.component";
-import Header from "@/components/Home/Header";
+import Header from "@/components/common/navBar/Header";
 import Sidebar from "@/components/Home/Sidebar";
 
 
