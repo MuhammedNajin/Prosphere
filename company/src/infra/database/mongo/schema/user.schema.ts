@@ -8,6 +8,7 @@ export interface UserAttrs {
 }
 
 export interface UserDoc extends Document {
+  _id: string
   username: string;
   email: string;
   phone: string;

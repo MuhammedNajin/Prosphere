@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@muhammednajinnprosphere/common": "^1.0.32",
+    "@muhammednajinnprosphere/common": "^1.0.35",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/mongoose": "^5.11.96",

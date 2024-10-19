@@ -71,12 +71,10 @@ const companySchema = new mongoose.Schema(
       required: false,
     },
 
-
-   
-
     owner: {
-      type: String,
-      required: [true, "Company owner is required"],
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, "Owner name is required"],
     },
   },
   { timestamps: true }

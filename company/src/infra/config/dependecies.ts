@@ -2,6 +2,7 @@ import {
   createUserUseCase,
   createCompanyUseCase,
   getCompanyUseCase,
+  getMyCompanyUseCase
 } from "../../application/useCases";
 import { userRepository, companyRepository } from "../repository/";
 
@@ -22,6 +23,7 @@ const useCases = {
   createUserUseCase,
   createCompanyUseCase,
   getCompanyUseCase,
+  getMyCompanyUseCase
 };
 
 export default {

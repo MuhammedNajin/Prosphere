@@ -1,4 +1,5 @@
 export class UserEntity {
+    _id?: string
     username: string;
     email: string;
     phone: string;
@@ -8,7 +9,8 @@ export class UserEntity {
     coverImage: string | null;
     profilePhoto: string | null;
   
-    constructor({ username, email, phone, jobRole }) {
+    constructor({ _id ,username, email, phone, jobRole }) {
+      this._id = _id
       this.username = username;
       this.email = email;
       this.phone = phone;

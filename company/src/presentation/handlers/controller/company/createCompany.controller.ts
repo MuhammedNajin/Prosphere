@@ -12,7 +12,7 @@ export const createCompanyController = (dependencies: any) => {
     try {
       console.log(req.body, req.cookies);
 
-      const { name, url, website, location, size, type, email } = req.body;
+      const { name, url, website, location, size, type, id } = req.body;
 
       const companyExist = await getCompanyUseCase(dependencies).execute(url);
 
@@ -27,14 +27,14 @@ export const createCompanyController = (dependencies: any) => {
         location,
         size,
         type,
-        owner: email
+        owner: id
       });
 
       await new CompanyCreatedProducer(kafka.producer).produce({
-        id: company._id,
+        _id: company._id,
         name,
         location,
-        owner: email,
+        owner: id,
       })
 
       res.status(201).json(company);

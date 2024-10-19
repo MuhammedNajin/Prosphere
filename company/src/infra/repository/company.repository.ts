@@ -1,6 +1,6 @@
 import { Company } from '../database/mongo/schema'
 import { CompanyAttrs } from '../database/mongo/schema/company.schema'
-
+import mongoose from 'mongoose'
 
 
 
@@ -14,6 +14,10 @@ export default {
         const company = await Company.findOne({ url });
         return company;
     },
+
+    getMyCompany: async (id: string) => {  
+        return await Company.find({ owner: id})
+    }
 
 
 }

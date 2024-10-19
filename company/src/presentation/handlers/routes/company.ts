@@ -8,9 +8,11 @@ export const companyRoutes = (dependencies: any) => {
 
   const {
    createCompanyController,
+   getCompanyController
   } = companyController(dependencies);
     
   router.post('/setup', createCompanyController);
+  router.get('/:id', getCompanyController)
   
 
   return router;
