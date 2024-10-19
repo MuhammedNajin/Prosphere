@@ -82,7 +82,7 @@ const jobSchema = new mongoose.Schema(
       required: [true, "Experience is required"],
     },
     companyId: {
-      type: String,
+      type: mongoose.Schema.ObjectId,
       required: [true, "Company ID is required"],
       ref: "Company",
     },

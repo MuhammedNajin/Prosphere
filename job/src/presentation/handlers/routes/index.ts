@@ -1,5 +1,6 @@
 import express, { Request, Response, Express } from "express";
 import { JobRoutes } from './jobRoutes'
+import { ApplicationRoutes } from "./applicationRoutes";
 
 export class AppRoutes {
     private readonly dependencies: null;
@@ -10,11 +11,14 @@ export class AppRoutes {
 
     get routes() {
         const router = express.Router();
-        const  { jobUseCase } = this.dependencies.useCase;
+        const  { applicationUseCase, jobUseCase } = this.dependencies.useCase;
         console.log("job usecase", this.dependencies.useCase);
         
         const jobRoutes = new JobRoutes(jobUseCase).router;
         router.use('/job', jobRoutes)
+
+        const applicationRoutes = new ApplicationRoutes(applicationUseCase).router
+        router.use('/job/application', applicationRoutes);
 
         // test route 
         router.get('/', (req: Request, res: Response) => {

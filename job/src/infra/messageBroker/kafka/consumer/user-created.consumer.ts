@@ -7,15 +7,15 @@ export class UserCreatedConsumer extends KafkaConsumer<UserCreatedEvent> {
 
     constructor(consumer: Consumer, dependecies: any) {
         super(consumer);
-        console.log("consuer", dependecies)
+        console.log("consuer", dependecies.userUseCase)
         this.dependencies = dependecies;
     }
 
     async onConsume(data: UserCreatedEvent['data'], msg: KafkaMessage): Promise<void> {
-        console.log("heloo from consumer");
+        console.log("heloo from consumer", data);
        try {
         const {
-            _id, 
+            _id,
             email,
             jobRole,
             phone,
@@ -23,7 +23,7 @@ export class UserCreatedConsumer extends KafkaConsumer<UserCreatedEvent> {
            } = data;
            console.log("userCreated event", data);
            const {
-              useCases: { userCreationUseCase }
+              userUseCases: { userCreationUseCase },
            } = this.dependencies;
           
            const profile = await userCreationUseCase.execute({

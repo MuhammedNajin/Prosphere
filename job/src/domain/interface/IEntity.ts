@@ -12,3 +12,18 @@ export interface IUserEntity {
   phone?: string;
   jobRole?: string;
 }
+
+export interface IApplicationEntity {
+  jobId: string;
+  applicantId: string;
+  coverLetter: string;
+  status:
+    | "Applied"
+    | "In Review"
+    | "Interview Scheduled"
+    | "Accepted"
+    | "Rejected";
+  appliedAt?: Date;
+  updatedAt?: Date;
+  notes: string;
+}

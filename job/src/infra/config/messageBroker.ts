@@ -1,18 +1,19 @@
 import { KafkaClient } from '@muhammednajinnprosphere/common';
-import { CompanyCreatedConsumer } from '@infra/messageBroker/kafka';
+import { CompanyCreatedConsumer, UserCreatedConsumer } from '@infra/messageBroker/kafka';
 
 class MessageBrokerConnection {
-  private static kafkaClient: KafkaClient;
-
+  private static kafkaClient: KafkaClient = new KafkaClient();
   private constructor() {}
 
   public static async connect(dependencies: any): Promise<void> {
-    if (!this.kafkaClient) {
-      this.kafkaClient = new KafkaClient();
-    }
-
     await this.kafkaClient.connect('job-service', ['localhost:29092'], "job-service-group");
-    new CompanyCreatedConsumer(this.kafkaClient.consumer, dependencies).listen();
+     const userCreateConsumer = await this.kafkaClient.getCosumer('user-created-group')
+     const companyCreateConsumer = await this.kafkaClient.getCosumer('company-created-group')
+     const  companyCreate = new CompanyCreatedConsumer(companyCreateConsumer!, dependencies)
+     const  userCreate = new UserCreatedConsumer(userCreateConsumer!, dependencies)
+    console.log(companyCreate,"listeennnnnnnnn", userCreate);
+      companyCreate.listen()
+      userCreate.listen()
   }
 
   public static get kafka(): KafkaClient {
@@ -21,6 +22,19 @@ class MessageBrokerConnection {
     }
     return this.kafkaClient;
   }
+
+
+  public static async disconnect(): Promise<void> {
+    try {
+        if (this.kafkaClient) {
+            await this.kafkaClient.disconnect();
+            console.log('Kafka disconnected successfully');
+        }
+    } catch (error) {
+        console.error('Error disconnecting from Kafka:', error);
+        throw error;
+    }
+}
 }
 
 export  { MessageBrokerConnection };

@@ -13,4 +13,16 @@ export class DatabaseConnection {
              
         }
     }
+
+    public static async disconnect(): Promise<void> {
+        try {
+           
+                await mongoose.disconnect(); 
+                console.log('Database disconnected successfully');
+    
+        } catch (error) {
+            console.error('Error disconnecting from database:', error);
+            throw error;
+        }
+    }
 }

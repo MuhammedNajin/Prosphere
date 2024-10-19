@@ -2,6 +2,7 @@ import mongoose, { Model, Document } from "mongoose";
 
 // Define the attributes for creating a new Company
 export interface CompanyAttrs {
+  _id: string
   name: string;
   owner: string;
   location: string;
@@ -9,6 +10,7 @@ export interface CompanyAttrs {
 
 // Define the document structure for a Company
 export interface CompanyDoc extends Document {
+  _id: string
   name: string;
   owner: string;
   location: string;
@@ -28,7 +30,8 @@ const companySchema = new mongoose.Schema(
       required: [true, "Company name is required"],
     },
     owner: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
       required: [true, "Owner name is required"],
     },
     location: {

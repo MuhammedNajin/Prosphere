@@ -1,6 +1,7 @@
  import express from 'express';
  import { AppRoutes } from '@presentation/handlers/routes'
  import cors from 'cors';
+ import { errorHandler } from '@muhammednajinnprosphere/common'
 
  class App {
     private readonly app: express.Application;
@@ -31,10 +32,12 @@
 
     private registerRoutes(): void {
         
-
+     
         console.log("dep", this.dependencies);
         const appRoute = new AppRoutes(this.dependencies)
         this.app.use("/api/v1", appRoute.routes)
+
+        this.app.use(errorHandler);
     }
 
     private startServer(): void {
