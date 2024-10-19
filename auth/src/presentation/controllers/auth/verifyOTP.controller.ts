@@ -51,6 +51,7 @@ const verifyOTPController = (dependencies: Dependencies) => {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
       });
+      
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

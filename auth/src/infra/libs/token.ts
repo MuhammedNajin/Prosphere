@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { OAuth2Client } from 'google-auth-library'; 
 
 class Token {
-  static  generateJwtToken(payload: TokenData, option?: { createAdminToken: boolean } = { createAdminToken: false}) {
+  static  generateJwtToken(payload: TokenData, option: { createAdminToken: boolean } = { createAdminToken: false}) {
       const { createAdminToken: admin, } = option!
       const accessSecrect = admin ? process.env.ADMIN_SECRECT! : process.env.TOKEN_SECRECT!
       const refreshSecrect = admin ? process.env.ADMIN_REFRESH_SECRECT! : process.env.REFRESH_SECRECT!
@@ -15,6 +15,10 @@ class Token {
         expiresIn: "2h"
        })
        return { accessToken, refreshToken }
+  }
+
+  static async verifyToken(token: string, TOKEN_SECRECT: string) {
+        return jwt.verify(token, TOKEN_SECRECT);
   }
 
   static generateForgetPasswordToken() {

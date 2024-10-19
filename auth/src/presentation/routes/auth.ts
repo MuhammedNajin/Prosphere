@@ -17,20 +17,39 @@ export const authRoutes = (dependencies: any) => {
     resentOTPController,
     forgotPasswordController,
     resetPasswordController,
-    adminLoginController
+    adminLoginController,
+    refreshTokenController
   } = authController(dependencies);
 
   router.post("/login",
      loginController);
      
-  router.post("/signup", signupController);
-  router.post("/verify-otp", verifyOTPController);
-  router.post("/logout", logoutController);
-  router.post("/google-auth", googleAuthController);
-  router.post("/resent-otp", resentOTPController);
-  router.post("/forget-password", forgotPasswordController);
-  router.post("/reset-password/:token", resetPasswordController);
-  router.post("/admin", adminLoginController);
+  router.post("/signup", 
+    signupController);
+    
+  router.post("/verify-otp",
+     verifyOTPController);
+
+  router.post("/logout", 
+    logoutController);
+
+  router.post("/google-auth", 
+    googleAuthController);
+
+  router.post("/resent-otp",
+     resentOTPController);
+
+  router.post("/forget-password", 
+    forgotPasswordController);
+
+  router.post("/reset-password/:token", 
+    resetPasswordController);
+
+  router.post("/admin", 
+    adminLoginController);
+
+  router.post("/refresh-token", 
+    refreshTokenController);
 
   return router;
 };

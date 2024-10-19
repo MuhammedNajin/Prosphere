@@ -7,7 +7,7 @@ import { resentOTPController } from "./resentOtp.controller";
 import { forgotPasswordController } from "./forgotPassword.controller";
 import { resetPasswordController } from "./resetPassword.controller";
 import { adminLoginController } from "./adminLogin.controller";
- 
+import { refreshTokenController } from './refreshToken.controller'
 
 export const authController = (dependencies: any) => {
   console.log("auth controller");
@@ -21,6 +21,7 @@ export const authController = (dependencies: any) => {
     resentOTPController: resentOTPController(dependencies),
     forgotPasswordController: forgotPasswordController(dependencies),
     resetPasswordController: resetPasswordController(dependencies),
-    adminLoginController: adminLoginController(dependencies)
+    adminLoginController: adminLoginController(dependencies),
+    refreshTokenController: refreshTokenController(dependencies),
   };
 };
