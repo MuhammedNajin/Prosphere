@@ -11,10 +11,14 @@ export const profileRoutes = (dependencies: any) => {
     uploadProfilePhotoController,
     aboutController,
     getProfileController,
-    updateProfileController
+    updateProfileController,
+    uploadResumeController,
+    getUploadedFileController
   } = profileController(dependencies);
     
   router.post('/photo', upload.single('image'), uploadProfilePhotoController);
+  router.post('/resume', upload.single('resume'), uploadResumeController);
+  router.get('/file/:key', getUploadedFileController);
   router.put('/about', aboutController);
   router.get('/:email', getProfileController);
   router.put('/:email', updateProfileController)

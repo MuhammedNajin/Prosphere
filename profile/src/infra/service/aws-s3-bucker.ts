@@ -1,6 +1,6 @@
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { generateFileName } from './generatFileName';
+import { generateFileName } from './generateFileName';
 import dotenv from 'dotenv'
 
 dotenv.config();
@@ -24,19 +24,18 @@ class S3Operations {
     });
   }
 
-  uploadImageToBucket = async (fileBufferCode: Buffer, fileType: string) => {
-    const fileName = generateFileName();
-
+  uploadImageToBucket = async (fileBufferCode: Buffer, fileType: string, key: string) => {
+    
     const uploadParams = {
       Bucket: this.bucketName,
       Body: fileBufferCode,
-      Key: fileName,
+      Key: key,
       ContentType: fileType,
       
     };
 
     const data = await this.s3.send(new PutObjectCommand(uploadParams));
-    return { data, fileName };
+    return data;
   }
 
   getImageUrlFromBucket = async (key: string) => {
@@ -46,7 +45,7 @@ class S3Operations {
         Bucket: this.bucketName,
         Key: key
       }),
-      { expiresIn: 360000 }
+      { expiresIn: 30 }
     );
     return imageUrl;
   }

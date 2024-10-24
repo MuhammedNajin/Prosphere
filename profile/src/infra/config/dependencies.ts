@@ -5,7 +5,9 @@ import {
  createProfileUseCase,
  aboutUseCase,
  getProfileUseCase,
- updateProfileUseCase
+ updateProfileUseCase,
+ uploadResumeUseCase,
+ getUploadedFileUseCase
 } from '@application/usecase'
 
 import s3Operation from '@infra/service/aws-s3-bucker';
@@ -24,6 +26,8 @@ const useCases = {
   aboutUseCase,
   getProfileUseCase,
   updateProfileUseCase,
+  uploadResumeUseCase,
+  getUploadedFileUseCase
 }
 
 const repository = {

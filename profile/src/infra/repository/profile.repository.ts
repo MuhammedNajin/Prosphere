@@ -9,13 +9,26 @@ interface UploadProfilePhotoArgs {
    query: any,
 }
 export default {
-  uploadProfilePhoto: async ({email, query}: UploadProfilePhotoArgs) => {
-    const updates = { $set: query };
+  uploadFile: async ({email, query}: UploadProfilePhotoArgs) => {
+    let updates: unknown = { $set: query };
+    const key = 'resumeKey'
+    console.log("quey", query[key]);
+    
+    if(query[key]) {
+      updates = { $push: query[key]}
+    }
+    
     const profile = await Profile.findOneAndUpdate({ email }, updates, {
       new: true,
     });
 
     return profile;
+  },
+
+  setResume: async (email: string, key: string) => {
+    await Profile.findOneAndUpdate({email}, {
+       $push: { resumeKey: key }
+    })
   },
 
   aboutMe: async (description: string, email: string) => {

@@ -1,43 +1,42 @@
 import mongoose, { Model, Document } from "mongoose";
 
 export interface profileAttrs {
-  _id: string
   username: string;
   email: string;
   phone?: string;
   jobRole?: string;
+  about?: string;
+  coverImageKey?: string;
+  profileImageKey?: string;
+  resumeKey?: string;
+  experience?: Experience[];
+  education?: Education[];
+  skills?: Skill[];
 }
 
 export interface Experience {
-  companyName: string;
-
-  startDate: {
-    startMonth: string;
-    startYear: string;
-  };
-
-  endDate: {
-    endMonth: string;
-    endYear: string;
-  };
-
   position: string;
-
-  url: string;
+  companyName: string;
+  employmentType?: string;
+  locationType?: "on-site" | "remote" | "hybrid";
+  startDate: Date;
+  endDate: Date;
+  currentlyWorking?: boolean;
 }
 
 export interface Education {
   school: string;
-  startDate: {
-    startMonth: string;
-    startYear: string;
-  };
-  endDate: {
-    endMonth: string;
-    endYear: string;
-  };
   degree: string;
-  grade: string;
+  fieldOfStudy?: string;
+  startDate: Date;
+  endDate: Date;
+  currentlyStudying?: string;
+  grade?: string;
+}
+
+export interface Skill {
+  name: string;
+  proficiency?: string;
 }
 
 export interface ProfileDoc extends Document {
@@ -45,12 +44,13 @@ export interface ProfileDoc extends Document {
   email: string;
   phone: string;
   jobRole: string;
-  profilePhoto: string;
   about: string;
+  coverImageKey: string;
   profileImageKey: string;
-  experience: Experience;
-  education: Education;
-  skills: [string];
+  resumeKey: string;
+  experience: Experience[];
+  education: Education[];
+  skills: Skill[];
 }
 
 export interface ProfileModel extends Model<ProfileDoc> {
@@ -62,106 +62,86 @@ const profileSchema = new mongoose.Schema({
     type: String,
     required: [true, "username is required"],
   },
-
   email: {
     type: String,
     required: [true, "email is required"],
-    unique: [true, " email should be uniqe"],
+    unique: [true, "email should be unique"],
   },
-
   phone: {
     type: String,
   },
-
-
   jobRole: {
     type: String,
   },
-
   about: {
     type: String,
   },
-
   coverImageKey: {
     type: String,
   },
-
   profileImageKey: {
     type: String,
   },
-
+  resumeKey: {
+    type: String,
+  },
   experience: [
     {
       position: {
         type: String,
       },
-
       companyName: {
         type: String,
       },
-
       employmentType: {
         type: String,
       },
-
       locationType: {
         type: String,
         enum: ["on-site", "remote", "hybrid"],
       },
-
       startDate: {
         type: Date,
       },
-
       endDate: {
         type: Date,
       },
-
       currentlyWorking: {
         type: Boolean,
         default: true,
       },
     },
   ],
-
   education: [
     {
       school: {
         type: String,
       },
-
       degree: {
         type: String,
       },
-
       fieldOfStudy: {
         type: String,
       },
-
       startDate: {
         type: Date,
       },
-
       endDate: {
         type: Date,
       },
-
       currentlyStudying: {
         type: String,
       },
-
       grade: {
         type: String,
       },
     },
   ],
-
   skills: [
     {
       name: {
         type: String,
       },
-
       proficiency: {
         type: String,
       },
@@ -173,9 +153,6 @@ profileSchema.statics.build = (attrs: profileAttrs) => {
   return new Profile(attrs);
 };
 
-const Profile = mongoose.model<ProfileDoc, ProfileModel>(
-  "Profile",
-  profileSchema
-);
+const Profile = mongoose.model<ProfileDoc, ProfileModel>("Profile", profileSchema);
 
 export default Profile;

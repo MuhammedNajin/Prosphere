@@ -27,7 +27,7 @@ export const uploadProfilePhotoUseCase = (dependencies: any) => {
           [key]: fileName,
       }
       console.log("key", query)
-      const result = await profileRepository.uploadProfilePhoto({
+      const result = await profileRepository.uploadFile({
         email,
         query,
       })
