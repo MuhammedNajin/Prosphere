@@ -16,7 +16,8 @@ export class JobRoutes {
         const { jobPostUseCase, getJobsUseCase } = this.jobUseCase;
         router
          .route('/')
-         .post(JobController.jobPost(jobPostUseCase));
+         .post(JobController.jobPost(jobPostUseCase))
+         .get(JobController.getJobs(getJobsUseCase))
 
         router
          .route('/:id')

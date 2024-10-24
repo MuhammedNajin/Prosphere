@@ -6,8 +6,8 @@ export class GetJobsUseCase implements IgetJobsUseCase {
 
     constructor (private jobRepository: IJobRepository) { }
   
-    async execute(id: string): Promise<JobEntity[] | null> {
-        const createdJob = await this.jobRepository.getAll(id);
+    async execute(): Promise<JobEntity[] | null> {
+        const createdJob = await this.jobRepository.getAll();
         console.log(createdJob);
 
         return createdJob

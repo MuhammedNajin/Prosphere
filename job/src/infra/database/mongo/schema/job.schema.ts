@@ -95,7 +95,7 @@ const jobSchema = new mongoose.Schema(
       required: [true, "Responsibilities are required"],
     },
     skills: {
-      type: [String],
+      type: [],
       required: [true, "Skills are required"],
     },
     qualifications: {

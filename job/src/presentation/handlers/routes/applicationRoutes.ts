@@ -1,23 +1,29 @@
 import { Router } from "express";
 import { ApplicationController } from '../controller'
 import ApplicationUseCase from '@application/interface/applicationUsecase_interface.ts';
-import { validateRequest, CreateApplicationSchema } from '@muhammednajinnprosphere/common'
+import { validateRequestBody, CreateApplicationSchema } from '@muhammednajinnprosphere/common'
 export class ApplicationRoutes {
   
     private applicationUseCase;
 
     constructor(applicationUseCase: ApplicationUseCase) {
+      console.log("contructor", applicationUseCase)
       this.applicationUseCase = applicationUseCase;
     }
 
     get router() {
 
         const router = Router();
-        console.log("job routes", this.applicationUseCase)
-        const { createApplicationUseCase } = this.applicationUseCase;
+        
+        const { createApplicationUseCase, getAllApplicationUseCase } = this.applicationUseCase;
+        console.log("job routes", createApplicationUseCase)
         router
          .route('/')
-         .post(validateRequest(CreateApplicationSchema), ApplicationController.createApplication(createApplicationUseCase));
+         .post(validateRequestBody(CreateApplicationSchema), ApplicationController.createApplication(createApplicationUseCase));
+
+        router
+        .route('/all/:companyId')
+        .get(ApplicationController.getAllApplication(getAllApplicationUseCase))
 
         return router;
     }

@@ -1,5 +1,6 @@
 import { IApplicationEntity } from './IEntity';
 
 export interface IApplicationRepository {
-   create(job: IApplicationEntity): Promise<IApplicationEntity | null>
+   create(appication: IApplicationEntity): Promise<IApplicationEntity | null>
+   getAll(companyId: string): Promise<IApplicationEntity[] | null>
 }

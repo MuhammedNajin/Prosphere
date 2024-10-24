@@ -12,13 +12,11 @@ export class GetJobsController {
 
   public handler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("req", req.params);
-      const { id } = req.params;
-      const jobs = await this.getJobsUseCase.execute(id);
+      
+      const jobs = await this.getJobsUseCase.execute();
 
       res.status(200).json({
-        success: true,
-        jobs,
+        jobs
       });
     } catch (error) {
       console.log(error);

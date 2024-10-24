@@ -5,7 +5,7 @@ export interface IJobPostUseCase {
 }
 
 export interface IgetJobsUseCase {
-    execute(id: string): Promise<JobEntity[] | null>;
+    execute(): Promise<JobEntity[] | null>;
 }
 
 

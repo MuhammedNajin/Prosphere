@@ -1,21 +1,33 @@
 import mongoose, { Model, Document } from "mongoose";
 
 export interface ApplicationAttrs {
+  comapanyId: string;
   jobId: string;
   applicantId: string;
+  name?: string;
+  phone?: string;
+  email?: string;
   coverLetter?: string;
   status: 'Applied' | 'In Review' | 'Interview Scheduled' | 'Accepted' | 'Rejected';
-  notes?: string;
+  resume?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
 }
 
 export interface ApplicationDoc extends Document {
+  comapanyId: string;
   jobId: string;
   applicantId: string;
-  coverLetter: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  coverLetter?: string;
   status: 'Applied' | 'In Review' | 'Interview Scheduled' | 'Accepted' | 'Rejected';
-  appliedAt?: Date;
-  updatedAt?: Date;
-  notes: string;
+  resume?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
+  appliedAt: Date;
+  updatedAt: Date;
 }
 
 export interface ApplicationModel extends Model<ApplicationDoc> {
@@ -23,6 +35,13 @@ export interface ApplicationModel extends Model<ApplicationDoc> {
 }
 
 const ApplicationSchema = new mongoose.Schema({
+
+  companyId: {
+     type: mongoose.Schema.Types.ObjectId,
+     ref: "Company",
+     required: [true, "Company id is required"],
+  },
+
   jobId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Job',
@@ -33,6 +52,18 @@ const ApplicationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: [true, "Applicant ID is required"],
+  },
+
+  name: {
+    type: String,
+  },
+
+  phone: {
+    type: String,
+  },
+
+  email: {
+    type: String,
   },
  
   coverLetter: {
@@ -45,6 +76,18 @@ const ApplicationSchema = new mongoose.Schema({
     default: 'Applied',
   },
 
+  resume: {
+    type: String,
+  },
+
+  linkedinUrl: {
+    type: String,
+  },
+
+  portfolioUrl: {
+    type: String,
+  },
+
   appliedAt: {
     type: Date,
     default: Date.now,
@@ -55,15 +98,7 @@ const ApplicationSchema = new mongoose.Schema({
     default: Date.now,
   },
 
-  notes: {
-    type: String,
-  },
-
-}, 
-
-{ timestamps: true }
-
-);
+}, { timestamps: true });
 
 ApplicationSchema.statics.build = (attrs: ApplicationAttrs) => {
   return new Application(attrs);

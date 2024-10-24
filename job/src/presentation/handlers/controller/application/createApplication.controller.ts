@@ -3,9 +3,10 @@ import {
   } from "@/application/interface/applicationUsecase_interface.ts";
   import { application, NextFunction, Request, Response } from "express";
   
-  export class createApplicationController {
+  export class CreateApplicationController {
     private createApplicationUseCase: ICreateApplicationUseCase;
     constructor(createApplicationUseCase: ICreateApplicationUseCase) {
+      console.log("createApplicationUseCase", createApplicationUseCase)
       this.createApplicationUseCase = createApplicationUseCase;
     }
   

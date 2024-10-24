@@ -1,12 +1,18 @@
-import { createApplicationController } from "./createApplicationController";
+import { CreateApplicationController,  } from "./createApplication.controller";
+import  { GetAllApplicationController } from "./getAllApplication.controller"
 import {
-  ICreateApplicationUseCase
+  ICreateApplicationUseCase,
+  IgetAllApplicationUseCase
 } from "@application/interface/applicationUsecase_interface.ts";
 
 export class ApplicationController {
 
   static createApplication(applicationPostUseCase: ICreateApplicationUseCase) {
-    return new createApplicationController(applicationPostUseCase).handler;
+    return new CreateApplicationController(applicationPostUseCase).handler;
+  }
+
+  static getAllApplication(getAllapplicationUseCase: IgetAllApplicationUseCase) {
+    return new GetAllApplicationController(getAllapplicationUseCase).handler;
   }
 
 }
