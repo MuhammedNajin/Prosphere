@@ -13,7 +13,7 @@ export const companyRoutes = (dependencies: any) => {
     
   router.post('/setup', createCompanyController);
   router.get('/:id', getCompanyController)
-  
+  router.put('/')
 
   return router;
 };

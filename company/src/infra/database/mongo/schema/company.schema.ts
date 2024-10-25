@@ -1,6 +1,4 @@
 import mongoose, { Model, Document } from "mongoose";
-
-// Define the attributes for a Company
 export interface CompanyAttrs {
   name: string;
   industry?: string;
@@ -14,7 +12,6 @@ export interface CompanyAttrs {
   url: string
 }
 
-// Define the document structure for a Company
 export interface CompanyDoc extends Document {
     name: string;
     industry?: string;
@@ -28,7 +25,6 @@ export interface CompanyDoc extends Document {
     url: string
 }
 
-// Define the Company Model with a custom build function
 export interface CompanyModel extends Model<CompanyDoc> {
   build(attrs: CompanyAttrs): CompanyDoc;
 }
@@ -45,7 +41,6 @@ const companySchema = new mongoose.Schema(
       required: [true, "Company urlAddress is required"],
     },
 
-    
     website: {
       type: String,
       required: false,
@@ -56,19 +51,39 @@ const companySchema = new mongoose.Schema(
       default: "IT", // Set IT as the default industry
     },
 
-    location: {
-      type: String,
+    headquarters: {
+       type: String,
+    },
 
-    }, 
+    location: {
+      type: [],
+
+    },
+    
+    foundedDate: {
+      type: Date,
+    },
+
+    techStack : {
+      type: [String]
+    },
 
     description: {
       type: String,
      
     },
 
+    SocialLinks: {
+       type: [String]
+    }, 
+
     logo: {
       type: String,
       required: false,
+    },
+
+    team: {
+      type: [ mongoose.Schema.Types.ObjectId ]
     },
 
     owner: {
