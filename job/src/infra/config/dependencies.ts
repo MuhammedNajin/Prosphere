@@ -4,6 +4,7 @@ import {
   UserRepository,
   ApplicationRepository,
 } from "@infra/repository";
+
 import {
   JobPostUseCase,
   CompanyCreationUseCase,
@@ -11,7 +12,9 @@ import {
   GetJobsUseCase,
   ApplicationCreationUseCase,
   GetAllApplicationUseCase,
+  ChangeApplicationStatusUseCaseUseCase
 } from "@application/usecase";
+
 
 export class Dependency {
   private jobRepository: JobRepository;
@@ -44,7 +47,8 @@ export class Dependency {
 
     const applicationUseCase = {
       createApplicationUseCase: new ApplicationCreationUseCase(this.applicationRepository),
-      getAllApplicationUseCase: new GetAllApplicationUseCase(this.applicationRepository)
+      getAllApplicationUseCase: new GetAllApplicationUseCase(this.applicationRepository),
+      changeApplicationStatusUseCase: new ChangeApplicationStatusUseCaseUseCase(this.applicationRepository)
     };
     
     return {

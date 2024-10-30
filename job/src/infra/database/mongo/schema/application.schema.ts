@@ -1,31 +1,59 @@
 import mongoose, { Model, Document } from "mongoose";
 
 export interface ApplicationAttrs {
-  comapanyId: string;
+  companyId: string;
   jobId: string;
   applicantId: string;
   name?: string;
   phone?: string;
   email?: string;
   coverLetter?: string;
-  status: 'Applied' | 'In Review' | 'Interview Scheduled' | 'Accepted' | 'Rejected';
+  status: 'Applied' | 'Inreview' | 'Shortlisted' | 'Interview' | 'Rejected' | 'Selected';
   resume?: string;
   linkedinUrl?: string;
   portfolioUrl?: string;
+  applicationSeen?: boolean;
+  interviewSchedules?: Array<{
+    title: string;
+    time: string;
+    status: 'Pending' | 'Completed';
+    feedback?: string;
+    feedbackDescription?: string;
+  }>;
+  statusDescription?: {
+    title?: string;
+    description?: string;
+    joiningDate?: Date;
+  };
+  interviewDate?: Date;
 }
 
 export interface ApplicationDoc extends Document {
-  comapanyId: string;
+  companyId: string;
   jobId: string;
   applicantId: string;
   name?: string;
   phone?: string;
   email?: string;
   coverLetter?: string;
-  status: 'Applied' | 'In Review' | 'Interview Scheduled' | 'Accepted' | 'Rejected';
+  status: 'Applied' | 'Inreview' | 'Shortlisted' | 'Interview' | 'Rejected' | 'Selected';
   resume?: string;
   linkedinUrl?: string;
   portfolioUrl?: string;
+  applicationSeen: boolean;
+  interviewSchedules: Array<{
+    title: string;
+    time: string;
+    status: 'Pending' | 'Completed';
+    feedback?: string;
+    feedbackDescription?: string;
+  }>;
+  statusDescription: {
+    title?: string;
+    description?: string;
+    joiningDate?: Date;
+  };
+  interviewDate?: Date;
   appliedAt: Date;
   updatedAt: Date;
 }
@@ -35,11 +63,10 @@ export interface ApplicationModel extends Model<ApplicationDoc> {
 }
 
 const ApplicationSchema = new mongoose.Schema({
-
   companyId: {
-     type: mongoose.Schema.Types.ObjectId,
-     ref: "Company",
-     required: [true, "Company id is required"],
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Company",
+    required: [true, "Company id is required"],
   },
 
   jobId: {
@@ -65,14 +92,14 @@ const ApplicationSchema = new mongoose.Schema({
   email: {
     type: String,
   },
- 
+
   coverLetter: {
     type: String,
   },
 
   status: {
     type: String,
-    enum: ['Applied', 'In Review', 'Interview Scheduled', 'Accepted', 'Rejected'],
+    enum: ['Applied', 'Inreview', 'Shortlisted', 'Interview', 'Rejected', 'Selected'],
     default: 'Applied',
   },
 
@@ -88,6 +115,39 @@ const ApplicationSchema = new mongoose.Schema({
     type: String,
   },
 
+  applicationSeen: {
+    type: Boolean,
+    default: false
+  },
+
+  interviewSchedules: [{
+    title: {
+      type: String,
+      required: true
+    },
+    time: {
+      type: String,
+      required: true
+    },
+    status: {
+      type: String,
+      enum: ['Pending', 'Completed'],
+      default: 'Pending'
+    },
+    feedback: String,
+    feedbackDescription: String
+  }],
+
+  statusDescription: {
+    title: String,
+    description: String,
+    joiningDate: Date
+  },
+
+  interviewDate: {
+    type: Date
+  },
+
   appliedAt: {
     type: Date,
     default: Date.now,
@@ -97,7 +157,6 @@ const ApplicationSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-
 }, { timestamps: true });
 
 ApplicationSchema.statics.build = (attrs: ApplicationAttrs) => {

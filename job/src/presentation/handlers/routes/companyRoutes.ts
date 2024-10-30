@@ -2,7 +2,9 @@ import { Router } from "express";
 import { ApplicationController } from '../controller'
 import ApplicationUseCase from '@application/interface/applicationUsecase_interface.ts';
 import { validateRequestBody, CreateApplicationSchema } from '@muhammednajinnprosphere/common'
-export class ApplicationRoutes {
+
+
+export class CompanyRoutes {
   
     private applicationUseCase;
 
@@ -14,7 +16,7 @@ export class ApplicationRoutes {
     get router() {
 
         const router = Router();
-        const { createApplicationUseCase, getAllApplicationUseCase, changeApplicationStatusUseCase } = this.applicationUseCase;
+        const { createApplicationUseCase, getAllApplicationUseCase } = this.applicationUseCase;
         console.log("job routes", createApplicationUseCase)
         router
          .route('/')
@@ -24,11 +26,6 @@ export class ApplicationRoutes {
         .route('/all/:companyId')
         .get(ApplicationController.getAllApplication(getAllApplicationUseCase))
 
-        router
-        .route('/:id')
-        .get()
-        .put(ApplicationController.changeApplicationStatus(changeApplicationStatusUseCase))
-        
         return router;
     }
 }
