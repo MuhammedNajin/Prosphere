@@ -12,7 +12,8 @@ import {
   GetJobsUseCase,
   ApplicationCreationUseCase,
   GetAllApplicationUseCase,
-  ChangeApplicationStatusUseCaseUseCase
+  ChangeApplicationStatusUseCaseUseCase,
+  GetApplicationUseCase
 } from "@application/usecase";
 
 
@@ -21,7 +22,7 @@ export class Dependency {
   private companyRepository: CompanyRepository;
   private userRepository: UserRepository;
   private applicationRepository: ApplicationRepository;
-  
+
   constructor() {
     this.jobRepository = new JobRepository();
     this.companyRepository = new CompanyRepository();
@@ -48,7 +49,8 @@ export class Dependency {
     const applicationUseCase = {
       createApplicationUseCase: new ApplicationCreationUseCase(this.applicationRepository),
       getAllApplicationUseCase: new GetAllApplicationUseCase(this.applicationRepository),
-      changeApplicationStatusUseCase: new ChangeApplicationStatusUseCaseUseCase(this.applicationRepository)
+      changeApplicationStatusUseCase: new ChangeApplicationStatusUseCaseUseCase(this.applicationRepository),
+      getApplicationUseCase: new GetApplicationUseCase(this.applicationRepository),
     };
     
     return {

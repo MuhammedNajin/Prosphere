@@ -14,16 +14,32 @@ export interface IUserEntity {
 }
 
 export interface IApplicationEntity {
+  id: string;
+  companyId: string;
   jobId: string;
   applicantId: string;
-  coverLetter: string;
-  status:
-    | "Applied"
-    | "In Review"
-    | "Interview Scheduled"
-    | "Accepted"
-    | "Rejected";
-  appliedAt?: Date;
-  updatedAt?: Date;
-  notes: string;
+  name?: string;
+  phone?: string;
+  email?: string;
+  coverLetter?: string;
+  status: 'Applied' | 'Inreview' | 'Shortlisted' | 'Interview' | 'Rejected' | 'Selected';
+  resume?: string;
+  linkedinUrl?: string;
+  portfolioUrl?: string;
+  applicationSeen: boolean;
+  interviewSchedules: Array<{
+    title: string;
+    time: string;
+    status: 'Pending' | 'Completed';
+    feedback?: string;
+    feedbackDescription?: string;
+  }>;
+  statusDescription: {
+    title?: string;
+    description?: string;
+    joiningDate?: Date;
+  };
+  interviewDate?: Date;
+  appliedAt: Date;
+  updatedAt: Date;
 }

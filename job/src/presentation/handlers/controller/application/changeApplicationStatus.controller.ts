@@ -1,23 +1,34 @@
 import {
-    ICreateApplicationUseCase
+    IChangeApplicationStatusUseCase
   } from "@/application/interface/applicationUsecase_interface.ts";
   import { application, NextFunction, Request, Response } from "express";
   
   export class ChangeApplicationStatusController {
-    private createApplicationUseCase: ICreateApplicationUseCase;
-    constructor(createApplicationUseCase: ICreateApplicationUseCase) {
-      console.log("createApplicationUseCase", createApplicationUseCase)
-      this.createApplicationUseCase = createApplicationUseCase;
+    private changeApplicationStatusUseCase: IChangeApplicationStatusUseCase;
+    constructor(changeApplicationStatusUseCase: IChangeApplicationStatusUseCase) {
+      console.log("createApplicationUseCase", changeApplicationStatusUseCase)
+      this.changeApplicationStatusUseCase = changeApplicationStatusUseCase;
     }
   
     public handler = async (req: Request, res: Response, next: NextFunction) => {
       try {
-        console.log("req", req.body);
-        const application = await this.createApplicationUseCase.execute(req.body);
+        const { id } = req.params;
+        const { 
+          status,
+          title,
+          description
+         } = req.body
+
+        const statusDescription = {
+          title,
+          description,
+        }
+        const application = await this.changeApplicationStatusUseCase.execute(id, status, statusDescription);
   
         res.status(200).json({
           success: true,
           application,
+          message: "Status updated successfully"
         });
 
       } catch (error) {

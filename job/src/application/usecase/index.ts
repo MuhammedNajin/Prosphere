@@ -4,7 +4,8 @@ import { UserCreationUseCase } from "./user/userCreate.usecase";
 import { GetJobsUseCase } from "./job/getJobs.usecase";
 import { ApplicationCreationUseCase } from "./application/createApplication.usecase";
 import { GetAllApplicationUseCase } from "./application/getAllApplication.usecase";
-import { ChangeApplicationStatusUseCaseUseCase } from './application/changeApplicationStatus.usecase'
+import { ChangeApplicationStatusUseCaseUseCase } from './application/changeApplicationStatus.usecase';
+import { GetApplicationUseCase } from './application/getApplication.usecase'
 export {
   JobPostUseCase,
   CompanyCreationUseCase,
@@ -13,4 +14,5 @@ export {
   ApplicationCreationUseCase,
   GetAllApplicationUseCase,
   ChangeApplicationStatusUseCaseUseCase,
+  GetApplicationUseCase,
 };
