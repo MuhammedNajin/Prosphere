@@ -20,7 +20,7 @@ import { Repository, Service, UseCases } from "@domain/entities/interfaces";
 import { transporter } from "@infra/Service";
 import { UserCreatedProducer } from "@infra/MessageBroker/kafka/producer/user-created-producer";
 import { kafka } from "./kafka";
-
+import { GrpcClient } from '@infra/rpc/grpc/authGrpcClient'
 const useCases: UseCases = {
   signupUseCase,
   loginUseCase,
@@ -47,6 +47,11 @@ const messageBroker = {
   kafka
 
 }
+
+const rpc = {
+   grpcClient: new GrpcClient(),
+}
+
 const service: Service = {
   transporter,
 
@@ -56,5 +61,6 @@ export default {
   useCases,
   repository,
   service,
-  messageBroker
+  messageBroker,
+  rpc
 };

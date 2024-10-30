@@ -48,7 +48,7 @@ export const authRoutes = (dependencies: any) => {
   router.post("/admin", 
     adminLoginController);
 
-  router.post("/refresh-token", 
+  router.post("/refreshToken", 
     refreshTokenController);
 
   return router;

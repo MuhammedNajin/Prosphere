@@ -5,7 +5,8 @@ export interface Dependencies {
   useCases: UseCases;
   repository: any;
   service: Service;
-  messageBroker: Producer
+  messageBroker: Producer;
+  rpc: any
 }
 
 export interface Producer {

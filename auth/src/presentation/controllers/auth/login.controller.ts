@@ -8,7 +8,8 @@ import { BadRequestError } from '@muhammednajinnprosphere/common';
 
  const loginController = (dependencies: Dependencies) => {
     const {
-        useCases: { loginUseCase, getUserUseCase }
+        useCases: { loginUseCase, getUserUseCase },
+        rpc: { grpcClient }
     } = dependencies;
 
     const login = async (req: Request, res: Response, next: NextFunction) => {
@@ -28,7 +29,8 @@ import { BadRequestError } from '@muhammednajinnprosphere/common';
             if(!userCredential) {
                 throw new BadRequestError("Invalid credential, please try again.")
             }
-
+            
+            const profile = await grpcClient.getUserProfile(userCredential._id);
             
             const payload = {
                 id: userCredential._id,
@@ -38,7 +40,8 @@ import { BadRequestError } from '@muhammednajinnprosphere/common';
               };
 
               const { accessToken, refreshToken } = Token.generateJwtToken(payload);
-
+              console.log(accessToken, refreshToken);
+              
               res.cookie("accessToken", accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
@@ -49,7 +52,7 @@ import { BadRequestError } from '@muhammednajinnprosphere/common';
                 secure: process.env.NODE_ENV === "production",
               });
 
-            res.status(200).json(userCredential);
+            res.status(200).json({ userCredential, profile });
             
         } catch (error) {
             console.log(error);

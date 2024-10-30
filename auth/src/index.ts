@@ -9,7 +9,7 @@ import { redisConnection } from './infra/database/redis/connection';
 
 ( async function start() {
     try {
-        redisConnection();
+        // redisConnection();
         databaseConnection();
        await kafkaConnect();
     } catch (error) {

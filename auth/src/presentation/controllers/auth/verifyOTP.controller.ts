@@ -6,7 +6,8 @@ import { BadRequestError } from "@muhammednajinnprosphere/common";
 const verifyOTPController = (dependencies: Dependencies) => {
   const {
     useCases: { verifyOtpUseCase, verifyUserUseCase },
-    messageBroker: { UserCreatedProducer, kafka }
+    messageBroker: { UserCreatedProducer, kafka },
+    rpc: { grpcClient }
   } = dependencies;
 
   const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
@@ -39,6 +40,14 @@ const verifyOTPController = (dependencies: Dependencies) => {
          jobRole: verified.phone,
          phone: verified.phone,
        })
+
+      // await grpcClient.CreateUser({
+      //   _id: verified._id.toString(),
+      //   username: verified.username,
+      //   email: verified.email,
+      //   phone: verified.phone,
+      //   jobRole: verified.phone,
+      // })
 
       const payload = {
         id: verified._id,

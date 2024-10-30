@@ -8,6 +8,9 @@ class Token {
       const { createAdminToken: admin, } = option!
       const accessSecrect = admin ? process.env.ADMIN_SECRECT! : process.env.TOKEN_SECRECT!
       const refreshSecrect = admin ? process.env.ADMIN_REFRESH_SECRECT! : process.env.REFRESH_SECRECT!
+
+      console.log("screct", accessSecrect);
+      
        const accessToken = jwt.sign(payload, accessSecrect, {
           expiresIn: "1h"
        } )

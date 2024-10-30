@@ -21,7 +21,6 @@ const googleAuthController = (dependencies: Dependencies) => {
         token
       );
 
-      
       if(status === 'exsist') {
         const payload = {
           id: user._id,

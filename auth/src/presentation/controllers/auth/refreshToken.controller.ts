@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { Dependencies, TokenData } from "@domain/entities/interfaces";
 import Token from "@infra/libs/token";
+import { ForbiddenError } from '@muhammednajinnprosphere/common'
+import jwt  from 'jsonwebtoken'
 
 const refreshTokenController = (dependencies: Dependencies) => {
   const {
@@ -34,6 +36,10 @@ const refreshTokenController = (dependencies: Dependencies) => {
       res.sendStatus(201);
     } catch (error) {
       console.log(error);
+      
+      if(error instanceof jwt.JsonWebTokenError) {
+        next(new ForbiddenError())
+      }
       next(error)
     }
   };
