@@ -1,0 +1,42 @@
+{
+  "name": "api-gateway",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node-dev src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "custom": "npm i @muhammednajinnprosphere/common@latest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@muhammednajinnprosphere/common": "^1.0.70",
+    "@types/express": "^4.17.21",
+    "@types/http-proxy-middleware": "^1.0.0",
+    "@types/jsonwebtoken": "^9.0.6",
+    "@types/winston": "^2.4.4",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "custom": "^0.0.0",
+    "d": "^1.0.2",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "http-proxy-middleware": "^3.0.2",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.5.4",
+    "winston": "^3.15.0",
+    "winston-logstash": "^1.2.1"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/morgan": "^1.9.9"
+  }
+}
