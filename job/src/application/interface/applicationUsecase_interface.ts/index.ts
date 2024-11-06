@@ -9,6 +9,9 @@ export interface IgetAllApplicationUseCase {
 export interface IgetApplicationUseCase {
     execute(id: string): Promise<IApplicationEntity | null>;
 }
+export interface IgetMyApplicationUseCase {
+    execute(userId: string): Promise<IApplicationEntity['id'][] | null>;
+}
 export interface IChangeApplicationStatusUseCase {
     execute(id: string, status: string, statusDescription: Object): Promise<null>
 }
@@ -21,4 +24,5 @@ export default interface {
     getAllApplicationUseCase: IgetAllApplicationUseCase;
     changeApplicationStatusUseCase: IChangeApplicationStatusUseCase,
     getApplicationUseCase: IgetApplicationUseCase,
+    getMyApplicationUseCase: IgetMyApplicationUseCase,
 }

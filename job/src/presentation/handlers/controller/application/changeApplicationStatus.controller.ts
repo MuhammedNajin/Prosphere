@@ -13,6 +13,8 @@ import {
     public handler = async (req: Request, res: Response, next: NextFunction) => {
       try {
         const { id } = req.params;
+        console.log("helo", id);
+        
         const { 
           status,
           title,

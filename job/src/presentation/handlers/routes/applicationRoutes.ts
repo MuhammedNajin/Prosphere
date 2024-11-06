@@ -18,7 +18,8 @@ export class ApplicationRoutes {
           createApplicationUseCase,    
           getAllApplicationUseCase,
           changeApplicationStatusUseCase,
-          getApplicationUseCase
+          getApplicationUseCase,
+          getMyApplicationUseCase
                } = this.applicationUseCase;
         console.log("job routes", createApplicationUseCase)
         router
@@ -33,6 +34,8 @@ export class ApplicationRoutes {
         .route('/:id')
         .get(ApplicationController.getApplication(getApplicationUseCase))
         .put(ApplicationController.changeApplicationStatus(changeApplicationStatusUseCase))
+
+        router.get('/my-application/:userId', ApplicationController.getMyApplication(getMyApplicationUseCase))
         
         return router;
     }

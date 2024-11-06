@@ -5,9 +5,11 @@ import {
   ICreateApplicationUseCase,
   IgetAllApplicationUseCase,
   IChangeApplicationStatusUseCase,
-  IgetApplicationUseCase
+  IgetApplicationUseCase,
+  IgetMyApplicationUseCase
 } from "@application/interface/applicationUsecase_interface.ts";
 import { GetApplicationController } from "./getApplication.controller";
+import { GetMyApplicationController } from "./getMyApplication.controller";
 
 export class ApplicationController {
 
@@ -21,6 +23,10 @@ export class ApplicationController {
 
   static getApplication(getApplicationUseCase: IgetApplicationUseCase) {
     return new GetApplicationController(getApplicationUseCase).handler;
+  }
+
+  static getMyApplication(getMyApplicationUseCase: IgetMyApplicationUseCase) {
+    return new GetMyApplicationController(getMyApplicationUseCase).handler;
   }
 
   static changeApplicationStatus(changeApplicationStatusUseCase: IChangeApplicationStatusUseCase) {

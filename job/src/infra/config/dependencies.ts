@@ -15,6 +15,7 @@ import {
   ChangeApplicationStatusUseCaseUseCase,
   GetApplicationUseCase
 } from "@application/usecase";
+import { GetMyApplicationUseCase } from "@/application/usecase/application/getMyApplication.usecase";
 
 
 export class Dependency {
@@ -51,6 +52,7 @@ export class Dependency {
       getAllApplicationUseCase: new GetAllApplicationUseCase(this.applicationRepository),
       changeApplicationStatusUseCase: new ChangeApplicationStatusUseCaseUseCase(this.applicationRepository),
       getApplicationUseCase: new GetApplicationUseCase(this.applicationRepository),
+      getMyApplicationUseCase:  new GetMyApplicationUseCase(this.applicationRepository)
     };
     
     return {
