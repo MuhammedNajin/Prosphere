@@ -28,18 +28,16 @@ export const updateProfileUseCase = (dependencies: any) => {
    */
 
   const execute = async ({
-    _id,
-    body,
-    isArray,
+    id,
+    body
   }: {
-    _id: string;
+    id: string;
     body: Partial<ICompany>;
-    isArray: boolean;
   }) => {
     try {
 
       // Validate _id
-      if (!_id || !validateObjectId(_id)) {
+      if (!id || !validateObjectId(id)) {
         throw new Error("Invalid company ID");
       }
 
@@ -49,7 +47,7 @@ export const updateProfileUseCase = (dependencies: any) => {
       }
 
       // perform updation 
-      return await companyRepository.updateCompany(_id, body, { isArray });
+      return await companyRepository.updateCompany(id, body);
 
     } catch (error) {
       console.log(error);

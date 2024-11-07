@@ -1,16 +1,16 @@
 import express, { NextFunction, Request, Response } from "express";
-
+import { StatusCode } from "@muhammednajinnprosphere/common";
 export const createCompanyController = (dependencies: any) => {
   console.log("signup");
 
   const {
     useCases: { createCompanyUseCase, getCompanyUseCase },
-     messageBroker: { CompanyCreatedProducer, kafka }
+    messageBroker: { CompanyCreatedProducer, kafka },
   } = dependencies;
 
-  const aboutMe = async (req: Request, res: Response, next: NextFunction) => {
+  const createCompany = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(req.body, req.cookies);
+      console.log(req.body, req.headers["x-user-data"]);
 
       const { name, url, website, location, size, type, id } = req.body;
 
@@ -27,7 +27,7 @@ export const createCompanyController = (dependencies: any) => {
         location,
         size,
         type,
-        owner: id
+        owner: id,
       });
 
       await new CompanyCreatedProducer(kafka.producer).produce({
@@ -35,13 +35,17 @@ export const createCompanyController = (dependencies: any) => {
         name,
         location,
         owner: id,
-      })
+      });
 
-      res.status(201).json(company);
-      
+      res
+      .status(StatusCode.CREATED)
+      .json(company);
+
     } catch (error) {
       console.log(error);
+      next(error)
     }
   };
-  return aboutMe;
+  
+  return createCompany;
 };

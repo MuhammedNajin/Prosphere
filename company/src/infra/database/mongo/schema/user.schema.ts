@@ -17,11 +17,9 @@ export interface UserDoc extends Document {
   about: string
 }
 
-
 export interface UserModel extends Model<UserDoc> {
   build(attrs: UserAttrs): UserDoc;
 }
-
 
 const userSchema = new mongoose.Schema({
   username: {

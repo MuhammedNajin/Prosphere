@@ -14,7 +14,7 @@ export const updateCompanyProfileController = (dependencies: any) => {
   const {
     useCases: { updateProfileUseCase },
   } = dependencies;
-
+  console.log("depen", dependencies)
  /**
    * Updates a company profile
    * 
@@ -30,13 +30,10 @@ export const updateCompanyProfileController = (dependencies: any) => {
   ) => {
     try {
       console.log("body", req.body, req.query);
-      const { _id } = req.params;
-      const { array } = req.query;
-      const isArray = array === 'true'
+      const { id } = req.params;
       const updatedProfile = await updateProfileUseCase(dependencies).execute({
-         _id,
+         id,
          body: req.body,
-         isArray
       })
       console.log("profile update", updatedProfile);
 

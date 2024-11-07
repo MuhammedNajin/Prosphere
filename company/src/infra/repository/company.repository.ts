@@ -19,6 +19,22 @@ export default {
   /**
    * Updates a company document in the database
    * @param _id - The ID of the company to update
+   * @returns Promise containing the update result
+   */
+
+  getCompanyById: async (_id: string) => {
+     try {
+      console.log("_id", _id)
+        return await Company.findById(_id);
+     } catch (error) {
+        console.log(error)
+        throw error;
+     }
+  },
+
+  /**
+   * Updates a company document in the database
+   * @param _id - The ID of the company to update
    * @param body - The update payload
    * @param options - Update options
    * @returns Promise containing the update result
@@ -26,22 +42,9 @@ export default {
   updateCompany: async (
     _id: string,
     body: Partial<ICompany>,
-    option: { isArray?: boolean } = {}
   ) => {
-    console.log("isArray", option);
     try {
-        if (option?.isArray) {
-            return await Company.findByIdAndUpdate(
-              { _id },
-              {
-                $addToSet: { ...body },
-              },
-              {
-                new: true,
-                runValidators: true,
-              }
-            );
-          }
+        
           return await Company.findByIdAndUpdate(
             { _id },
             {
@@ -52,6 +55,7 @@ export default {
               runValidators: true,
             }
           );
+
     } catch (error) {
         console.log(error);
     }
