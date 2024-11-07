@@ -7,12 +7,16 @@ export interface IJobPostUseCase {
 export interface IgetJobsUseCase {
     execute(): Promise<JobEntity[] | null>;
 }
+export interface IupdateJobsUseCase {
+    execute(job: JobEntity, id: string): Promise<unknown>;
+}
 
 
 
 export default interface JobUseCase {
     jobPostUseCase: IJobPostUseCase,
-    getJobsUseCase: IgetJobsUseCase
+    getJobsUseCase: IgetJobsUseCase,
+    updateJobUseCase: IupdateJobsUseCase,
 }
 
 

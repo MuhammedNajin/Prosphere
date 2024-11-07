@@ -68,44 +68,58 @@ const jobSchema = new mongoose.Schema(
       type: String,
       required: [true, "Job location is required"],
     },
+
+    officeLocation: {
+      type: String,
+    }, 
+
     salary: {
       status: Boolean,
       from: Number,
       to: Number,
     },
+
     vacancies: {
       type: Number,
       required: [true, 'vacancies required']
     },
+
     experience: {
       type: String,
       required: [true, "Experience is required"],
     },
+
     companyId: {
       type: mongoose.Schema.ObjectId,
       required: [true, "Company ID is required"],
       ref: "Company",
     },
+
     expiry: {
       type: Date,
       required: [true, "Expiry date is required"],
     },
+
     responsibility: {
       type: [String],
       required: [true, "Responsibilities are required"],
     },
+
     skills: {
       type: [],
       required: [true, "Skills are required"],
     },
+
     qualifications: {
       type: [String],
       required: [true, "Qualifications are required"],
     },
+
     status: {
       type: Boolean,
       default: true,
     },
+
     expired: {
       type: Boolean,
       default: false,
@@ -114,7 +128,6 @@ const jobSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Static method to create a new job
 jobSchema.statics.build = (attrs: JobAttrs) => {
   return new Job(attrs);
 };

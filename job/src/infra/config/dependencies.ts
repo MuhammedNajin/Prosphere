@@ -13,7 +13,8 @@ import {
   ApplicationCreationUseCase,
   GetAllApplicationUseCase,
   ChangeApplicationStatusUseCaseUseCase,
-  GetApplicationUseCase
+  GetApplicationUseCase,
+  UpdateJobUseCase
 } from "@application/usecase";
 import { GetMyApplicationUseCase } from "@/application/usecase/application/getMyApplication.usecase";
 
@@ -35,6 +36,7 @@ export class Dependency {
     const jobUseCase = {
       jobPostUseCase: new JobPostUseCase(this.jobRepository),
       getJobsUseCase: new GetJobsUseCase(this.jobRepository),
+      updateJobUseCase: new UpdateJobUseCase(this.jobRepository)
     };
 
     const companyUseCases = {

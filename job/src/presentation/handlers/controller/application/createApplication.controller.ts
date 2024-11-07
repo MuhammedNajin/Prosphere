@@ -14,7 +14,10 @@ export class CreateApplicationController {
 
   public handler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log("req", req.body);
+      console.log("req body", req.body);
+      const { jobId, companyId , applicantId } = req.body
+      console.log(jobId.length, companyId.length, applicantId.length);
+      
       const payload = JSON.parse(req.headers["x-user-data"] as string);
       console.log("payload", payload);
       // const applicationExixts = await this.GetMyApplicationUseCase.execute(

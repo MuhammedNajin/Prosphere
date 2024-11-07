@@ -11,7 +11,7 @@ export class JobPostController {
      public handler = async (req: Request, res: Response, next: NextFunction) => {
           
         try {
-             console.log('req', req.body)
+             console.log('req body', req.body)
              const job = await this.jobPostUseCase.execute(req.body);
 
             res

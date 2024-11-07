@@ -2,18 +2,20 @@ import { Router } from "express";
 import { JobController } from '../controller/'
 import JobUseCase from '@application/interface/jobUsecase_interface'
 export class JobRoutes {
-  
-    private jobUseCase;
 
-    constructor(jobUseCase: JobUseCase) {
-      this.jobUseCase = jobUseCase;
-    }
+
+    constructor( private jobUseCase: JobUseCase) {}
 
     get router() {
 
         const router = Router();
         console.log("job routes", this.jobUseCase)
-        const { jobPostUseCase, getJobsUseCase } = this.jobUseCase;
+        const { jobPostUseCase, getJobsUseCase, updateJobUseCase } = this.jobUseCase;
+        router.use((req, res, next) => {
+          console.log("application route", req.url, req.method)
+          next()
+        })
+
         router
          .route('/')
          .post(JobController.jobPost(jobPostUseCase))
@@ -21,7 +23,9 @@ export class JobRoutes {
 
         router
          .route('/:id')
-         .get(JobController.getJobs(getJobsUseCase));
+         .get(JobController.getJobs(getJobsUseCase))
+         .post(JobController.updateJob(updateJobUseCase));
+
         return router;
 
     }

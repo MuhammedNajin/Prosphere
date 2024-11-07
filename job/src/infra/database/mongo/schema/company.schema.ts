@@ -29,15 +29,28 @@ const companySchema = new mongoose.Schema(
       type: String,
       required: [true, "Company name is required"],
     },
+    
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, "Owner name is required"],
     },
-    location: {
-      type: String,
-      required: [true, "Company location is required"],
-    },
+
+    location: [
+      {
+        placename: {
+          type: String,
+        },
+        type: {
+          type: String,
+          enum: ['Point'],
+          default: "Point"
+        },
+        coordinates: {
+          type: [Number],
+        },
+      }
+    ],
   },
   { timestamps: true }
 );

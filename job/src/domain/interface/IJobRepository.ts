@@ -7,4 +7,6 @@ export interface IJobRepository {
 
     getAll(id: string): Promise<JobEntity[] | null>
 
+    update(job: JobEntity, id: sting): Promise<unknown>
+
 }

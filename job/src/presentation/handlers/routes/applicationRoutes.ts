@@ -22,6 +22,11 @@ export class ApplicationRoutes {
           getMyApplicationUseCase
                } = this.applicationUseCase;
         console.log("job routes", createApplicationUseCase)
+
+        router.use((req, res, next) => {
+          console.log("application route", req.url, req.method)
+          next()
+        })
         router
          .route('/')
          .post(validateRequestBody(CreateApplicationSchema), ApplicationController.createApplication(createApplicationUseCase));
