@@ -14,7 +14,8 @@ import {
   GetAllApplicationUseCase,
   ChangeApplicationStatusUseCaseUseCase,
   GetApplicationUseCase,
-  UpdateJobUseCase
+  UpdateJobUseCase,
+  AddCommentUseCase
 } from "@application/usecase";
 import { GetMyApplicationUseCase } from "@/application/usecase/application/getMyApplication.usecase";
 
@@ -36,7 +37,8 @@ export class Dependency {
     const jobUseCase = {
       jobPostUseCase: new JobPostUseCase(this.jobRepository),
       getJobsUseCase: new GetJobsUseCase(this.jobRepository),
-      updateJobUseCase: new UpdateJobUseCase(this.jobRepository)
+      updateJobUseCase: new UpdateJobUseCase(this.jobRepository),
+      addCommentUseCase: new AddCommentUseCase(this.jobRepository)
     };
 
     const companyUseCases = {

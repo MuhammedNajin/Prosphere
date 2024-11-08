@@ -1,10 +1,12 @@
 import { JobPostController } from "./jobPost.controller";
 import { GetJobsController } from "./getJobs.controller";
 import { UpdateJobController } from "./updateJob.controller"
+import { AddCommentController } from "./addComment.controller"
 import {
   IJobPostUseCase,
   IgetJobsUseCase,
-  IupdateJobsUseCase
+  IupdateJobsUseCase,
+  IAddCommentUseCase
 } from "@application/interface/jobUsecase_interface";
 export class JobController {
   static jobPost(jobPostUseCase: IJobPostUseCase) {
@@ -17,6 +19,11 @@ export class JobController {
 
   static updateJob(updateJobsUseCase: IupdateJobsUseCase) {
     return new UpdateJobController(updateJobsUseCase).handler;
+  }
+
+
+  static addComment(addCommentUseCase: IAddCommentUseCase) {
+    return new AddCommentController(addCommentUseCase).handler;
   }
 
 }

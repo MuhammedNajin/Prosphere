@@ -115,6 +115,17 @@ const jobSchema = new mongoose.Schema(
       required: [true, "Qualifications are required"],
     },
 
+
+    likeCount: {
+      type: Number,
+      default: 0,
+    }, 
+
+    commentCount: {
+      type: Number,
+      default: 0,
+    },
+
     status: {
       type: Boolean,
       default: true,

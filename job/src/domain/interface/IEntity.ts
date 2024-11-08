@@ -43,3 +43,18 @@ export interface IApplicationEntity {
   appliedAt: Date;
   updatedAt: Date;
 }
+
+
+
+export interface ReplyDoc {
+  userId: string;
+  commentText: string;
+  createdAt: Date;
+}
+
+export interface IComment {
+  userId: string;
+  jobId: string;
+  commentText: string;
+  replies: ReplyDoc[];
+}

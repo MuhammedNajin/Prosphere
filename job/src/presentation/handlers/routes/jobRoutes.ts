@@ -10,11 +10,16 @@ export class JobRoutes {
 
         const router = Router();
         console.log("job routes", this.jobUseCase)
-        const { jobPostUseCase, getJobsUseCase, updateJobUseCase } = this.jobUseCase;
+        const { jobPostUseCase, getJobsUseCase, updateJobUseCase, addCommentUseCase } = this.jobUseCase;
         router.use((req, res, next) => {
           console.log("application route", req.url, req.method)
           next()
         })
+
+        router
+        .route('/comment')
+        .post(JobController.addComment(addCommentUseCase));
+
 
         router
          .route('/')
@@ -26,6 +31,7 @@ export class JobRoutes {
          .get(JobController.getJobs(getJobsUseCase))
          .post(JobController.updateJob(updateJobUseCase));
 
+       
         return router;
 
     }

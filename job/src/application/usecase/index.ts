@@ -7,6 +7,7 @@ import { GetAllApplicationUseCase } from "./application/getAllApplication.usecas
 import { ChangeApplicationStatusUseCaseUseCase } from "./application/changeApplicationStatus.usecase";
 import { GetApplicationUseCase } from "./application/getApplication.usecase";
 import { UpdateJobUseCase } from "./job/updateJob.usecase";
+import { AddCommentUseCase  } from "./job/addComment.usecase";
 export {
   JobPostUseCase,
   CompanyCreationUseCase,
@@ -17,4 +18,5 @@ export {
   ChangeApplicationStatusUseCaseUseCase,
   GetApplicationUseCase,
   UpdateJobUseCase,
+  AddCommentUseCase
 };
