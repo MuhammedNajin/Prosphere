@@ -13,7 +13,7 @@ export const updateCompanyLogoUseCase = (dependencies: any) => {
     const execute = async ({ file, id }) => {
       console.log(file, id, file.originalname);
     
-      const bucketKey = `${id}${file.originalname}`;
+      const bucketKey = `${file.originalname}${Math.random()}`;
   
       const data = await s3Operation.uploadImageToBucket(
         file.buffer,

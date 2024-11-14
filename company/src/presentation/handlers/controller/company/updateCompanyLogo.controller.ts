@@ -39,7 +39,7 @@ export const upadateCompanyLogoController = (dependencies: any) => {
           file,
         });
       }
-
+     console.log(logoUrl)
       res.status(201).json({
         success: status,
         logoUrl,

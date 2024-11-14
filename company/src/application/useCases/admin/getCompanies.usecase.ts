@@ -1,8 +1,6 @@
 import { ICompany } from "../../interface";
 
-
-
-export const getCompanyUseCase = (dependencies: any) => {
+export const getCompaniesUseCase = (dependencies: any) => {
   const {
     repository: { companyRepository },
   } = dependencies;
@@ -11,9 +9,8 @@ export const getCompanyUseCase = (dependencies: any) => {
     throw new Error("dependency required, missing dependency");
   }
 
-  const execute = async (id: string) => {
-    const companyDetails = await companyRepository.getCompany(id);
-    return companyDetails;
+  const execute = async () => {
+    return await companyRepository.getCompanies();
   };
 
   return {

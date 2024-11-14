@@ -5,7 +5,10 @@ import {
   getMyCompanyUseCase,
   updateCompanyLogoUseCase,
   getCompanyByIdUseCase,
-  updateProfileUseCase
+  updateProfileUseCase,
+  uploadCompanyVerificationDocsUseCase,
+  getCompaniesUseCase,
+  changeCompanyStatusUseCase
 } from "../../application/useCases";
 import { userRepository, companyRepository } from "../repository/";
 import { CompanyCreatedProducer } from '../messageBroker/kafka';
@@ -34,6 +37,9 @@ const useCases = {
   updateCompanyLogoUseCase,
   getCompanyByIdUseCase,
   updateProfileUseCase,
+  uploadCompanyVerificationDocsUseCase,
+  getCompaniesUseCase,
+  changeCompanyStatusUseCase
 };
 
 export default {
