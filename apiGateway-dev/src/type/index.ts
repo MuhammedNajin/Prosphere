@@ -1,18 +1,27 @@
+
 export {}
 
-interface User {
-    id: string;
-    username: string;
-    email: string;
-    role: string
-    
-  }
- 
+interface Payload {
+  email: string;
+  userName: string;
+  id: string;
+  role: string;
+}
+
+interface CompanyPayload {
+  id: string,
+  name: string
+  owner: string
+  verified: boolean
+  status: "pending" | 'uploaded' | 'verified' | 'reject';
+  role : 'owner'
+}
 declare global {
     namespace Express {
       interface Request {
-        currentUser?: User;
-        currentAdmin?: User;
+        currentUser?: Payload;
+        currentAdmin?: Payload;
+        currentCompany?: CompanyPayload;
       }
     }
   }

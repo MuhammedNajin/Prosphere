@@ -12,7 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "@muhammednajinnprosphere/common": "^1.0.70",
+    "@muhammednajinnprosphere/common": "^1.0.81",
     "@types/express": "^4.17.21",
     "@types/http-proxy-middleware": "^1.0.0",
     "@types/jsonwebtoken": "^9.0.6",

@@ -1,6 +1,6 @@
 import { Application, Request, Response } from "express";
 import { createProxyMiddleware, RequestHandler } from "http-proxy-middleware";
-import { AuthRouteConfig, ProxyConfig } from "../interface";
+import { AuthRouteConfig, ProxyConfig } from "../type/interface";
 
 
 export const setupProxies = (app: Application, routes: AuthRouteConfig[]) => {
