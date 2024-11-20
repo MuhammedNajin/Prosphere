@@ -31,7 +31,7 @@ import { BadRequestError } from '@muhammednajinnprosphere/common';
             }
             
             const profile = await grpcClient.getUserProfile(userCredential._id);
-            
+            console.log("profile", profile)
             const payload = {
                 id: userCredential._id,
                 username: userCredential.username,

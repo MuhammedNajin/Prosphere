@@ -18,7 +18,8 @@ export const authRoutes = (dependencies: any) => {
     forgotPasswordController,
     resetPasswordController,
     adminLoginController,
-    refreshTokenController
+    refreshTokenController,
+    generateCompanyAccessTokenController
   } = authController(dependencies);
 
   router.post("/login",
@@ -45,7 +46,7 @@ export const authRoutes = (dependencies: any) => {
   router.post("/reset-password/:token", 
     resetPasswordController);
 
-  router.post("/admin", 
+  router.post("/admin-login", 
     adminLoginController);
 
   router.post("/refreshToken", 

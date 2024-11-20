@@ -14,15 +14,11 @@ export const adminRoutes = (dependencies: any) => {
 
 
   router.get("/users",
-     currentAdmin,
-     requireAdmin,
      getAllUserController
     );
 
 
   router.patch("/block/:email",
-    currentAdmin,
-    requireAdmin,
     blockUserController
   );
 

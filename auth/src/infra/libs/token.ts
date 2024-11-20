@@ -20,6 +20,7 @@ class Token {
        return { accessToken, refreshToken }
   }
 
+
   static async verifyToken(token: string, TOKEN_SECRECT: string) {
         return jwt.verify(token, TOKEN_SECRECT);
   }

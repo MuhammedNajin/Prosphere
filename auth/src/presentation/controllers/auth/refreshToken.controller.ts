@@ -15,20 +15,21 @@ const refreshTokenController = (dependencies: Dependencies) => {
     next: NextFunction
   ) => {
     try {
-      
+      const { isAdmin } = req.query
      const token = req.cookies.accessToken
      console.log('refresh-token endpoint', token);
-      await Token.verifyToken(token, process.env.REFRESH_SECRECT!);
+      const secret = isAdmin ? process.env.ADMIN_REFRESH_SECRECT : process.env.REFRESH_SECRECT
+      await Token.verifyToken(token, secret!);
       const payload = Token.decode(token) as TokenData;
       console.log("payload", payload);
      const { accessToken, refreshToken} = Token.generateJwtToken(payload);
 
-     res.cookie("accessToken", accessToken, {
+     res.cookie(`${isAdmin ? "adminAccess" : "accessToken"}`, accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
       });
       
-      res.cookie("refreshToken", refreshToken, {
+      res.cookie(`${isAdmin ? "adminRefresh" : "refreshToken"}`, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
       });
