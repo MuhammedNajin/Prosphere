@@ -1,25 +1,24 @@
-import mongoose, { Model, Document } from 'mongoose';
+import mongoose, { Model, Document } from "mongoose";
 
-// Message Interfaces
 export interface MessageAttrs {
-  conversation: mongoose.Types.ObjectId;
-  sender: mongoose.Types.ObjectId;
+  conversation: string;
+  sender: string;
   content: {
-    type: 'text' | 'image' | 'file' | 'audio';
+    type: "text" | "image" | "file" | "audio";
     text?: string;
     fileUrl?: string;
     fileName?: string;
     fileSize?: number;
     mimeType?: string;
   };
-  replyTo?: mongoose.Types.ObjectId;
+  replyTo?: string;
 }
 
 export interface MessageDoc extends Document {
   conversation: mongoose.Types.ObjectId;
   sender: mongoose.Types.ObjectId;
   content: {
-    type: 'text' | 'image' | 'file' | 'audio';
+    type: "text" | "image" | "file" | "audio";
     text: string | null;
     fileUrl: string | null;
     fileName: string | null;
@@ -43,83 +42,89 @@ export interface MessageModel extends Model<MessageDoc> {
   build(attrs: MessageAttrs): MessageDoc;
 }
 
-// Message Schema
-const MessageSchema = new mongoose.Schema<MessageDoc, MessageModel>({
-  conversation: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Conversation',
-    required: [true, 'Conversation is required']
-  },
-  sender: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: [true, 'Sender is required']
-  },
-  content: {
-    type: {
-      type: String,
-      enum: ['text', 'image', 'file', 'audio'],
-      required: [true, 'Content type is required']
-    },
-    text: {
-      type: String,
-      default: null
-    },
-    fileUrl: {
-      type: String,
-      default: null
-    },
-    fileName: {
-      type: String,
-      default: null
-    },
-    fileSize: {
-      type: Number,
-      default: null
-    },
-    mimeType: {
-      type: String,
-      default: null
-    }
-  },
-  replyTo: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message',
-    default: null
-  },
-  readBy: [{
-    user: {
+const MessageSchema = new mongoose.Schema<MessageDoc, MessageModel>(
+  {
+    conversation: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+      ref: "Conversation",
+      required: [true, "Conversation is required"],
     },
-    readAt: {
-      type: Date,
-      default: Date.now
-    }
-  }],
-  deliveredTo: [{
-    user: {
+    sender: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+      ref: "User",
+      required: [true, "Sender is required"],
     },
-    deliveredAt: {
+    content: {
+      type: {
+        type: String,
+        enum: ["text", "image", "file", "audio"],
+        required: [true, "Content type is required"],
+      },
+      text: {
+        type: String,
+        default: null,
+      },
+      fileUrl: {
+        type: String,
+        default: null,
+      },
+      fileName: {
+        type: String,
+        default: null,
+      },
+      fileSize: {
+        type: Number,
+        default: null,
+      },
+      mimeType: {
+        type: String,
+        default: null,
+      },
+    },
+    replyTo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
+    },
+    readBy: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        readAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    deliveredTo: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        deliveredAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
       type: Date,
-      default: Date.now
-    }
-  }],
-  deleted: {
-    type: Boolean,
-    default: false
+      default: null,
+    },
   },
-  deletedAt: {
-    type: Date,
-    default: null
+  {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   }
-}, {
-  timestamps: true,
-  toJSON: { virtuals: true },
-  toObject: { virtuals: true }
-});
+);
 
 // Static build method for Message
 MessageSchema.statics.build = (attrs: MessageAttrs) => {
@@ -127,6 +132,9 @@ MessageSchema.statics.build = (attrs: MessageAttrs) => {
 };
 
 // Create model
-const Message = mongoose.model<MessageDoc, MessageModel>('Message', MessageSchema);
+const Message = mongoose.model<MessageDoc, MessageModel>(
+  "Message",
+  MessageSchema
+);
 
 export default Message;
