@@ -2,7 +2,7 @@ import express from 'express';
 import http from 'http';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import { Server as SockerIoServer, Socket } from 'socket.io'
+import cors from 'cors'
 import AppRouter from '@/presentation/routes';
 import chatRepository from '../repository/chat.repository';
 dotenv.config();
@@ -82,12 +82,11 @@ class Server {
        console.log("request", req.url, req.method);
        next();
     })
-    this.app.use((req, res, next) => {
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-      next();
-    });
+
+    this.app.use(cors({
+      origin: ["http://localhost:5173"],
+      credentials: true
+  }))
 
     this.app.get('/health', (req, res) => {
       res.status(200).json({

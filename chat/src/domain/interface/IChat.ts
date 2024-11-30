@@ -1,4 +1,3 @@
-
 export interface MessageProps {
   conversation: string;
   sender: string;
@@ -10,4 +9,13 @@ export interface MessageProps {
     mimeType?: string;
   };
   replyTo?: string;
+}
+
+export interface ConversationProps {
+  type: 'direct' | 'group';
+  participants: string[];
+  lastMessage?: string;
+  name?: string;
+  avatar?: string;
+  admins?: string[];
 }

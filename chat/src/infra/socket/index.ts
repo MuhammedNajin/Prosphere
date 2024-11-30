@@ -12,7 +12,7 @@ export interface SocketMessage {
 export class SocketManager extends EventEmitter {
   private static instance: SocketManager;
   private io: SocketIOServer;
-  private activeRooms: Map<string, Set<string>> = new Map();
+  private activeRooms: Map<string, string> = new Map();
 
   private constructor(server: HTTPServer) {
     super();
@@ -26,7 +26,7 @@ export class SocketManager extends EventEmitter {
     });
    
    this.io.use((socket, next) => {
-      console.log(socket);
+     
      next()
    })
 
@@ -57,12 +57,15 @@ export class SocketManager extends EventEmitter {
 
   private handleConnection(socket: Socket): void {
     console.log(`New client connected: ${socket.id}`);
+ 
     this.emit('clientConnected', socket.id);
   }
 
   private handleRoomEvents(socket: Socket): void {
-    socket.on('join_room', (roomId: string) => {
-      this.joinRoom(socket, roomId);
+    socket.on('join_room', (data: { receiver: string }) => {
+      console.log("roomId", data)
+      const { receiver } = data
+      this.joinRoom(socket, receiver);
     });
 
     socket.on('leave_room', (roomId: string) => {
@@ -72,10 +75,11 @@ export class SocketManager extends EventEmitter {
 
   private handleMessageEvents(socket: Socket): void {
     socket.on('message', (data: SocketMessage) => {
-      this.broadcastToRoom(socket, data);
+      // this.broadcastToRoom(socket, data);
     });
 
-    socket.on('direct_message', (data: { recipientId: string; content: any }) => {
+    socket.on('direct_message', (data: { reciever: string; content: any }) => {
+      console.log("direct_message", data)
       this.sendDirectMessage(socket, data);
     });
   }
@@ -93,20 +97,10 @@ export class SocketManager extends EventEmitter {
 
   private joinRoom(socket: Socket, roomId: string): void {
     socket.join(roomId);
-    
-    if (!this.activeRooms.has(roomId)) {
-      this.activeRooms.set(roomId, new Set());
+    if(!this.activeRooms.has(roomId)) {
+       this.activeRooms.set(roomId, socket.id);
     }
-    this.activeRooms.get(roomId)?.add(socket.id);
-
-    console.log(`Client ${socket.id} joined room: ${roomId}`);
-    
-    socket.to(roomId).emit('user_joined', {
-      userId: socket.id,
-      timestamp: new Date()
-    });
-
-    this.emit('roomJoined', { socketId: socket.id, roomId });
+    console.log(`Client ${socket.id} joined room: ${roomId}`, this.activeRooms);
   }
 
   private leaveRoom(socket: Socket, roomId: string): void {
@@ -139,33 +133,14 @@ export class SocketManager extends EventEmitter {
     this.emit('messageSent', { socketId: socket.id, room: data.room, content: data.content });
   }
 
-  private sendDirectMessage(socket: Socket, data: { recipientId: string; content: any }): void {
-    this.io.to(data.recipientId).emit('direct_message', {
-      senderId: socket.id,
-      content: data.content,
-      timestamp: new Date()
-    });
-
-    this.emit('directMessageSent', {
-      from: socket.id,
-      to: data.recipientId,
-      content: data.content
-    });
+  private sendDirectMessage(socket: Socket, data: { receiver: string; content: any, time: string }): void {
+    console.log(" re cived",   this.activeRooms.get(data.receiver));
+    this.io.to(data.receiver).emit('direct_message', data);
   }
 
   private handleClientDisconnection(socket: Socket): void {
     console.log(`Client disconnected: ${socket.id}`);
     
-    // Remove client from all active rooms
-    this.activeRooms.forEach((clients, roomId) => {
-      if (clients.has(socket.id)) {
-        clients.delete(socket.id);
-        if (clients.size === 0) {
-          this.activeRooms.delete(roomId);
-        }
-      }
-    });
-
     this.emit('clientDisconnected', socket.id);
   }
 

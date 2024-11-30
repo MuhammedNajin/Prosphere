@@ -4,3 +4,5 @@ export interface ICreateMessageUseCase {
     
     execute(CoversationDTO: ConversationProps): Promise<ConversationProps>
 }
+
+
