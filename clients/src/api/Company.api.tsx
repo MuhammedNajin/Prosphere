@@ -1,42 +1,93 @@
-import createAxios, { AxiosInstance } from "./config";
-
-
-
+import axiosInstance, { AxiosInstance } from "./config";
 
 class CompanyApi {
-    private static axios: AxiosInstance = createAxios('http://localhost:3003/api/v1/company');
+  private static axios: AxiosInstance = axiosInstance;
 
-   static async createCompany(CompanyDetails: unknown) {
-      try {
-        console.log("profilePhoto", CompanyDetails)
+  static createCompany = async ({ data }) => {
+    console.log("company", data);
+    return await this.axios.post("/api/v1/user/company/setup", data);
+  };
 
-     const response = await this.axios.post('/setup', CompanyDetails)
-
-      if(response.status === 201) {
-         return response.data;
+  static  getCompanies =  async ()  => {
+    try {
+      const response = await this.axios.get(`/api/v1/user/company/my-company`);
+      if (response.status === 200) {
+        console.log(response);
+        return response.data;
       }
-
-      } catch (error) {
-        console.log(error);
-      }
-   }
-
-   static async getCompany(id: string) {
-      try {
-         const response = await this.axios.get(`/${id}`)
-         if(response.status === 200) {
-            console.log(response)
-            return response.data;
-         }
-      } catch (error) {
-         console.log(error)
-      }
-   }
-
-    // If you need to change the base URL
-    static setBaseUrl(url: string) {
-        this.axios = createAxios(url);
+    } catch (error) {
+      console.log(error);
+      return error;
     }
+  }
+
+  static async getCompany(id: string) {
+    try {
+      const response = await this.axios.get(`/api/v1/company/${id}`);
+      if (response.status === 200) {
+        return response.data;
+      }
+    } catch (error) {
+      return error;
+    }
+  }
+
+  static async getCompanyProfile(id: string) {
+     try {
+       const response = await this.axios.get(`/api/v1/user/company/profile/${id}`);
+       return response.data;
+     } catch (error) {
+       console.log(error);
+       
+     }
+  }
+
+  static  upLoadCompanyLogo = async ({ data, id}) => {
+      return await this.axios.post(
+        `/api/v1/company/logo/${id}`,
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+  }
+
+  static async getUploadedFIle(key: string) {
+      return await this.axios.get(`/api/v1/company/logo/${key}`);
+  }
+
+  static updateCompanyProfile = async ({ id, data }) => {
+    return await this.axios.put(`/api/v1/company/${id}`, data);
+  };
+
+  static uploadVerificationDocs = async ({ data, id }) => {
+    return await this.axios.post(`/api/v1/user/company/verify/${id}`, data, {
+       headers: {
+         "Content-Type": "multipart/form-data"
+       }
+    })
+  }
+   
+  // change this route to user api
+  static generateToken = async ({ id }:{ id: string, el?: unknown }) => {
+    return await this.axios.post(`/api/v1/user/company/token/${id}`);
+ }
+
+
+ static getApplicationByJob = async (jobId: string) => {
+   try {
+      const response = await this.axios.get(`/api/v1/job/company/jobs/${jobId}`)
+      return response.data?.data
+   } catch (error) {
+     console.log(error);
+     throw error;
+   }
+ }
+
+
+
 }
 
 export { CompanyApi };

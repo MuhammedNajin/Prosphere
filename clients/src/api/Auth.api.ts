@@ -1,5 +1,5 @@
 import { AxiosError } from "axios";
-import createAxios, { AxiosInstance } from "./config"
+import axiosInstance, { AxiosInstance } from "./config"
 
 export interface IOtp {
     userId: string,
@@ -7,30 +7,16 @@ export interface IOtp {
 }
 
 class ApiService {
-    private static axios: AxiosInstance = createAxios('http://localhost:7000');
+    private static axios: AxiosInstance = axiosInstance
 
-    static signUp = async (user: any,) => {
-        try {
-            console.log('signup data', user)
-            const response = await this.axios.post('/api/v1/auth/signup', user);
-            if(response.status === 201) {
-                return response.data;
-            }
-        } catch (error) {
-            console.log(error);
-            if(error instanceof AxiosError) {
-                const { errors } = error?.response.data;
-                console.log(errors);
-                
-                return Promise.reject(errors[0].message)
-            }
-        }
+    static signUp = async ({ data }) => {
+      return await this.axios.post('/api/v1/auth/signup', data);
     }
 
-    static verifyOtp = async ({ otp, userId}: IOtp, { rejectWithValue }) => {
+    static verifyOtp = async (data: IOtp, { rejectWithValue }) => {
         try {
-            console.log("userId:", userId, "otp, ", otp, this)
-            const response = await this.axios.post("/api/v1/auth/verify-otp", {userId, otp});
+            
+            const response = await this.axios.post("/api/v1/auth/verify-otp", data);
             console.log(response);
             
             if(response.status === 200) {
@@ -47,9 +33,9 @@ class ApiService {
         }
     }
 
-static signIn = async ({ email, password }: { email: string, password: string},  { rejectWithValue }) => {
+static signIn = async (data: { email: string, password: string},  { rejectWithValue }) => {
         try {
-            const response = await this.axios.post('/api/v1/auth/login', { email, password});
+            const response = await this.axios.post('/api/v1/auth/login', data);
             if(response.status === 200) {
                 return response.data;
             }
@@ -145,11 +131,6 @@ static signIn = async ({ email, password }: { email: string, password: string}, 
         }
     }
     
-
-    // If you need to change the base URL
-    static setBaseUrl(url: string) {
-        this.axios = createAxios(url);
-    }
 }
 
 export { ApiService }

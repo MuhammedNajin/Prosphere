@@ -16,7 +16,7 @@ const AdminRouteWrapper: React.FC = (props) => {
         return children
 
      } else {
-       return <Navigate replace to="/admin/login" />
+       return <Navigate replace to="/admin/singin" />
      }
     
     

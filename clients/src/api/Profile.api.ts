@@ -1,36 +1,32 @@
-import createAxios, { AxiosInstance } from "./config";
-
-
-
+import axiosInstance, { AxiosInstance } from "./config";
 
 class ProfileApi {
-    private static axios: AxiosInstance = createAxios('http://localhost:3002/api/v1/profile');
+    private static axios: AxiosInstance = axiosInstance
 
-   static async uploadProfilePhoto(data: unknown, key: string, email: string) {
-      try {
-        console.log("profilePhoto", data)
-
-     const response = await this.axios.post(`/photo?key=${key}&email=${email}`, data, {
+   static uploadProfilePhoto  = async ({ data, key, existingKey}) => {
+      return await this.axios.post(`/api/v1/profile/photo?key=${key}&${existingKey ? `${existingKey}=${existingKey}` : '' }`, data, {
         headers: {
             'Content-Type': 'multipart/form-data',
           },
       })
 
-      if(response.status === 201) {
-         return true
-      }
+     
+   }
 
-      } catch (error) {
-        console.log(error);
-        
-      }
+   static uploadResume = async ({ data  }) => { 
+      console.log("profilePhoto", data)
+      return await this.axios.post(`/api/v1/profile/resume`, data, {
+        headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+      })
    }
 
    static async about(description: string, email: string) {
       try {
         console.log("description", description);
         
-         const response = await this.axios.put('/about', {
+         const response = await this.axios.put('/api/v1/profile/about', {
           description,
           email
          })
@@ -45,31 +41,31 @@ class ProfileApi {
       }
    }
 
-   static async updateProfile(data, email: string, array?: boolean) {
-      try {
-         const response = await this.axios.put(`/${email}?array=${array}`, data)
-         if(response.status === 201) {
-            return response.data;
-         }
-      } catch (error) {
-        console.log(error);
-        
-      }
+   static updateProfile = async ({ data,  email, array } : { email: string, array?: boolean}) => {
+      return await this.axios.put(`/api/v1/profile/${email}?array=${array}`, data)
    }
 
-   static async getProfile(email: string) {
+   static async getProfile(id: string) {
       try {
-        const response = await this.axios.get(`/${email}`);
+        const response = await this.axios.get(`/api/v1/profile/${id}`);
         return response.data
       } catch (error) {
         console.log(error);
       }
    }
 
-    // If you need to change the base URL
-    static setBaseUrl(url: string) {
-        this.axios = createAxios(url);
-    }
+   static async getUploadedFile(key: string) {
+      try {
+         const response = await this.axios.get(`/api/v1/profile/file/${key}`);
+         if(response.status == 200) {
+            return response.data;
+         }
+      } catch (error) {
+         console.log(error);
+         return error
+      }
+   }
+
 }
 
 export { ProfileApi };

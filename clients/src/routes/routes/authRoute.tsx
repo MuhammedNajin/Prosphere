@@ -3,8 +3,8 @@ import Auth from "@/components/Auth/Auth.component"
 import AuthLayout from "@/layout/AuthLayout"
 import ResetPasswordPage from "@/pages/ResetPassword"
 import GoogleAuth from "@/pages/User/GoogleAuth"
-import UserRouteWrapper from "@/userRouteWrapper"
-
+import UserRouteWrapper from "@/routes/protected/UserRouteWrapper"
+import New from '@/components/Auth/Auths.component'
 
 export const authRoute = {
      path: '',
@@ -33,6 +33,11 @@ export const authRoute = {
         {
             path: "/google/auth/flow",
             element: <GoogleAuth />
+        },
+
+        {
+            path: "/register",
+            element: <New />
         },
      ]
 }

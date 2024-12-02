@@ -7,8 +7,10 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 import store, { persistor } from "./redux/store.tsx";
 import { QueryClientProvider, QueryClient } from "react-query";
 import { PersistGate } from "redux-persist/integration/react";
+import SocketWrapper from "./context/socketContext.tsx";
 
-const queryClient = new QueryClient({
+
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000, // 5 minutes
@@ -18,15 +20,19 @@ const queryClient = new QueryClient({
   },
 });
 createRoot(document.getElementById("root")!).render(
+  <Provider store={store}>
   <GoogleOAuthProvider clientId="884141115056-o3pkeqli515ugoohn2qbpqasc723q90p.apps.googleusercontent.com">
     <StrictMode>
       <QueryClientProvider client={queryClient}>
-        <Provider store={store}>
+       
           <PersistGate loading={null} persistor={persistor}>
-            <App />
+           <SocketWrapper>
+             <App />
+           </SocketWrapper>
           </PersistGate>
-        </Provider>
+        
       </QueryClientProvider>
     </StrictMode>
   </GoogleOAuthProvider>
+  </Provider>
 );

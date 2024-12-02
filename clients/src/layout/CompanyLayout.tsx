@@ -1,27 +1,32 @@
 import NavBar from '../components/common/navBar/NavBar';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import SidebarNavigation from '@/components/common/sidebar/SideBar';
-import { CompanySideBarItems, CompanySettingsItems } from '../data/SidebarItems'
+import { CompanySideBarItems, CompanySettingsItems } from '../constants/SidebarItems'
 import CreateJobModal from '@/components/job/CreateJobModal';
+import Header from '@/components/company/Header/CompanyHeader';
 
 const CompanyLayout: React.FC = () => {
     const [sideBar, setSidebar] = useState(false)
     const [isOpen, setClose] = useState(false)
+
+    const jobModalToggle = useCallback(() => {
+        setClose((prev) => !prev);
+    }, [])
   return (
     <>
-      <NavBar setSidebar={setSidebar} sideBar={sideBar} setModal={setClose}/>
-      
-      <div className='flex px-1'>
-     
-        <div className={`-translate-x-full md:relative md:translate-x-0 md:block fixed z-50 transition-transform duration-300 ease-in-out ${sideBar && "translate-x-0"}`}>
-         <SidebarNavigation userImage='/company.png' settingsNavItems={CompanySettingsItems} userType='company' userName='Brototype' mainNavItems={CompanySideBarItems} />
-        </div>
-        <div className='flex-1'>
-         <CreateJobModal isOpen={isOpen} onClose={setClose} />
-         <Outlet />
-        </div>
-      </div>
+      <div className='md:flex px-1'>
+    { isOpen &&  <CreateJobModal isOpen={isOpen} onClose={setClose} /> }
+  <div className={`fixed z-50 h-screen bg-gray-100 md:relative md:h-auto md:translate-x-0 transition-transform duration-300 ease-in-out ${sideBar ? 'translate-x-0' : '-translate-x-full'}`}>
+    <SidebarNavigation userImage='/company.png' settingsNavItems={CompanySettingsItems()} userType='company' userName='Brototype' mainNavItems={CompanySideBarItems()} />
+  </div>
+  <div className='flex-1 bg-white h-screen overflow-y-auto'>
+    <Header onClose={jobModalToggle}/>
+    <div className='p-4 mt-16'>
+      <Outlet />
+    </div>
+  </div>
+</div>
     </>
   )
 }

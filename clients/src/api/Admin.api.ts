@@ -1,12 +1,12 @@
 
 
 import { AxiosError } from "axios";
-import createAxios, { AxiosInstance } from "./config"
+import axiosInstance, { AxiosInstance } from "./config"
 
 
 
 class AdminApi {
-    private static axios: AxiosInstance = createAxios('http://localhost:7000');
+    private static axios: AxiosInstance = axiosInstance
 
    
     static fetchUsers = async () => {
@@ -22,7 +22,7 @@ class AdminApi {
 
     static signIn = async ({ email, password }: { email: string, password: string}, { rejectWithValue } ) => {
         try {
-            const response = await this.axios.post('/api/v1/auth/admin', { email, password});
+            const response = await this.axios.post('/api/v1/auth/admin-login', { email, password});
             if(response.status === 200) {
                 console.log(response);
                 return response.data;
@@ -42,7 +42,7 @@ class AdminApi {
         try {
             console.log(token);
             
-            const response = await this.axios.post('/api/v1/auth/google-auth', {},
+            const response = await this.axios.post('/api/v1/admin/google-auth', {},
                 {
                    headers: {
                      "Authorization": `Bearer ${token}`
@@ -60,7 +60,7 @@ class AdminApi {
 
     static resetPassword = async ({password, token}: { password: string, token: string }) => {
         try {
-            const response = await this.axios.post(`/api/v1/auth/reset-password/${token}`, {
+            const response = await this.axios.post(`/api/v1/admin/reset-password/${token}`, {
                 password
             })
             return response.data;
@@ -87,10 +87,44 @@ class AdminApi {
         }
     }
 
-    // If you need to change the base URL
-    static setBaseUrl(url: string) {
-        this.axios = createAxios(url);
+    static verificationRequest = async (status: string = 'uploaded') => {
+        try {
+            const response = await this.axios.get(`/api/v1/admin/company/verification?status=${status}`);
+            console.log("data", response.data);
+            
+            return response.data
+        } catch (error) {
+            throw error;
+        }
     }
+
+    static  getCompany = async(id: string) => {
+        try {
+          const response = await this.axios.get(`/api/v1/admin/company/${id}`);
+          if (response.status === 200) {
+            return response.data;
+          }
+        } catch (error) {
+          return error; 
+        }
+      }
+
+    static changeCompanyVerificationStatus = async ({ status, id }) => {
+        return await this.axios.patch(`/api/v1/admin/company/status/${id}?status=${status}`);
+    }
+
+    static getVerificationDocs = async (key: string) => {
+        try {
+            const response = await this.axios.get(`/api/v1/admin/company/doc/${key}`)
+            return response.data
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    }
+
+  
+    
 }
 
 export { AdminApi };
