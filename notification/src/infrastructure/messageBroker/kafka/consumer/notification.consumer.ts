@@ -13,8 +13,8 @@ export class NotificationConsumer extends KafkaConsumer<NotificationEvent> {
     async onConsume(data: NotificationEvent['data'], msg: KafkaMessage): Promise<void> {
         console.log("heloo from consumer", data);
        try {
-           await new CreateNotificationUseCase(notificationRepository).execute(data)
-          console.log("notification event");
+          const notification =  await new CreateNotificationUseCase(notificationRepository).execute(data)
+          console.log("notification event", notification);
        } catch (error) {
          console.log(error);
        }
