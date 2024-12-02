@@ -25,6 +25,11 @@ import {
 import { CompanyApi } from '@/api/Company.api';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import LocationSearch from '../common/LocationField/LocationField';
+import { Location } from '@/types/Settings';
+import { MapboxResult } from '@/types/company';
+import { useMutation } from 'react-query';
+import LoaderSubmitButton from '../common/spinner/LoaderSubmitButton';
 
 // Types
 export type CompanyDetails = {
@@ -40,57 +45,60 @@ export type CompanyDetails = {
 // Schema
 const formSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  url: z.string().min(1, { message: "URL is required" }),
   website: z.string().url({ message: "Invalid URL" }).optional().or(z.literal('')),
-  location: z.string().min(4, {message: "location is required",}),
+  location: z.array(z.object({
+    placename: z.string(),
+    coordinates: z.array(z.number()),
+  })).min(1, "Comapany location required"),
   size: z.string().min(1, { message: "Organization size is required" }),
   type: z.string().min(1, { message: "Organization type is required" }),
 });
 
 // Components
-
+type Companydata = z.infer<typeof formSchema>
 
 
 
 const CompanyDetailsForm: React.FC = () => {
-  const form = useForm<CompanyDetails>({
+  const form = useForm<Companydata>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      url: '',
       website: '',
-      industry: '',
       size: '',
       type: '',
-      location: 'kozhilode, kerala, india',
+      location: [],
     },
   });
 
   const { user } = useSelector((state) => state.auth);
   const navigate = useNavigate()
-  console.log(user)
-  const onSubmit = async (data: CompanyDetails) => {
-    console.log(data);
-   const response = await CompanyApi.createCompany({ ...data, id: user?._id });
-   console.log("response", response);
-   if(response) {
-     navigate('/company');
-   }
 
+  const companyMutation = useMutation({
+    mutationFn: CompanyApi.createCompany,
+    onSuccess: () => {
+      navigate('/mycompany', { state: false });
+    },
+    onError: (error) => {
+       console.log(error);
+       
+    }
+  })
+  console.log(user)
+  const onSubmit = async (companyData: Companydata) => {
+    console.log("companyData", companyData);
+    const data = { ...companyData, id: user?._id }
+    companyMutation.mutate({ data })
+  
   };
 
+
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6">
-      <Button onClick={(e) => navigate('/company') } variant="ghost" className="text-blue-600 hover:text-blue-800">
-    <ArrowLeft className="w-4 h-4 mr-2" />
-    Back
-  </Button>
+    <div className="max-w-4xl mx-auto p-6 mb-8">
+      <div className='p-2'>
+         <h1 className='inline-flex gap-2'><span className='text-red-500'>*</span>indicates required field</h1>
       </div>
-      <h1 className="text-2xl font-bold mb-6 flex items-center">
-        <span className="mr-2">🏢</span>
-        Let's get started with a few details about your company.
-      </h1>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -107,19 +115,7 @@ const CompanyDetailsForm: React.FC = () => {
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="url"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Prosphere.online/company/<span className="text-red-500">*</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="Add your unique Prosphere address" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
             <FormField
               control={form.control}
               name="website"
@@ -148,12 +144,15 @@ const CompanyDetailsForm: React.FC = () => {
             />
             <FormField
               control={form.control}
-              name="industry"
+              name="location"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Location<span className="text-red-500">*</span></FormLabel>
                   <FormControl>
-                    <Input placeholder="kozhikode, kerala, india" {...field} />
+                    <LocationSearch onSelectLocation={(location: MapboxResult) => {
+                      console.log(location.place_name)
+                      form.setValue('location', [{ placename: location.place_name, coordinates: location.coordinates }])
+                    }} placeholder='Company location'/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -213,7 +212,7 @@ const CompanyDetailsForm: React.FC = () => {
                 </FormItem>
               )}
             />
-            <Button type="submit">Submit</Button>
+           <LoaderSubmitButton state={companyMutation.isLoading} >Save</LoaderSubmitButton>
           </form>
         </Form>
         <div>
