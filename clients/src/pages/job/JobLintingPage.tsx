@@ -5,7 +5,6 @@ import React from "react";
 const JobListingPage: React.FC = () => {
     return (
         <div>
-            <Header />
            <JobListing />
         </div>
     )

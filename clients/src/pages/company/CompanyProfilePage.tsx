@@ -1,5 +1,5 @@
 
-import CompanyProfile from '@/components/company/CompanyProfile'
+import CompanyProfile from '@/components/company/Profile/CompanyProfile'
 import React from 'react'
 
 const CompanyProfilePage: React.FC = () => {
