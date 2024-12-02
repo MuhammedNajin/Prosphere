@@ -15,3 +15,44 @@ export enum ModalContent {
     ContactInfo = "Contact Info"
   }
   
+
+ export enum IMAGEKEY {
+   AVATAR = "profileImageKey",
+   COVER = "coverImageKey"
+ }
+
+ export interface Experience {
+  title: string;
+  company: string;
+  location: string;
+  startDate: string;
+  endDate?: string;
+  description: string;
+  _id?: string;
+}
+
+export interface Education {
+  school: string;
+  degree: string;
+  fieldOfStudy: string;
+  startDate: string;
+  endDate?: string;
+  description?: string;
+  _id?: string;
+}
+
+export interface Skill {
+  name: string;
+  level: number;
+  _id?: string;
+}
+
+export interface ProfileData {
+  _id: string;
+  about?: string;
+  coverImageKey?: string;
+  profileImageKey?: string;
+  experience: Experience[];
+  education: Education[];
+  skills: Skill[];
+}
