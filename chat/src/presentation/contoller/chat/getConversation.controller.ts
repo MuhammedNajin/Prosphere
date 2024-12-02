@@ -1,4 +1,4 @@
-import { IChatRepository } from "@/shared/interface/IChatRepository";
+import { IChatRepository } from "@/domain/IRepository/IChatRepository";
 import { NextFunction, Request, Response } from "express";
 import { GetConversationUseCase } from "@/application/usecase/chatUsecase/getConversation.usecase";
 import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";

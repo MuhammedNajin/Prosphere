@@ -1,7 +1,8 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import { EventEmitter } from 'events';
-
+import chatRepository from '../repository/chat.repository';
+import { MESSAGE_STATUS } from '@/shared/enums/messageEnums';
 export interface SocketMessage {
   room: string;
   content: any;
@@ -47,6 +48,7 @@ export class SocketManager extends EventEmitter {
       this.handleRoomEvents(socket);
       this.handleMessageEvents(socket);
       this.handleDisconnection(socket);
+      this.changeStatusTODeliver(socket);
     });
 
     this.io.engine.on('connection_error', (error: Error) => {
@@ -54,6 +56,8 @@ export class SocketManager extends EventEmitter {
       this.emit('error', error);
     });
   }
+
+
 
   private handleConnection(socket: Socket): void {
     console.log(`New client connected: ${socket.id}`);
@@ -71,6 +75,16 @@ export class SocketManager extends EventEmitter {
     socket.on('leave_room', (roomId: string) => {
       this.leaveRoom(socket, roomId);
     });
+
+    socket.on("join_conversation", (conversationId) => {
+        console.log("join_conversation", conversationId);
+        socket.join(conversationId)
+    })
+
+    socket.on('leave_conversation', (conversationId) => {
+      console.log("leave_coversation", conversationId);
+       socket.leave(conversationId)
+    })
   }
 
   private handleMessageEvents(socket: Socket): void {
@@ -133,15 +147,24 @@ export class SocketManager extends EventEmitter {
     this.emit('messageSent', { socketId: socket.id, room: data.room, content: data.content });
   }
 
-  private sendDirectMessage(socket: Socket, data: { receiver: string; content: any, time: string }): void {
-    console.log(" re cived",   this.activeRooms.get(data.receiver));
+  private sendDirectMessage(socket: Socket, data: { receiver: string; content: any, time: string, conversation: string }): void {
+    console.log(" re cived",   this.activeRooms.get(data.receiver), data.conversation);
     this.io.to(data.receiver).emit('direct_message', data);
+    this.io.to(data.conversation).emit("private_message", data);
   }
 
   private handleClientDisconnection(socket: Socket): void {
     console.log(`Client disconnected: ${socket.id}`);
     
     this.emit('clientDisconnected', socket.id);
+  }
+
+  private changeStatusTODeliver(socket: Socket): void {
+     socket.on('deliver_message', (data: { receiver: string, messageId: string }) => {
+         console.log("deliver_message listen from server", data);
+         this.io.to(data.receiver).emit('deliver_message', data.messageId);
+        chatRepository.changeMessageStatus(data.messageId, MESSAGE_STATUS.DELIVERED)
+     })
   }
 
   public getRoomMembers(roomId: string): string[] {

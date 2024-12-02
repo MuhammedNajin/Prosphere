@@ -1,4 +1,4 @@
-import { IUserRepository } from "@/shared/interface/IUserRepository";
+import { IUserRepository } from "@/domain/IRepository/IUserRepository";
 import User, { UserAttrs, UserModel } from "../database/mongo/schema/user.schema";
 
 class UserRepository implements IUserRepository {

@@ -1,5 +1,4 @@
 import mongoose, { Model, Document } from "mongoose";
-
 export interface MessageAttrs {
   conversation: string;
   sender: string;
@@ -25,6 +24,7 @@ export interface MessageDoc extends Document {
     fileSize: number | null;
     mimeType: string | null;
   };
+  status: 'sent' | 'delivered' | 'read';
   replyTo: mongoose.Types.ObjectId | null;
   readBy: Array<{
     user: mongoose.Types.ObjectId;
@@ -44,16 +44,19 @@ export interface MessageModel extends Model<MessageDoc> {
 
 const MessageSchema = new mongoose.Schema<MessageDoc, MessageModel>(
   {
+
     conversation: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Conversation",
       required: [true, "Conversation is required"],
     },
+
     sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Sender is required"],
     },
+
     content: {
       type: {
         type: String,
@@ -81,11 +84,19 @@ const MessageSchema = new mongoose.Schema<MessageDoc, MessageModel>(
         default: null,
       },
     },
+
     replyTo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
       default: null,
     },
+
+    status: {
+       type: String,
+       enums: ["sent", "delivered", 'read'],
+       default: 'sent',
+    },
+
     readBy: [
       {
         user: {
@@ -98,40 +109,49 @@ const MessageSchema = new mongoose.Schema<MessageDoc, MessageModel>(
         },
       },
     ],
+
     deliveredTo: [
       {
         user: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
         },
+
         deliveredAt: {
           type: Date,
           default: Date.now,
         },
+
       },
     ],
+
     deleted: {
       type: Boolean,
       default: false,
     },
+
     deletedAt: {
       type: Date,
       default: null,
     },
   },
+
   {
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
-  }
+    toJSON: {
+        transform: (doc, ret) => {
+          ret.id = doc._id;
+          delete ret._id
+          delete ret.__v
+        }
+      },
+  },
 );
 
-// Static build method for Message
 MessageSchema.statics.build = (attrs: MessageAttrs) => {
   return new Message(attrs);
 };
 
-// Create model
 const Message = mongoose.model<MessageDoc, MessageModel>(
   "Message",
   MessageSchema

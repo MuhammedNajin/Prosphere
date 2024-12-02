@@ -1,5 +1,5 @@
-import { IUserRepository } from "@/shared/interface/IUserRepository";
-import { IChatRepository } from "@/shared/interface/IChatRepository";
+import { IUserRepository } from "@/domain/IRepository/IUserRepository";
+import { IChatRepository } from "@/domain/IRepository/IChatRepository";
 import Conversation from "../database/mongo/schema/conversation.schema";
 import Message, {
   MessageAttrs,
@@ -52,7 +52,13 @@ class ChatRepository implements IChatRepository {
      })
   }
 
-
+  async changeMessageStatus(_id: string, status: MessageDoc['status']): Promise<MessageDoc | null> {
+      return await Message.findByIdAndUpdate({ _id }, {
+         $set: { status }
+      },
+      { new: true }
+    )
+  }
 }
 
 export default new ChatRepository();

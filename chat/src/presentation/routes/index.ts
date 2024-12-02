@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import ChatRoute from './chat.route';
-import { IChatRepository } from '@/shared/interface/IChatRepository';
+import { IChatRepository } from '@/domain/IRepository/IChatRepository';
 
 class AppRouter {
     public router: Router;

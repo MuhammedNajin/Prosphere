@@ -1,4 +1,5 @@
 export interface MessageProps {
+  _id: string
   conversation: string;
   sender: string;
   content: {

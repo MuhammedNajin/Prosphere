@@ -1,6 +1,6 @@
 
 import { User } from '@domain/entity/user.entity'
-import { IUserRepository } from '@/shared/interface/IUserRepository';
+import { IUserRepository } from '@/domain/IRepository/IUserRepository';
 import { UserProps } from '@/domain/interface/IUser';
 
 

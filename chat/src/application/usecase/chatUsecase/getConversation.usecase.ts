@@ -1,5 +1,5 @@
 import { User } from '@domain/entity/user.entity'
-import { IChatRepository } from '@/shared/interface/IChatRepository';
+import { IChatRepository } from '@/domain/IRepository/IChatRepository';
 import { MessageProps } from '@/domain/interface/IChat';
 import { IGetConversationUseCase} from '@/application/interface/IGetConversation.usecase'
 

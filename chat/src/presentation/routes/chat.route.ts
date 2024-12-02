@@ -1,6 +1,6 @@
 import express, { Router } from 'express';
 import { CreateMessageController } from '../contoller/chat/createMessage.controller';
-import { IChatRepository } from '@/shared/interface/IChatRepository';
+import { IChatRepository } from '@/domain/IRepository/IChatRepository';
 import { GetConversationController } from '../contoller/chat/getConversation.controller';
 import { GetChatController } from '../contoller/chat/getChat.controller';
 
