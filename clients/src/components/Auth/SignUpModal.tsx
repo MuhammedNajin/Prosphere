@@ -5,7 +5,7 @@ import OTPInput from "../utils/Otp";
 import { useFirebasePhone } from "../../hooks/useFirebasePhone";
 import { ApiService } from "../../api";
 import { useDispatch } from "react-redux";
-import { verifyOtpThunk } from "../../redux";
+import { verifyOtpThunk } from "@/redux/reducers/authSlice";
 import NextComponent from "./Next.component";
 import FormComponent from "./FormComponent";
 import { useNavigate } from "react-router-dom";
@@ -95,15 +95,6 @@ export const SignUpModal: React.FC<Modal> = ({ closeModal }) => {
 
   const handleVerify = () => {
   
-      dispatch(verifyOtpThunk({ userId: user.id, otp }))
-      .unwrap()
-      .then(() => {
-        navigate('/')
-      })
-      .catch((err) => {
-        toast.error(err)
-      })
-   
   };
 
   return (

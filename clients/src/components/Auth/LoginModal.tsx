@@ -2,12 +2,12 @@ import React, { useEffect, useState, useRef } from "react";
 import { IoClose } from "react-icons/io5";
 import Spinner from "../utils/Spinner";
 import { useDispatch } from "react-redux";
-import { signInThunk } from "../../redux";
 import LoginForm from "./LoginForm.component";
 import { useNavigate } from "react-router-dom";
 import { ApiService } from "../../api";
 import { Toaster, toast } from "react-hot-toast";
 import * as z from "zod";
+import { setUser, signInThunk } from "@/redux/reducers/authSlice";
 
 interface Modal {
   closeModal: () => void;
@@ -85,7 +85,9 @@ const LoginModal: React.FC<Modal> = ({ closeModal }) => {
     } else {
       dispatch(signInThunk({ email, password }))
         .unwrap()
-        .then(() => {
+        .then((data: any) => {
+       
+          dispatch(setUser(data.profile))
           navigate("/");
         })
         .catch((err) => {

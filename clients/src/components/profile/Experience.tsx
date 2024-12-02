@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlusIcon, PencilIcon } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface Experience {
   id: number;
@@ -82,7 +83,7 @@ const ExperiencesSection: React.FC<ExperiencesSectionProps> = ({ experiences, se
                   <PencilIcon className="w-4 h-4 text-gray-400" />
                 </button>
               </div>
-              <p className="mt-2 text-gray-700">{exp.currentlyWorking ? exp.startDate: ""}</p>
+              <p className="mt-2 text-gray-700">{exp.currentlyWorking ? format(exp.startDate, "PPP"): ""}</p>
             </div>
           </div>
           {exp.id !== experiences.length && <hr className="my-6 border-gray-200" />}

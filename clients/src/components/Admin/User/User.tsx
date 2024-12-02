@@ -7,14 +7,8 @@ const UserComponent: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row">
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      {/* Main content */}
-      <div className="flex-1 flex flex-col">
-        <Topbar onMenuClick={() => setSidebarOpen(true)} />
-        <div className="p-4 sm:p-6">
+    <div className="min-h-screen flex-1">
+     <div className="p-4 sm:p-6">
           <h1 className="text-2xl sm:text-3xl font-bold mb-4">Users</h1>
           {/* Search bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between mb-4 space-y-2 sm:space-y-0">
@@ -28,7 +22,6 @@ const UserComponent: React.FC = () => {
           {/* User table */}
           <UserTable />
         </div>
-      </div>
     </div>
   );
 }

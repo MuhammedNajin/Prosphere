@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import developerRoles from "../../data/Jobrole";
+import developerRoles from "../../constants/Jobrole";
 import CircleLoader from "react-spinners/BarLoader";
 
 import { z } from "zod";

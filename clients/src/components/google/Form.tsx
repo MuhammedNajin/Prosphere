@@ -1,7 +1,7 @@
 import React,{ useEffect, useState } from "react";
-import developerRoles from "../../data/Jobrole";
+import developerRoles from "../../constants/Jobrole";
 import { useDispatch } from "react-redux";
-import { googleAuthThunk } from "../../redux";
+import { googleAuthThunk } from "@/redux/reducers/authSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 
 

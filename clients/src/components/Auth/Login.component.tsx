@@ -1,81 +1,162 @@
-import React, { useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ApiService } from "../../api";
-import { GoogleLogin } from "@react-oauth/google";
-import { useDispatch } from "react-redux";
-import { googleAuth } from "../../redux";
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
+import { useDispatch } from 'react-redux';
+import { IoClose } from 'react-icons/io5';
+import { toast } from 'react-hot-toast';
+import { signInThunk } from '@/redux/reducers/authSlice';
+import { ApiService } from '../../api';
+import * as z from 'zod'
 
-interface Login {
-  setModal: React.Dispatch<React.SetStateAction<boolean>>;
-}
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-const LoginComponent: React.FC<Login> = ({ setModal }) => {
-const navigate = useNavigate()
-const location = useLocation();
-const dispatch = useDispatch();
-useEffect(() => {
-  console.log("location", location);
+const LoginComponent = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const LoginFormSchema = z.object({
+    email: z
+      .string()
+      .min(1, 'Email is required')
+      .email('Invalid email address'),
+    password: z
+      .string()
+      .min(1, 'Enter required Field'),
+  });
   
-   if(location.state) {
-      setModal((state) => !state);
-   }
-},[])
+ useEffect(() => {
+   console.log(LoginFormSchema)
+ })
 
-  async function handle(credentialResponse: any) {
-    const token = credentialResponse.credential
-   const { status, user } = await ApiService.googleAuth(token);
-   console.log("user from google auth", user)
-   if(status === 'new') {
-       navigate('/google/auth/flow', { state: user });
-   } else if(status === "exsist")
-      dispatch(googleAuth(user))
+  const handleSubmit = async (data) => {
+    dispatch(signInThunk(data))
+      .unwrap()
+      .then((data) => {
+        console.log("data.profile", data.profile)
+        navigate('/');
+      })
+      .catch((err) => {
+        toast.error(err);
+      });
+  };
+  
+  const form = useForm({
+    resolver: zodResolver(LoginFormSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  function onSubmit() {
+
+  }
+
+  const handleGoogleAuth = async (credentialResponse) => {
+    const token = credentialResponse.credential;
+    const { status, user } = await ApiService.googleAuth(token);
+    
+    if (status === 'new') {
+      navigate('/google/auth/flow', { state: user });
+    } else if (status === 'exist') {
+      dispatch(googleAuth(user));
       navigate('/');
-   }
-  
+    }
+  };
+
   return (
-    <div className="bg-white mb-20 items-center justify-center p-8 shadow rounded-xl border border-zinc-300">
-      <form>
-        
-        
-        <div className="mb-3">
-        <GoogleLogin
-          onSuccess={handle}
-          width="330"
-          size="large"
-          text="signup_with"
-          onError={() => {
-            console.log("Login Failed");
-          }}
+    <div className="max-w-96  bg-white items-center justify-center p-8 shadow rounded-xl border border-zinc-300">
+      <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-gray-700">
+                Email
+              </FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter your email"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="text-xs text-red-500" />
+            </FormItem>
+          )}
         />
+
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-sm font-medium text-gray-700">
+                Password
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="Enter your password"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage className="text-xs text-red-500" />
+            </FormItem>
+          )}
+        />
+
+        <Button
+          type="submit"
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+        >
+          Sign In
+        </Button>
+
+        <div className="flex items-center my-6">
+          <div className="flex-1 h-px bg-zinc-300"></div>
+          <p className="px-4 text-zinc-500">Or</p>
+          <div className="flex-1 h-px bg-zinc-300"></div>
         </div>
-        <div className="flex justify-between relative mt-6">
-          <span className="w-36 h-px bg-zinc-400"></span>
-          <p className="absolute left-40 -top-3">Or</p>
-          <span className="w-36 h-px bg-zinc-400"></span>
-        </div>
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={(e) => setModal((state) => !state)}
-            className="shadow text-lg text-center w-full bg-orange-500 text-white px-12 py-3 rounded-full tracking-normal capitalize border-0  font-bold bg-inherit hover:bg-orange-600 transition duration-200"
-          >
-            SignIn
-          </button>
+
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleAuth}
+            width="330"
+            size="large"
+            text="signup_with"
+            onError={() => toast.error('Google Login Failed')}
+          />
         </div>
       </form>
-      <div className="mt-3">
-        <h2 className="ms-2 text-lg font-semibold">
-          Don't have an account?{" "}
-          <Link
-            className="text-orange-500 hover:underline tracking-tight"
-            to="/signup"
-          >
-            SignUp
+    </Form>
+
+      <div className="mt-6">
+        <h2 className="text-lg font-semibold">
+          Don't have an account?{' '}
+          <Link className="text-blue-500 hover:underline" to="/signup">
+            Sign Up
           </Link>
         </h2>
-        <p className="text-sm ms-2  text-zinc-500">
-          By signing up, you agree to the
-          <span className="text-orange-500 select-none hover:underline">
+        <p className="text-sm text-zinc-500 mt-2">
+          By signing up, you agree to the{' '}
+          <span className="text-blue-500 cursor-pointer hover:underline">
             Terms of Service and Privacy Policy
           </span>
           , including Cookie Use.

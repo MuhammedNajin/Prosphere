@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { z } from "zod";
-import { adminLoginThunk } from "../../../redux";
+import { adminLoginThunk } from "@/redux/reducers/authSlice";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";

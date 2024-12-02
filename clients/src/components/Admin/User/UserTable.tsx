@@ -4,8 +4,9 @@ import { useQuery, useQueryClient } from "react-query";
 import ConfirmModal from "../../common/confirmModal";
 import { AxiosError } from "axios";
 import { useDispatch } from "react-redux";
-import { adminLogoutThuck } from "../../../redux";
+import { adminLogoutThuck } from "@/redux/reducers/authSlice";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 
 const UserTable: React.FC = () => {
   const [open, setOpen] = useState<boolean>(false);
@@ -69,7 +70,7 @@ const UserTable: React.FC = () => {
                   <td className="px-5 py-5 text-sm">{el.username}</td>
                   <td className="px-5 py-5 text-sm">{el.email}</td>
                   <td className="px-5 py-5 text-sm">{el.phone}</td>
-                  <td className="px-5 py-5 text-sm">{el.createdAt}</td>
+                  <td className="px-5 py-5 text-sm">{format(el.createdAt, 'PPP')}</td>
                   <td className="px-5 py-5 text-sm">
                     <button
                       onClick={() => {

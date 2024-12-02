@@ -35,6 +35,7 @@ const Auth: React.FC<Type> = ({ type }) => {
                   Discover opportunities and connect with professionals through
                   our platform where your career meets community.
                 </p>
+                
               </div>
             </div>
 

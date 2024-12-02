@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/form";
 
 import { ProfileApi } from "@/api/Profile.api";
+import { queryClient } from '@/main';
   
  interface ProfileEditFormProps {
     setModal: React.Dispatch<React.SetStateAction<boolean>>
@@ -43,11 +44,12 @@ function ProfileEditForm({ setModal }: ProfileEditFormProps) {
     try {
       const response = await ProfileApi.updateProfile(data, user.email, false);
       console.log(response);
+      queryClient.invalidateQueries({ queryKey: ['profile', user.email] });
       setModal(false)
-      // Handle success (e.g., show a success message)
+      
     } catch (error) {
       console.error("Error updating profile:", error);
-      // Handle error (e.g., show an error message)
+     
     }
   }
 

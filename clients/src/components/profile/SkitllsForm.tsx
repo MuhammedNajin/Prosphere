@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from '@/components/ui/input';
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
-import { popularSkills } from '../../data/popularSkill'
+import { popularSkills } from '../../constants/popularSkill';
 import {
   Form,
   FormControl,
@@ -17,6 +17,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useMutation } from 'react-query';
+import SuccessMessage from '../common/Message/SuccessMessage';
+import ErrorMessage from '../common/Message/ErrorMessage';
+import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/main';
 
 const skillSchema = z.object({
   skills: z.array(z.object({
@@ -25,18 +31,18 @@ const skillSchema = z.object({
   })).min(1, "At least one skill is required")
 });
 
-
-
 interface SkillFormProps {
-   skills?: string[]
+  skills?: string[];
+  onClose: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-function SkillForm({ skills }: SkillFormProps) {
+function SkillForm({ skills, onClose }: SkillFormProps) {
   const { user } = useSelector((state) => state.auth);
   const [inputSkill, setInputSkill] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionsRef = useRef(null);
+
 
   const form = useForm<z.infer<typeof skillSchema>>({
     resolver: zodResolver(skillSchema),
@@ -93,16 +99,31 @@ function SkillForm({ skills }: SkillFormProps) {
     }
   };
 
+ const { toast } = useToast()
+  const updateSkillsMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof skillSchema>) => {
+      const skills = { skills: data.skills }
+      return await ProfileApi.updateProfile({data: skills, email: user.email, array: true});
+    },
+    onSuccess: () => {
+      toast({
+        title: <SuccessMessage message='Skills updated successfully'/>,
+        
+      });
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      onClose(false)
+    },
+    onError: (error) => {
+      console.error('Error updating profile:', error);
+      toast({
+        title: <ErrorMessage message='Failed to update Skills. Please try again.' />
+        
+      });
+    },
+  });
+
   const onSubmit = async (data) => {
-    console.log(data);
-    try {
-      const response = await ProfileApi.updateProfile({ skills: data.skills }, user.email, true);
-      console.log(response);
-      // Handle success (e.g., show a success message)
-    } catch (error) {
-      console.error("Error updating skills:", error);
-      // Handle error (e.g., show an error message)
-    }
+    updateSkillsMutation.mutate(data)
   };
 
   return (
@@ -122,8 +143,16 @@ function SkillForm({ skills }: SkillFormProps) {
                     onFocus={() => setShowSuggestions(true)}
                     placeholder="Enter a skill"
                     className="flex-grow"
+                    disabled={updateSkillsMutation.isLoading}
                   />
-                  <Button className='bg-white text-orange-500 border border-orange-500 hover:bg-orange-500 hover:text-white' type="button" onClick={handleAddSkill}>Add Skill</Button>
+                  <Button 
+                    className='bg-white text-orange-500 border border-orange-500 hover:bg-orange-500 hover:text-white' 
+                    type="button" 
+                    onClick={handleAddSkill}
+                    disabled={updateSkillsMutation.isLoading}
+                  >
+                    Add Skill
+                  </Button>
                   {showSuggestions && suggestions.length > 0 && (
                     <div ref={suggestionsRef} className="absolute z-10 w-full bg-white border border-gray-300 mt-12 rounded-md shadow-lg">
                       {suggestions.map((skill, index) => (
@@ -147,6 +176,7 @@ function SkillForm({ skills }: SkillFormProps) {
                       value={field.proficiency}
                       onChange={(e) => form.setValue(`skills.${index}.proficiency`, e.target.value)}
                       className="ml-2 bg-transparent border-none text-sm"
+                      disabled={updateSkillsMutation.isLoading}
                     >
                       <option value="Beginner">Beginner</option>
                       <option value="Intermediate">Intermediate</option>
@@ -165,7 +195,13 @@ function SkillForm({ skills }: SkillFormProps) {
           )}
         />
         <div className='flex justify-end'>
-        <Button type="submit" className="mt-4">Save Skills</Button>
+          <Button 
+            type="submit" 
+            className="mt-4"
+              disabled={updateSkillsMutation.isLoading}
+          >
+            {updateSkillsMutation.isLoading ? 'Saving...' : 'Save Skills'}
+          </Button>
         </div>
       </form>
     </Form>

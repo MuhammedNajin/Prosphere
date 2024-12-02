@@ -6,7 +6,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
+} from "@/components/ui/popover-dialog";
 
 import { Input } from '@/components/ui/input'
 
@@ -23,8 +23,8 @@ import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import EnhancedCalendar from "./Calender";
 
-import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
@@ -33,22 +33,42 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from '@/hooks/use-toast';
+import { useMutation } from 'react-query';
+import { queryClient } from '@/main';
+import ErrorMessage from '../common/Message/ErrorMessage';
+import SuccessMessage from '../common/Message/SuccessMessage';
+import LoaderSubmitButton from '../common/spinner/LoaderSubmitButton';
+
 
 interface EducationForm {
-  education: Object
+  education?: {
+    school?: string;
+    degree?: string;
+    fieldOfStudy?: string;
+    startDate?: Date;
+    endDate?: Date;
+    currentlyStudying?: boolean;
+    grade?: string;
+  };
+  onClose: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-function EducationForm({ education }: EducationForm = { education:{
-  school:"",
-  degree: "",
-  fieldOfStudy: "",
-  startDate: undefined,
-  endDate: undefined,
-  currentlyStudying: false,
-  grade: "",
-} }) {
-    const { user } = useSelector((state) => state.auth);
-    const formSchema = z
+function EducationForm({
+  education = {
+    school: "",
+    degree: "",
+    fieldOfStudy: "",
+    startDate: undefined,
+    endDate: undefined,
+    currentlyStudying: false,
+    grade: "",
+  },
+  onClose
+}: EducationForm) {
+  const { user } = useSelector((state: any) => state.auth);
+
+  const formSchema = z
     .object({
       school: z.string().min(1, "School name is required"),
       degree: z.string().min(1, "Degree is required"),
@@ -71,42 +91,55 @@ function EducationForm({ education }: EducationForm = { education:{
         path: ["endDate"],
       }
     );
-        const {  
-          school,
-          degree,
-          fieldOfStudy,
-          startDate,
-          endDate,
-          grade
-        } = education;
-    const form = useForm({
-        resolver: zodResolver(formSchema),
-        defaultValues: {
-          school: school,
-          degree: degree,
-          fieldOfStudy: fieldOfStudy,
-          startDate: startDate,
-          endDate: endDate,
-          currentlyStudying: education.currentlyStudying,
-          grade: grade,
-        },
-      });
-    
-      async function onSubmit(data) {
-        console.log(data);
-        const payloadData = {
-            education: data
-        }
-        const response = await ProfileApi.updateProfile(payloadData, user.email, true);
-        console.log(response);
-      }
 
-      const currentlyStudying = form.watch("currentlyStudying");
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      school: education?.school || "",
+      degree: education?.degree || "",
+      fieldOfStudy: education?.fieldOfStudy || "",
+      startDate: education?.startDate || undefined,
+      endDate: education?.endDate || undefined,
+      currentlyStudying: education?.currentlyStudying || false,
+      grade: education?.grade || "",
+    },
+  });
+  
+  const { toast } = useToast()
+  const { mutate: updateEducation, isLoading } = useMutation({
+    mutationFn: async (data: any) => {
+      const payloadData = {
+        education: data,
+      };
+      return await ProfileApi.updateProfile({ data: payloadData, email: user.email, array:true});
+    },
+    onSuccess: () => {
+      toast({
+        title: <SuccessMessage className='' message='Education details updated successfully'/>,
+        
+      });
+      queryClient.invalidateQueries({ queryKey: ['profile', user.email] });
+       
+     onClose(false)
+    },
+    onError: (error) => {
+      toast({
+        title: <ErrorMessage message='Failed to update education details' />
+        
+      });
+      console.error("Error updating education:", error);
+    },
+  });
+
+  async function onSubmit(data: any) {
+    updateEducation(data);
+  }
+  const currentlyStudying = form.watch("currentlyStudying");
 
   return (
     <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="flex gap-x-6 ">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <div className="flex gap-x-6 ">
                 <FormField
                   control={form.control}
                   name="school"
@@ -199,14 +232,12 @@ function EducationForm({ education }: EducationForm = { education:{
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
+                          <EnhancedCalendar
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }
-                            initialFocus
                           />
                         </PopoverContent>
                       </Popover>
@@ -240,14 +271,12 @@ function EducationForm({ education }: EducationForm = { education:{
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
+                          <EnhancedCalendar
                             selected={field.value}
                             onSelect={field.onChange}
                             disabled={(date) =>
                               date > new Date() || date < new Date("1900-01-01")
                             }
-                            initialFocus
                           />
                         </PopoverContent>
                       </Popover>
@@ -278,13 +307,11 @@ function EducationForm({ education }: EducationForm = { education:{
                 )}
               />
               <div className="flex justify-end">
-                <Button className="" type="submit">
-                  Save Education
-                </Button>
+               <LoaderSubmitButton state={isLoading} >Save</LoaderSubmitButton>
               </div>
-            </form>
-          </Form>
-  )
+      </form>
+    </Form>
+  );
 }
 
-export default EducationForm
+export default EducationForm;

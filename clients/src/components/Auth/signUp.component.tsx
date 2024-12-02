@@ -2,7 +2,7 @@ import React from "react";
 import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin,} from "@react-oauth/google";
-import { googleAuth, googleAuthThunk } from "../../redux";
+import { googleAuth, googleAuthThunk } from "@/redux/reducers/authSlice";
 import { ApiService } from "../../api";
 
 interface SignUP {

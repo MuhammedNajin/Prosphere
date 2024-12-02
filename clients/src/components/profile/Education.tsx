@@ -1,5 +1,6 @@
 import React from 'react';
 import { PlusIcon, PencilIcon } from 'lucide-react';
+import { format } from 'date-fns';
 
 interface Education {
   id: number;
@@ -65,7 +66,7 @@ const EducationSection: React.FC<ExperiencesSectionProps> = ({setContent, setInd
                   <p className="text-gray-600">
                     {edu.degree}, {edu.fieldOfStudy}
                   </p>
-                  <p className="text-gray-500">{edu.startDate}</p>
+                  <p className="text-gray-500">{format(edu.startDate, "PPP")}</p>
                 </div>
                 <button
                  onClick={() => {

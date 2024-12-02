@@ -3,7 +3,6 @@ import { FaEdit, FaPhone } from "react-icons/fa";
 import About from "./About";
 import { ProfileApi } from "@/api/Profile.api";
 import { useSelector } from "react-redux";
-import { Button } from "@/components/ui/button";
 import {
   Popover,
   PopoverContent,
@@ -40,7 +39,7 @@ import EducationForm from "./EducationForm";
 import SkillForm from "./SkitllsForm";
 import AboutForm from "./AboutForm";
 import { CiCalculator1, CiLocationOn } from "react-icons/ci";
-import { ProfileImageForm } from "./ProfileImageForm";
+import  ProfileImageForm from "./ProfileImageForm";
 import ExperiencesSection from "./Experience";
 import SkillsSection from "./Skills";
 import EducationSection from "./Education";
@@ -49,6 +48,7 @@ import ContactInfoModalContent from "./ContactInfo";
 import { CoverImageModal } from "./CoverImageForm";
 import { useQuery } from "react-query";
 import { ModalContent } from "@/types/profile";
+import ProfileSkeleton from "../Skeleton/UserProfile.skeleton";
 
 const Profile: React.FC = () => {
   const [modal, setModal] = useState<boolean>(false);
@@ -56,20 +56,43 @@ const Profile: React.FC = () => {
   const [modalContent, setModalContent] = useState("");
   const [index, setIndex] = useState(-1);
   const { user } = useSelector((state) => state.auth);
-
-  const { data } = useQuery(
-    ["fetchProfile", user.email],
-    () => ProfileApi.getProfile(user.email),
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [coverImage, setCoverImage] = useState('');
+  const { data, isLoading } = useQuery(
+    ["profile"],
+    () => ProfileApi.getProfile(user._id),
     {}
   );
 
+  
   console.log("data", data);
+
   useEffect(() => {
-    console.log("uerdata", data);
-  }, []);
+      if(data && data.coverImageKey) {
+       ProfileApi.getUploadedFile(data.coverImageKey)
+       .then((url) => {
+        console.log("url", url)
+           setCoverImage(url)
+       })
+       
+      }
+
+      if(data && data.profileImageKey) {
+        ProfileApi.getUploadedFile(data.profileImageKey)
+       .then((url) => {
+        console.log("url", url)
+        setAvatarUrl(url);
+       })
+      }
+
+  }, [data]);
+
+  if(isLoading) {
+    return <ProfileSkeleton />
+  }
 
   return (
-    <main className="basis-full rounded">
+    <main className="basis-full rounded p-8">
       <Dialog open={showModal} onOpenChange={setShowModal}>
         <DialogContent className="max-w-xl shadow-none">
           <DialogHeader>
@@ -78,6 +101,7 @@ const Profile: React.FC = () => {
           {(modalContent === ModalContent.AddPosition ||
             modalContent === ModalContent.EditPosition) && (
             <PositionForm
+            onClose={setShowModal}
               position={
                 data && modalContent === ModalContent.EditPosition
                   ? data.experience[index]
@@ -94,6 +118,7 @@ const Profile: React.FC = () => {
                   ? data.education[index]
                   : null
               }
+              onClose={setShowModal}
             />
           )}
 
@@ -105,12 +130,14 @@ const Profile: React.FC = () => {
                   ? data.skills
                   : []
               }
+              onClose={setShowModal}
             />
           )}
 
           {(modalContent === ModalContent.AddAbout ||
             modalContent === ModalContent.EditAbout) && (
             <AboutForm
+            onClose={setShowModal}
               about={
                 data && modalContent === ModalContent.EditAbout
                   ? data.about
@@ -124,7 +151,7 @@ const Profile: React.FC = () => {
 
           {(modalContent === ModalContent.AddProfileImage ||
             modalContent === ModalContent.EditProfileImage) && (
-            <ProfileImageForm />
+            <ProfileImageForm avatarKey={data.profileImageKey} avatarUrl={avatarUrl} onClose={setShowModal} />
           )}
 
           {modalContent === ModalContent.EditProfile && (
@@ -135,7 +162,7 @@ const Profile: React.FC = () => {
             <ContactInfoModalContent />
           )}
 
-          {modalContent === ModalContent.EditCoverImage && <CoverImageModal />}
+          {modalContent === ModalContent.EditCoverImage && <CoverImageModal currentImageUrl={coverImage} onClose={setShowModal} coverKey={data.coverImageKey}/>}
         </DialogContent>
       </Dialog>
 
@@ -151,18 +178,18 @@ const Profile: React.FC = () => {
                 <div className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 flex items-center justify-center hover:bg-orange-200 hover:text-white">
                   {data && data.coverImageKey ? (
                     <button className="p-1 rounded-full hover:bg-gray-200 ">
-                      <Pencil className="w-4 h-4 text-white hover:text-white" />
+                      <Pencil className="w-4 h-4 text-orange-700 hover:text-white" />
                     </button>
                   ) : (
                     <button className="p-1 rounded-full">
-                      <Camera className="w-4 h-4 text-orange-600 hover:text-white" />
+                      <Camera className="w-4 h-4 text-orange-700 hover:text-white" />
                     </button>
                   )}
                 </div>
                 <img
                   src={
                     data && data.coverImageKey
-                      ? data.coverImageKey
+                      ? `${coverImage}`
                       : "/coverImage.png"
                   }
                   style={{ width: "100%", height: "100%" }}
@@ -173,9 +200,7 @@ const Profile: React.FC = () => {
                   {data && data.profileImageKey ? (
                     <img
                       onClick={(e) => setModal(!modal)}
-                      src={
-                        data && data.profileImageKey ? data.profileImageKey : ""
-                      }
+                      src={data && data.profileImageKey ? `${avatarUrl}`: ""}
                       className="rounded-full"
                       style={{ width: "100%", height: "100%" }}
                       alt=""
@@ -194,9 +219,6 @@ const Profile: React.FC = () => {
                     <h2 className="text-lg font-medium text-zinc-500">
                       {user.jobRole}
                     </h2>
-                    <h1 className="text-sm font-medium text-orange-300">
-                      10+ connections
-                    </h1>
                   </div>
                   <div className="flex flex-col mt-1 justify-start gap-y-1 text-zinc-400 tracking-wider">
                     <div className="flex gap-x-2 items-center">
@@ -224,19 +246,21 @@ const Profile: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex mt-3 gap-x-3">
-                    <button className="inline-flex gap-x-1 items-center text-base justify-center px-4 py-[4px] rounded-full bg-gradient-to-b from-orange-500 to-orange-600 text-white focus:ring-2 focus:ring-orange-400 hover:shadow-xl transition duration-200">
+                    {/* <button className="inline-flex gap-x-1 items-center text-base justify-center px-4 py-[4px] rounded-full bg-gradient-to-b from-orange-500 to-orange-600 text-white focus:ring-2 focus:ring-orange-400 hover:shadow-xl transition duration-200">
                       <Plus size={14} className="font-bold" />
                       Connect
-                    </button>
+                    </button> */}
 
                     <Popover>
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger>
                             <PopoverTrigger asChild>
-                              <button>
-                                <CircleEllipsis size={30} className="" />
-                              </button>
+                            <button className="inline-flex gap-x-1 items-center text-base justify-center px-4 py-[4px] rounded-full bg-gradient-to-b from-orange-500 to-orange-600 text-white focus:ring-2 focus:ring-orange-400 hover:shadow-xl transition duration-200">
+                            <CircleEllipsis size={20} className="" />
+                      More
+                    </button>
+                              
                               </PopoverTrigger>
                             </TooltipTrigger>
                             <TooltipContent className="border-1 bg-orange-600 text-white shadow-xl">

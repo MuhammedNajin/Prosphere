@@ -1,5 +1,5 @@
 import React from "react";
-import { adminLogoutThuck } from "../../../redux";
+import { adminLogoutThuck } from "@/redux/reducers/authSlice";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
@@ -11,13 +11,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const logoutHandler = () => {
-    dispatch(adminLogoutThuck())
-      .unwrap()
-      .then(() => {
-        navigate('/admin/login');
-      });
-  };
+ 
 
   return (
     <div className="bg-white p-4 shadow-md flex justify-between items-center">
@@ -39,7 +33,7 @@ const Topbar: React.FC<TopbarProps> = ({ onMenuClick }) => {
           <p>Admin123@gmail.com</p>
           <p className="text-gray-400">Admin</p>
         </div>
-        <button onClick={logoutHandler} className="bg-red-600 text-white px-4 py-2 rounded-md text-sm">Logout</button>
+      
       </div>
     </div>
   );
