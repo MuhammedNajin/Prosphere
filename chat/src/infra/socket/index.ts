@@ -49,6 +49,7 @@ export class SocketManager extends EventEmitter {
       this.handleMessageEvents(socket);
       this.handleDisconnection(socket);
       this.changeStatusTODeliver(socket);
+      this.handleReadMessage(socket)
     });
 
     this.io.engine.on('connection_error', (error: Error) => {
@@ -57,7 +58,13 @@ export class SocketManager extends EventEmitter {
     });
   }
 
-
+  private handleReadMessage(socket: Socket) {
+    socket.on("read_message", ({ conversationId, sender}: { conversationId: string, sender: string }) => {
+      console.log("read_message", conversationId, sender)
+       this.io.to(`${conversationId}${sender}`).emit("read_message", { conversationId, sender });
+       chatRepository.readMessage(conversationId, MESSAGE_STATUS.READ, sender)
+    }) 
+  } 
 
   private handleConnection(socket: Socket): void {
     console.log(`New client connected: ${socket.id}`);
@@ -76,15 +83,15 @@ export class SocketManager extends EventEmitter {
       this.leaveRoom(socket, roomId);
     });
 
-    socket.on("join_conversation", (conversationId) => {
-        console.log("join_conversation", conversationId);
-        socket.join(conversationId)
+    socket.on("join_conversation", (data: { conversationId: string, userId: string}) => {
+        console.log("join_conversation", data);
+        socket.join(`${data?.conversationId}${data?.userId}`)
     })
 
-    socket.on('leave_conversation', (conversationId) => {
-      console.log("leave_coversation", conversationId);
-       socket.leave(conversationId)
-    })
+    socket.on("leave_conversation", (data: { conversationId: string, userId: string}) => {
+        console.log("leave_conversation", data);
+        socket.join(`${data?.conversationId}${data?.userId}`)
+    });
   }
 
   private handleMessageEvents(socket: Socket): void {
@@ -150,7 +157,7 @@ export class SocketManager extends EventEmitter {
   private sendDirectMessage(socket: Socket, data: { receiver: string; content: any, time: string, conversation: string }): void {
     console.log(" re cived",   this.activeRooms.get(data.receiver), data.conversation);
     this.io.to(data.receiver).emit('direct_message', data);
-    this.io.to(data.conversation).emit("private_message", data);
+    this.io.to(`${data.conversation}${data.receiver}`).emit("private_message", data);
   }
 
   private handleClientDisconnection(socket: Socket): void {

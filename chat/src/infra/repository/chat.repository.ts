@@ -39,12 +39,101 @@ class ChatRepository implements IChatRepository {
     });
   }
 
-  async getConversation(id: string) {
-    return await Conversation.find({ participants: { $in: [id]}}).populate({
-      path: 'participants lastMessage',
-      match: { _id: { $ne: id } }
-    })
+  async getConversation(userId: string) {
+    try {
+      const conversations = await Conversation.aggregate([
+
+        {
+          $match: {
+            participants: new mongoose.Types.ObjectId(userId)
+          }
+        },
+        
+        {
+          $lookup: {
+            from: 'messages',
+            let: { conversationId: '$_id' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: { $eq: ['$conversation', '$$conversationId'] },
+                  deleted: false,
+                  sender: { $ne: new mongoose.Types.ObjectId(userId) },
+                  status: { $ne: 'read' },
+                  'readBy.user': { 
+                    $not: { $eq: new mongoose.Types.ObjectId(userId) }
+                  }
+                }
+              }
+            ],
+            as: 'unreadMessages'
+          }
+        },
+  
+        {
+          $lookup: {
+            from: 'messages',
+            localField: 'lastMessage',
+            foreignField: '_id',
+            as: 'lastMessageDetails'
+          }
+        },
+  
+        {
+          $lookup: {
+            from: 'users',
+            let: { participantIds: '$participants' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $in: ['$_id', '$$participantIds'] },
+                      { $ne: ['$_id', new mongoose.Types.ObjectId(userId)] }
+                    ]
+                  }
+                }
+              },
+              {
+                $project: {
+                  _id: 1,
+                  username: 1,
+                  avatar: 1,
+                }
+              }
+            ],
+            as: 'otherParticipants'
+          }
+        },
+
+        {
+          $project: {
+            id: "$_id",
+            _id: 0,
+            type: 1,
+            unreadCount: { $size: '$unreadMessages' },
+            lastMessage: { $arrayElemAt: ['$lastMessageDetails', 0] },
+            participants: '$otherParticipants',
+            createdAt: 1,
+            updatedAt: 1
+          }
+        },
+  
+        {
+          $sort: { 
+            'lastMessage.createdAt': -1, 
+            createdAt: -1 
+          }
+        }
+      ]);
+      console.log("conversation", conversations)
+      return conversations;
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      throw error;
+    }
   }
+
 
   async updateConversation(_id: string, mutation: object): Promise<void> {
      await Conversation.updateOne({_id}, {
@@ -59,6 +148,15 @@ class ChatRepository implements IChatRepository {
       { new: true }
     )
   }
+
+  async readMessage(conversationId: string, status: MessageDoc['status'], sender: string): Promise<void> {
+       await Message.updateMany({ conversation: conversationId, sender: { $ne: sender } }, {
+         $set: { status }
+      },
+    )
+  }
+
+
 }
 
 export default new ChatRepository();

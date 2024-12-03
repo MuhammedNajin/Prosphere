@@ -25,7 +25,6 @@ export interface ConversationModel extends Model<ConversationDoc> {
 
 // Conversation Schema
 const ConversationSchema = new mongoose.Schema<ConversationDoc, ConversationModel>({
-
   type: {
     type: String,
     enum: ['direct', 'group'],
@@ -63,14 +62,19 @@ const ConversationSchema = new mongoose.Schema<ConversationDoc, ConversationMode
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   }]
-
 }, {
   timestamps: true,
-  toJSON: { virtuals: true },
+  toJSON: {
+    transform: function(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      delete ret.__v;
+      return ret;
+    },
+    virtuals: true
+  },
   toObject: { virtuals: true }
 });
-
-
 
 ConversationSchema.statics.build = (attrs: ConversationAttrs) => {
   return new Conversation(attrs);
