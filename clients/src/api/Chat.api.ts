@@ -11,20 +11,20 @@ export class ChatApi {
 
   static getConversation = async (id: string) => {
     try {
-           const response = await this.axios.get(`/api/v1/chat/conversation/${id}`);
-      return response.data;
+      const response = await this.axios.get(`/api/v1/chat/conversation/${id}`);
+      return response?.data?.data;
     } catch (error) {
       throw error;
     }
   };
 
   static getChat = async (conversationId: string) => {
-     try {
-        const response = await this.axios.get(`/api/v1/chat/${conversationId}`);
-        return response?.data?.data;
-     } catch (error) {
-        console.log(error)
-        throw error;
-     }
-  }
+    try {
+      const response = await this.axios.get(`/api/v1/chat/${conversationId}`);
+      return response?.data?.data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
 }

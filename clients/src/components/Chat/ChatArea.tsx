@@ -30,7 +30,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
   const user = useGetUser();
 
   const [content, setContent] = useState<string>("");
-  const socket = useContext(SocketContext);
+  const { chatSocket } = useContext(SocketContext);
 
   const { data } = useQuery({
     queryKey: ["chat"],
@@ -46,44 +46,76 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
     });
   };
 
-  const chageStatusToDeliver = (id: string) => {
+  const chageMessageStatus = (id: string, status: string) => {
     queryClient.setQueryData<Message[]>(["chat"], (oldData) => {
       if(!oldData) return [];
       return oldData.map((msg) => {
          if(msg.id === id) {
-           msg.status = MESSAGE_STATUS.DELIVERED
+           msg.status = status
          }
          return msg;
       })
     })
   } 
 
+  const readMessage = () => {
+    queryClient.setQueryData<Message[]>(["chat"], (oldData) => {
+      if(!oldData) return [];
+      return oldData.map((msg) => {
+           msg.status = MESSAGE_STATUS.READ
+         return msg;
+      })
+    })
+  }
+
   useEffect(() => {
-    console.log("socket", socket);
+    console.log("chatSocket", chatSocket);
 
     // listen the message from server
 
-    socket?.on("private_message", (data) => {
+    chatSocket?.on("private_message", (data) => {
       console.log("private_message", data);
       addNewMessage(data);
+      handleReadMessage();
     });
-    
 
-    // it will update the status to delivered
-    socket?.on('deliver_message', (id: string) => {
-      console.log("message delivered", id)
-        chageStatusToDeliver(id)
+    
+    function handleReadMessage() {
+      chatSocket?.emit("read_message", {
+        conversationId: conversation.conversationId,
+        sender: conversation?.id
+      })
+    }
+    
+    handleReadMessage()
+
+    chatSocket?.on('deliver_message', (conversationId: string) => {
+      console.log("message delivered", conversationId)
+      chageMessageStatus(conversationId, MESSAGE_STATUS.DELIVERED)
     })
 
-    socket?.emit("join_conversation", conversation.conversationId);
+    chatSocket?.on("read_message", (conversationId: string) => {
+      console.log("read message client", conversationId)
+      readMessage();
+    })
 
-    // off the listener when unmonted other way's it will register two times in dev mode
+    chatSocket?.emit("join_conversation",{
+       conversationId:  conversation.conversationId,
+       userId: user._id
+    });
+   
+
     return () => {
-      socket?.off("direct_message");
-      socket?.off("private_message");
-      socket?.emit("leave_conversation", conversation.conversationId);
+
+      chatSocket?.off("direct_message");
+      chatSocket?.off("private_message");
+      chatSocket?.emit("leave_conversation",{
+        conversationId:  conversation.conversationId,
+        userId: user._id
+     });
+
     };
-  }, [socket?.connected]);
+  }, [chatSocket?.connected]);
 
   useEffect(() => {
     console.log("conversation", conversation);
@@ -91,6 +123,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
   }, [conversation, data]);
 
   async function handleSend() {
+    if(!content) return;
+
+
     setContent("");
    const id =  generateObjectId();
     const newMessage = {
@@ -118,7 +153,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
     };
    console.log("msg",  msg);
    
-    socket?.emit("direct_message", newMessage);
+    chatSocket?.emit("direct_message", newMessage);
 
     addNewMessage(newMessage);
     await ChatApi.sendMessage(msg);
@@ -210,7 +245,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
               value={content}
               onChange={(e) => {
                 console.log(e.target.value);
-
+                
                 setContent(e.target.value);
               }}
               type="text"

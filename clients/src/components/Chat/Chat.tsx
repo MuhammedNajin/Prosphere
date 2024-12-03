@@ -2,17 +2,65 @@ import React, { useContext, useEffect, useState } from "react";
 import ChatHeader from "./ChatHeader";
 import ChatArea from "./ChatArea";
 import { useLocation } from "react-router-dom";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { ChatApi } from "@/api/Chat.api";
 import { useGetUser } from "@/hooks/useGetUser";
 import { convertToIST } from "@/lib/utilities/ConverttoIst";
 import { SocketContext } from "@/context/socketContext";
+import { MESSAGE_STATUS } from "@/types/chat";
+
+interface conversation {
+  id: string;
+  type: "direct" | "group";
+  participants: string[];
+  lastMessage: Message;
+  admins: string[];
+  muted: Array<{
+    user: string;
+    mutedUntil: Date | null;
+  }>;
+  unreadCount: number;
+  pinnedBy: string[];
+}
+
+interface Message {
+  id: string;
+  conversation: string;
+  sender: string;
+  content: {
+    type: "text" | "image" | "file" | "audio";
+    text?: string;
+    fileUrl?: string;
+    fileName?: string;
+    fileSize?: number;
+    mimeType?: string;
+  };
+  status: MESSAGE_STATUS;
+  replyTo?: string;
+}
 
 const Chat: React.FC = () => {
   const { state } = useLocation();
-  const socket = useContext(SocketContext);
+  const { chatSocket } = useContext(SocketContext);
   const [selectedCoversation, setConversation] = useState(null);
   const user = useGetUser();
+
+  const client = useQueryClient();
+  const updateConversation = (msg: Message) => {
+    client.setQueryData<conversation[]>(["conversation"], (oldData) => {
+      console.log("old data", oldData);
+
+      if (!oldData) return [];
+
+      return oldData?.map((cov) => {
+        if (cov.id === msg.conversation) {
+          cov.lastMessage = msg;
+          cov.unreadCount += 1
+        }
+        return cov;
+      });
+    });
+  };
 
   useEffect(() => {
     if (state?.applicant) {
@@ -20,31 +68,30 @@ const Chat: React.FC = () => {
     }
   }, [state]);
 
-
   useEffect(() => {
-    if (!socket) return;
-    console.log("mounted ", selectedCoversation)
+    if (!chatSocket) return;
+    console.log("mounted ", selectedCoversation);
     const handleDirectMessage = (data) => {
-      console.log("sidebar socket message", data);
-      socket.emit("deliver_message", { 
-        messageId: data.id, 
-        receiver: data.sender 
+      console.log("sidebar chatSocket message", data);
+      if (data) {
+        updateConversation(data);
+      }
+      chatSocket.emit("deliver_message", {
+        messageId: data.id,
+        receiver: data.sender,
       });
     };
 
-    socket.on("direct_message", handleDirectMessage);
+    chatSocket.on("direct_message", handleDirectMessage);
 
     return () => {
-      console.log("clean up ", selectedCoversation)
-      socket.off("direct_message", handleDirectMessage);
+      console.log("clean up ", selectedCoversation);
+      chatSocket.off("direct_message", handleDirectMessage);
     };
-
-  }, [socket]);
-
-
+  }, [chatSocket]);
 
   const { data } = useQuery({
-    queryKey: ['conversation'],
+    queryKey: ["conversation"],
     queryFn: () => ChatApi.getConversation(user._id),
   });
 
@@ -67,15 +114,21 @@ const Chat: React.FC = () => {
         </div>
 
         <div className="overflow-y-auto">
-          {data?.data &&
-            data?.data?.map((conv) => (
+          {data &&
+            data?.map((conv: conversation) => (
               <div
                 onClick={() => {
+                  if(selectedCoversation?.id === conv.id) {
+                     return
+                  }
+
+                  
+
                   setConversation({
                     id: conv?.participants[0]?._id,
                     name: conv?.participants[0]?.username,
                     avatar: conv?.participants[0]?.avatar,
-                    conversationId: conv._id
+                    conversationId: conv.id,
                   });
                 }}
                 key={conv.id}
@@ -88,16 +141,55 @@ const Chat: React.FC = () => {
                 />
                 <div className="ml-3 flex-1">
                   <div className="flex justify-between items-center">
-                    <span className="font-semibold text-sm">
+                    <span className="font-semibold text-sm text-gray-600">
                       {conv?.participants[0]?.username}
                     </span>
                     <span className="text-xs text-gray-500">
                       {convertToIST(conv.updatedAt)}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-600 truncate">
-                    {conv?.lastMessage?.content?.text}
-                  </p>
+                  <div className="flex items-center justify-between w-full hover:bg-gray-50 transition-colors duration-200 rounded-lg">
+                    <div className="flex-grow mr-2 min-w-0">
+                      <p
+                        className={`
+                            text-sm 
+                            truncate 
+                            max-w-full 
+                            ${
+                              conv.lastMessage.status !== MESSAGE_STATUS.READ &&
+                              user._id !== conv.lastMessage.sender
+                                ? "font-semibold text-black"
+                                : "font-normal text-gray-600"
+                            }
+                          `}
+                      >
+                        {conv?.lastMessage?.content?.text || "No messages yet"}
+                      </p>
+                    </div>
+
+                    {conv.lastMessage.status !== MESSAGE_STATUS.READ &&
+                      user._id !== conv.lastMessage.sender && (
+                        <div
+                          className="
+                                flex 
+                                items-center 
+                                justify-center 
+                                bg-orange-600 
+                                text-white 
+                                rounded-full 
+                                min-w-[20px] 
+                                h-5
+                                px-1 
+                                text-[9px] 
+                                font-medium
+                                mr-2
+                              "
+                          aria-label="Unread messages count"
+                        >
+                          { conv.unreadCount }
+                        </div>
+                      )}
+                  </div>
                 </div>
               </div>
             ))}
