@@ -30,6 +30,7 @@ body {
 }
 
 
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -119,6 +120,42 @@ body {
   src: url('/fonts/clash-display-variable.woff2') format('woff2-variations');
   font-weight: 100 900;
   font-display: swap;
+}
+
+
+
+/* Add this to your global CSS or component CSS */
+.chat-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #e5e7eb;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+
+.chat-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #d1d5db;
+}
+
+/* For Firefox */
+.chat-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #e5e7eb transparent;
+}
+
+/* Optional: Make scrollbar visible only on hover */
+.chat-scrollbar::-webkit-scrollbar-thumb {
+  opacity: 0;
+}
+
+.chat-scrollbar:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
 }
 
 h1, h2, h3, h4 {
