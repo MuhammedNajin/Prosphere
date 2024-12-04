@@ -9,6 +9,7 @@ import CompanyProfilePage from "@/pages/company/CompanyProfilePage"
 import MyCompanyPage from "@/pages/company/MycompanyPage"
 import JobDescriptionPage from "@/pages/job/JobDescriptionPage"
 import JobListingPage from "@/pages/job/JobLintingPage"
+import PremiumPage from "@/pages/User/Premium"
 import ProfilePage from "@/pages/User/ProfilePage"
 
 
@@ -39,6 +40,11 @@ export const userRoute = {
                   element: <CompanyOverview />
                 }
               ]
+        },
+
+        {
+           path: "/premium",
+           element: <PremiumPage />
         },
         
         {
