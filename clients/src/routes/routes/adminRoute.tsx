@@ -3,6 +3,7 @@ import CompanyVerificationDetails from "@/components/Admin/Company/CompanyVerifi
 import CompanyVerificationRequest from "@/components/Admin/Company/CompanyVerificationRequest";
 import UserComponent from "@/components/Admin/User/User";
 import AdminLayout from "@/layout/AdminLayout";
+import PlanManagement from "@/components/Admin/Subscription/Subscription";
 
 export const adminRoute = {
     path: '/admin/',
@@ -21,6 +22,11 @@ export const adminRoute = {
        {
            path: "user",
            element: <AdminRouteWrapper> <UserComponent /> </AdminRouteWrapper>,
+       },
+
+       {
+           path: "subscription",
+           element: <PlanManagement />
        }
     ]
 }

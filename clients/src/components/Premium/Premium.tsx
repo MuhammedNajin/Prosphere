@@ -1,7 +1,11 @@
 // PricingPlans.tsx
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
-
+import { loadStripe } from '@stripe/stripe-js'
+import { useMutation } from 'react-query';
+import { PaymentApi } from '@/api/payment.api';
+import { AxiosError } from 'axios';
+import { useGetUser } from '@/hooks/useGetUser';
 interface Plan {
   name: string;
   color: 'blue' | 'green' | 'purple';
@@ -45,8 +49,8 @@ const plans: Plan[] = [
     name: 'Premium Plan',
     color: 'purple',
     price: {
-      monthly: 19.99,
-      yearly: 199.99
+      monthly: 199.99,
+      yearly: 1999.99
     },
     features: [
       'Unlimited job postings',
@@ -56,9 +60,12 @@ const plans: Plan[] = [
   }
 ];
 
+ const publishkey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+ const stripePromise = loadStripe(publishkey);
+
 const Premium: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
-
+  const user = useGetUser();
   const getColorClasses = (color: Plan['color']): string => {
     const colorMap = {
       blue: 'bg-blue-600',
@@ -68,9 +75,31 @@ const Premium: React.FC = () => {
     return colorMap[color];
   };
 
-  const handlePlanSelection = (planName: string) => {
-    console.log(`Selected plan: ${planName}`);
-    // Add your plan selection logic here
+  const paymentMutation = useMutation({
+    mutationFn: PaymentApi.create,
+    onSuccess: async (data) => {
+        console.log("payment created", data)
+        const { id } = data?.data;
+        const stripe = await stripePromise;
+        if(id && stripe) {
+          stripe.redirectToCheckout({ sessionId: id });
+        }
+
+    },
+    onError: (err: AxiosError) => {
+        console.log("error", err);
+    }
+  })
+
+  const handlePlanSelection = (plan: Plan) => {
+    console.log(`Selected plan: ${plan}`);
+
+    const data = {
+        name: plan.name,
+        id: user._id,
+        price: plan.price.monthly,
+    }
+    paymentMutation.mutate({ data })
   };
 
   return (
@@ -143,7 +172,7 @@ const Premium: React.FC = () => {
             </div>
 
             <button
-              onClick={() => handlePlanSelection(plan.name)}
+              onClick={() => handlePlanSelection(plan)}
               className={`
                 w-full rounded-lg py-3 px-4 text-center font-semibold
                 transition-colors duration-200

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 
 interface LoaderSubmitButtonProps {
    state: boolean
-   children: ReactNode
+   children?: ReactNode
 }
 
 const LoaderSubmitButton: React.FC<LoaderSubmitButtonProps> = ({
