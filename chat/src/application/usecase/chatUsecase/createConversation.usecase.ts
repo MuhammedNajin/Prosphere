@@ -8,7 +8,8 @@ export class CreateConversationUseCase implements ICreateConversationUseCase {
 
   public async execute(
     sender: string,
-    receiver: string
+    receiver: string,
+    conversationId: string
   ): Promise<ConversationProps> {
     try {
 
@@ -22,7 +23,8 @@ export class CreateConversationUseCase implements ICreateConversationUseCase {
 
       return await this.chatRepo.createNewConversation(
          sender,
-         receiver
+         receiver,
+         conversationId,
        );
 
     } catch (error) {

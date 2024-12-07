@@ -13,18 +13,23 @@ export class CreateMessageController {
     next: NextFunction
   ) => {
     try {
-      const { sender, receiver, content, id } = req.body;
+      const { sender, receiver, content, id, conversationId } = req.body;
       console.log("req.body", req.body);
       const conversation = await new CreateConversationUseCase(
         this.chatRepo
-      ).execute(sender, receiver);
+      ).execute(sender, receiver, conversationId);
+
+      // message entity props
       const props = {
         _id: id,
         sender,
         conversation: conversation._id,
         content,
       };
+
       const messageDTO = new Message(props).toDTO();
+
+      
       const message = await new CreateMessageUseCase(this.chatRepo).execute(
         messageDTO
       );

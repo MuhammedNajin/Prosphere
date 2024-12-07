@@ -26,13 +26,14 @@ class ChatRepository implements IChatRepository {
       $and: [
         { participants: sender },
         { participants: receiver },
-        { 'participants.2': { $exists: false } }  // Ensures exactly 2 participants
+        { 'participants.2': { $exists: false } } 
       ]
     });
   }
 
-  async createNewConversation(sender: string, receiver: string) {
+  async createNewConversation(sender: string, receiver: string, _id: string) {
     return await Conversation.create({
+      _id,
       participants: [sender, receiver],
       type: "direct",
       createdAt: new Date()
@@ -150,7 +151,7 @@ class ChatRepository implements IChatRepository {
   }
 
   async readMessage(conversationId: string, status: MessageDoc['status'], sender: string): Promise<void> {
-       await Message.updateMany({ conversation: conversationId, sender: { $ne: sender } }, {
+       await Message.updateMany({ conversation: conversationId, sender }, {
          $set: { status }
       },
     )
