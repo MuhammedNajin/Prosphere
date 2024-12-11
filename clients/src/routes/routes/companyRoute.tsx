@@ -22,6 +22,8 @@ import JobInspectPage from "@/pages/company/JobInspectPage"
 import ApplicationTable from "@/components/company/Jobs/ApplicationTable"
 import JobDescription from "@/components/job/JobDescription"
 import ChatPage from "@/pages/Chat/ChatPage"
+import PremiumPage from "@/pages/User/Premium"
+import { PaymentSuccessPage } from "@/pages/payment/Payment"
 
 export const companyRoute = [
     {
@@ -41,6 +43,16 @@ export const companyRoute = [
         {
           path: "message",
           element: <ChatPage />
+        },
+
+        {
+          path: "plan",
+          element: <PremiumPage />
+       },
+
+        {
+          path: "payment/success",
+          element: <PaymentSuccessPage />
         },
 
         {

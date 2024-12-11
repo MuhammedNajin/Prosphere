@@ -86,6 +86,16 @@ class CompanyApi {
    }
  }
 
+ static getJobStats = async (companyId: string, dateRange: { startDate: Date, endDate: Date }) => {
+  try {
+    const response = await this.axios.get(`/api/v1/job/company/stats?companyId=${companyId}&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}`)
+    return response.data?.data
+ } catch (error) {
+   console.log(error);
+   throw error;
+ }
+ }
+
 
 
 }

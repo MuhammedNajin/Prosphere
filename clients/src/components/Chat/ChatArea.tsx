@@ -5,6 +5,10 @@ import {
   Paperclip,
   Send,
   Smile,
+  ChevronDown,
+  Reply,
+  Trash,
+  Trash2,
 } from "lucide-react";
 import { TbCircleCheckFilled } from "react-icons/tb";
 import { useGetUser } from "@/hooks/useGetUser";
@@ -13,6 +17,13 @@ import { ChatApi } from "@/api/Chat.api";
 import { useQuery, useQueryClient } from "react-query";
 import { MESSAGE_STATUS } from "@/types/chat";
 import { generateObjectId } from "@/lib/utilities/generateDocumentId";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import TypingIndicator from "./TypingIndicator";
 
 interface ChatAreaProps {
   conversation?: unknown;
@@ -29,17 +40,20 @@ interface Message {
   conversation: string;
   sender: string;
   replyTo: string | null;
+  status?: string;
+  createdAt: string;
 }
 
 const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
   const user = useGetUser();
   const [content, setContent] = useState("");
   const { chatSocket } = useContext(SocketContext);
+  const queryClient = useQueryClient();
+
   const { data } = useQuery({
-    queryKey: ["chat"],
+    queryKey: ["chat", conversation],
     queryFn: () => ChatApi.getChat(conversation.conversationId),
   });
-  const queryClient = useQueryClient();
 
   const isToday = (date) => {
     const today = new Date();
@@ -129,19 +143,34 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
     }
   };
 
+  const handleMessageAction = {
+    reply: (msg: Message) => {
+      console.log('Reply to:', msg);
+      // Implement reply logic
+    },
+    delete: (msg: Message) => {
+      console.log('Delete message:', msg);
+      // Implement delete logic
+    },
+    deleteForEveryone: (msg: Message) => {
+      console.log('Delete for everyone:', msg);
+      // Implement delete for everyone logic
+    }
+  };
+
   const addNewMessage = (newMessage: Message) => {
-    queryClient.setQueryData<Message[]>(["chat"], (oldData) => {
+    queryClient.setQueryData<Message[]>(["chat", conversation], (oldData) => {
       if (!oldData) return [newMessage];
       return [...oldData, newMessage];
     });
   };
 
-  const chageMessageStatus = (id: string, status: string) => {
-    queryClient.setQueryData<Message[]>(["chat"], (oldData) => {
+  const changeMessageStatus = (id: string, status: string) => {
+    queryClient.setQueryData<Message[]>(["chat", conversation], (oldData) => {
       if (!oldData) return [];
       return oldData.map((msg) => {
-        if (msg.id === id) {
-          msg.status = status;
+        if (msg._id === id) {
+          return { ...msg, status };
         }
         return msg;
       });
@@ -149,26 +178,22 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
   };
 
   const readMessage = () => {
-    queryClient.setQueryData<Message[]>(["chat"], (oldData) => {
+    queryClient.setQueryData<Message[]>(["chat", conversation], (oldData) => {
       if (!oldData) return [];
-      return oldData.map((msg) => {
-        msg.status = MESSAGE_STATUS.READ;
-        return msg;
-      });
+      return oldData.map((msg) => ({ ...msg, status: MESSAGE_STATUS.READ }));
     });
   };
 
   useEffect(() => {
-    console.log("chatSocket", chatSocket);
+    if (!chatSocket?.connected) return;
 
-    chatSocket?.on("private_message", (data) => {
-      console.log("private_message", data);
+    chatSocket.on("private_message", (data) => {
       addNewMessage(data);
       handleReadMessage();
     });
 
     function handleReadMessage() {
-      chatSocket?.emit("read_message", {
+      chatSocket.emit("read_message", {
         conversationId: conversation.conversationId,
         sender: conversation?.id,
       });
@@ -176,27 +201,23 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
 
     handleReadMessage();
 
-    chatSocket?.on("deliver_message", (conversationId: string) => {
-      console.log("message delivered", conversationId);
-      chageMessageStatus(conversationId, MESSAGE_STATUS.DELIVERED);
+    chatSocket.on("deliver_message", (conversationId: string) => {
+      changeMessageStatus(conversationId, MESSAGE_STATUS.DELIVERED);
     });
 
-    chatSocket?.on("read_message", (conversationId: string) => {
-      console.log("read message client", conversationId);
+    chatSocket.on("read_message", (conversationId: string) => {
       readMessage();
     });
 
-    chatSocket?.emit("join_conversation", {
+    chatSocket.emit("join_conversation", {
       conversationId: conversation.conversationId,
-      userId: user._id,
     });
 
     return () => {
-      chatSocket?.off("direct_message");
-      chatSocket?.off("private_message");
-      chatSocket?.emit("leave_conversation", {
-        conversationId: conversation.conversationId,
-        userId: user._id,
+      chatSocket.off("direct_message");
+      chatSocket.off("private_message");
+      chatSocket.emit("leave_conversation", {
+        conversationId: conversation.conversationId
       });
     };
   }, [chatSocket?.connected]);
@@ -204,10 +225,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
   const handleSend = async () => {
     if (!content) return;
 
-    setContent("");
     const id = generateObjectId();
+    const newConv = conversation?.newConv ?? false;
     const newMessage = {
-      id,
+      _id: id,
       conversation: conversation.conversationId,
       sender: user._id,
       receiver: conversation?.id,
@@ -217,7 +238,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
       },
       status: MESSAGE_STATUS.SENT,
       createdAt: new Date().toISOString(),
-      replayTo: null,
+      replyTo: null,
+      newConv: newConv,
+      receiverDetails: newConv ? newConv : undefined,
     };
 
     chatSocket?.emit("direct_message", newMessage);
@@ -227,7 +250,86 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
       sender: user._id,
       receiver: conversation?.id,
       content: { type: "text", text: content },
+      conversationId: conversation.conversationId,
     });
+
+    setContent("");
+  };
+
+  const MessageComponent = ({ msg }: { msg: Message }) => {
+    const [showActions, setShowActions] = useState(false);
+    const isOwnMessage = msg?.sender === user?._id;
+
+    const messageStyles = isOwnMessage
+      ? "bg-orange-700 text-white before:border-l-orange-700 before:border-t-orange-700"
+      : "bg-white text-gray-600 before:border-r-white before:border-t-white";
+
+    const timeStyles = isOwnMessage ? "text-gray-200" : "text-gray-500";
+
+    return (
+      <div className={`flex items-start ${isOwnMessage ? 'justify-end' : ''} space-x-3`}>
+        <div className="flex gap-x-1 max-w-md items-end relative group">
+          <div
+            className={`flex gap-x-2 shadow rounded-md p-2 pb-1 relative
+              before:content-[''] before:absolute before:top-0 
+              before:w-0 before:h-0 before:border-[8px] 
+              before:border-solid before:border-b-transparent 
+              ${isOwnMessage 
+                ? 'before:right-[-8px] before:border-r-transparent' 
+                : 'before:left-[-8px] before:border-l-transparent'
+              }
+              ${messageStyles}`}
+            onMouseEnter={() => setShowActions(true)}
+            onMouseLeave={() => setShowActions(false)}
+          >
+            <div className="h-6">
+              <p className="text-sm self-start">{msg?.content?.text}</p>
+            </div>
+            
+            <div className="flex justify-end items-center mt-1 space-x-1 min-w-[65px]">
+              <span className={`text-[11px] self-end ${timeStyles}`}>
+                {new Date(msg?.createdAt).toLocaleTimeString("en-US", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            </div>
+
+            {showActions && (
+              <div className="absolute top-0 right-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-1 rounded-full hover:bg-black/10 transition-colors">
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem onClick={() => handleMessageAction.reply(msg)} className="gap-2">
+                      <Reply className="w-4 h-4" />
+                      <span>Reply</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleMessageAction.delete(msg)} className="gap-2 text-red-600">
+                      <Trash className="w-4 h-4" />
+                      <span>Delete</span>
+                    </DropdownMenuItem>
+                    {isOwnMessage && (
+                      <DropdownMenuItem 
+                        onClick={() => handleMessageAction.deleteForEveryone(msg)} 
+                        className="gap-2 text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span>Delete for everyone</span>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+          </div>
+          {isOwnMessage && getStatusIcon(msg?.status)}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -236,65 +338,13 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
         {data?.map((msg, index) => (
           <React.Fragment key={msg?._id}>
             {renderDateHeader(msg, data[index - 1])}
-            {msg?.sender !== user?._id ? (
-              // Received message
-              <div className="flex items-start space-x-3">
-                <div className="flex max-w-md relative">
-                  <div
-                    className="bg-white flex gap-x-2 text-gray-600 rounded-md p-2 pb-1 shadow relative 
-        before:content-[''] before:absolute before:top-0 before:left-[-8px] 
-        before:w-0 before:h-0 before:border-[8px] 
-        before:border-solid before:border-l-transparent 
-        before:border-b-transparent before:border-r-white 
-        before:border-t-white"
-                  >
-                    <div className="h-6">
-                      <p className="text-sm self-start">{msg?.content?.text}</p>
-                    </div>
-                    <div className="flex justify-end items-center mt-1 space-x-1">
-                      <span className="text-[11px] text-gray-500 self-end">
-                        {new Date(msg?.createdAt).toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              // Sent message
-              <div className="flex items-start justify-end space-x-3">
-                <div className="flex gap-x-1 max-w-md items-end relative">
-                  <div
-                    className="bg-orange-700 flex gap-x-2 text-white shadow rounded-md p-2 pb-1 relative
-                  before:content-[''] before:absolute before:top-0 before:right-[-8px] 
-                  before:w-0 before:h-0 before:border-[8px] 
-                  before:border-solid before:border-r-transparent 
-                  before:border-b-transparent before:border-l-orange-700 
-                  before:border-t-orange-700"
-                  >
-                    <div className="h-6">
-                      <p className="text-sm self-start">{msg?.content?.text}</p>
-                    </div>
-                    <div className="flex justify-end items-center mt-1 space-x-1 min-w-[65px]">
-                      <span className="text-[11px] text-gray-200 self-end">
-                        {new Date(msg?.createdAt).toLocaleTimeString("en-US", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                  {getStatusIcon(msg?.status)}
-                </div>
-              </div>
-            )}
+            <MessageComponent msg={msg} />
           </React.Fragment>
         ))}
+        <TypingIndicator />
       </div>
 
-      <div className="p-4 border-t border-gray-200 bg-white">
+      <div className="p-4 pb-0 border-t border-gray-200 bg-white">
         <div className="flex items-center space-x-2">
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <Paperclip className="w-5 h-5 text-gray-600" />
@@ -313,7 +363,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
           </div>
           <button
             onClick={handleSend}
-            className="p-3 inline-flex items-center justify-center bg-blue-600 hover:bg-blue-700 rounded-full"
+            className="p-3 inline-flex items-center justify-center bg-orange-600 hover:bg-orange-700 rounded-full"
           >
             <Send size={18} className="text-white" />
           </button>

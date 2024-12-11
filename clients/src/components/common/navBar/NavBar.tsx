@@ -1,22 +1,42 @@
-import React from "react";
-import { Search } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Dropdown from "./DropDown";
 import { useGetUser } from "@/hooks/useGetUser";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
+import { useContext, useEffect, useState } from "react";
+import { SocketContext } from "@/context/socketContext";
+import { NotificationAttrs } from "@/types/notification";
+import { cn } from "@/lib/utils";
+import { ToastAction } from "@/components/ui/toast";
 
 const Header = () => {
+  const [ count, setCount ] = useState(0)
   const user = useGetUser()
   const isLoggedIn = user ?? null
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const { notificationSocket } = useContext(SocketContext);
+
+  useEffect(() => {
+    notificationSocket?.on("notification:sent", (data: NotificationAttrs) => {
+        console.log("notification:sent", data)
+        setCount((prev) => prev + 1)
+        toast({
+          title: data.title,
+          description: data.message,
+          className: cn('top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4'),
+          action: <ToastAction onClick={() => console.log("clicked")} altText="Try again">See more...</ToastAction>
+        });
+    })
+  }, [notificationSocket?.connected]);
 
   return (
     <header className="flex overflow-hidden fixed w-full md:max-w-[80%] z-50 flex-wrap gap-4 justify-between items-center px-6 py-4 bg-white max-md:px-5 border-b shadow-sm border-solid">
-      {/* Logo */}
-      <div className="flex items-center gap-2">
-       
-      </div>
+ 
 
-      {/* Search Bar */}
       <div className="flex-1 max-w-xl px-4">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -28,10 +48,15 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Auth Buttons or User Dropdown */}
       <div className="flex items-center gap-4">
         {isLoggedIn ? (
-          <Dropdown />
+         <div className="flex gap-x-2 items-center">
+           <div className="relative" onClick={() => navigate('/notification')}>
+            <span className="absolute -top-2 -right-1 bg-orange-700 rounded-full px-1 text-white">{count}</span>
+           <Bell size={25} />
+           </div>
+           <Dropdown />
+         </div>
         ) : (
           <div className="flex gap-3">
             <Button

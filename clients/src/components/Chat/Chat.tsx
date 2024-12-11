@@ -1,26 +1,29 @@
 import React, { useContext, useEffect, useState } from "react";
 import ChatHeader from "./ChatHeader";
 import ChatArea from "./ChatArea";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { ChatApi } from "@/api/Chat.api";
 import { useGetUser } from "@/hooks/useGetUser";
 import { convertToIST } from "@/lib/utilities/ConverttoIst";
 import { SocketContext } from "@/context/socketContext";
 import { MESSAGE_STATUS } from "@/types/chat";
+import { generateObjectId } from "@/lib/utilities/generateDocumentId";
+import { Backpack, ChevronLeft } from "lucide-react";
+import { Button } from "../ui/button";
 
 interface conversation {
   id: string;
   type: "direct" | "group";
   participants: string[];
-  lastMessage: Message;
-  admins: string[];
-  muted: Array<{
+  lastMessage?: Message;
+  admins?: string[];
+  muted?: Array<{
     user: string;
     mutedUntil: Date | null;
   }>;
-  unreadCount: number;
-  pinnedBy: string[];
+  unreadCount?: number;
+  pinnedBy?: string[];
 }
 
 interface Message {
@@ -55,40 +58,12 @@ const Chat: React.FC = () => {
       return oldData?.map((cov) => {
         if (cov.id === msg.conversation) {
           cov.lastMessage = msg;
-          cov.unreadCount += 1
+          cov.unreadCount += 1;
         }
         return cov;
       });
     });
   };
-
-  useEffect(() => {
-    if (state?.applicant) {
-      console.log("Applicant state:", state.applicant);
-    }
-  }, [state]);
-
-  useEffect(() => {
-    if (!chatSocket) return;
-    console.log("mounted ", selectedCoversation);
-    const handleDirectMessage = (data) => {
-      console.log("sidebar chatSocket message", data);
-      if (data) {
-        updateConversation(data);
-      }
-      chatSocket.emit("deliver_message", {
-        messageId: data.id,
-        receiver: data.sender,
-      });
-    };
-
-    chatSocket.on("direct_message", handleDirectMessage);
-
-    return () => {
-      console.log("clean up ", selectedCoversation);
-      chatSocket.off("direct_message", handleDirectMessage);
-    };
-  }, [chatSocket]);
 
   const { data } = useQuery({
     queryKey: ["conversation"],
@@ -100,10 +75,89 @@ const Chat: React.FC = () => {
     console.log("data", data);
   }, [data]);
 
+  const addNewConversation = (newConv) => {
+    client.setQueryData<conversation[]>(["conversation"], (oldData) => {
+      if (!oldData) return [newConv];
+
+      return [...oldData, newConv];
+    });
+  };
+  useEffect(() => {
+    const applicant = state?.applicant;
+    if (applicant && data) {
+      console.log("Applicant state:", applicant);
+
+      const exist = data?.find(
+        (conv: conversation) => conv.participants[0]?._id === applicant?._id
+      );
+      console.log("exist", exist);
+
+      if (!exist) {
+        const newConversation: conversation = {
+          type: "direct",
+          id: generateObjectId(),
+          participants: [applicant],
+          unreadCount: 0,
+          updatedAt: new Date().toISOString(),
+        };
+
+        addNewConversation(newConversation);
+
+        setConversation({
+          id: newConversation?.participants[0]?._id,
+          name: newConversation?.participants[0]?.username,
+          avatar: newConversation?.participants[0]?.avatar,
+          conversationId: newConversation?.id,
+          newConv: true,
+        });
+      }
+    }
+  }, [state, data]);
+
+  useEffect(() => {
+    if (!chatSocket) return;
+    console.log("mounted ", selectedCoversation);
+    const handleDirectMessage = (msg) => {
+      console.log("sidebar chatSocket message", msg);
+      if (msg) {
+        updateConversation(msg);
+      }
+
+      if (msg?.newConv) {
+        const { id, content, sender, conversation, status, replyTo } = msg;
+        addNewConversation({
+          type: "direct",
+          id: msg?.conversation,
+          participants: [msg?.receiverDetails],
+          lastMessage: { id, content, sender, conversation, status, replyTo },
+          unreadCount: 0,
+        });
+      }
+
+      chatSocket.emit("deliver_message", {
+        messageId: msg.id,
+        receiver: msg.sender,
+      });
+    };
+
+    chatSocket.on("direct_message", handleDirectMessage);
+
+    return () => {
+      console.log("clean up ", selectedCoversation);
+      chatSocket.off("direct_message", handleDirectMessage);
+    };
+  }, [chatSocket]);
+
   return (
-    <div className="flex h-[85vh] bg-gray-100">
+    <div className="flex h-[95vh] bg-gray-100">
       <div className="w-80 bg-white border-r border-gray-200">
         <div className="p-4">
+          <div className="flex py-2 pb-3 justify-between font-semibold">
+            <h1 className="text-lg">Chats</h1>
+            
+            <Link to="/"
+            className="inline-flex justify-between border p-1 text-sm rounded-lg hower:bg-gray-300 hover:shadow" > <ChevronLeft size={20} /> Back</Link>
+          </div>
           <div className="relative">
             <input
               type="text"
@@ -118,11 +172,9 @@ const Chat: React.FC = () => {
             data?.map((conv: conversation) => (
               <div
                 onClick={() => {
-                  if(selectedCoversation?.id === conv.id) {
-                     return
+                  if (selectedCoversation?.id === conv.id) {
+                    return;
                   }
-
-                  
 
                   setConversation({
                     id: conv?.participants[0]?._id,
@@ -156,19 +208,20 @@ const Chat: React.FC = () => {
                             truncate 
                             max-w-full 
                             ${
-                              conv.lastMessage.status !== MESSAGE_STATUS.READ &&
-                              user._id !== conv.lastMessage.sender
+                              conv.lastMessage?.status !==
+                                MESSAGE_STATUS.READ &&
+                              user._id !== conv.lastMessage?.sender
                                 ? "font-semibold text-black"
                                 : "font-normal text-gray-600"
                             }
                           `}
                       >
-                        {conv?.lastMessage?.content?.text || "No messages yet"}
+                        {conv?.lastMessage?.content?.text}
                       </p>
                     </div>
 
-                    {conv.lastMessage.status !== MESSAGE_STATUS.READ &&
-                      user._id !== conv.lastMessage.sender && (
+                    {conv?.lastMessage?.status !== MESSAGE_STATUS.READ &&
+                      user._id !== conv?.lastMessage?.sender && (
                         <div
                           className="
                                 flex 
@@ -186,7 +239,7 @@ const Chat: React.FC = () => {
                               "
                           aria-label="Unread messages count"
                         >
-                          { conv.unreadCount }
+                          {conv?.unreadCount}
                         </div>
                       )}
                   </div>

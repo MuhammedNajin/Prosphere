@@ -39,14 +39,15 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       });
 
       // Initialize notification socket
-      notificationSocketInstance = io('http://localhost:6002', {
+      notificationSocketInstance = io('http://localhost:4000', {
         transports: ["websocket", "polling"],
         reconnectionAttempts: 5,
-        path: '/socket.io/notification'
+    
       });
 
       notificationSocketInstance.on('connect', () => {
         console.log('Connected to Notification Socket.IO server', user);
+        notificationSocketInstance?.emit('subscribe', user?._id);
         setNotificationSocket(notificationSocketInstance); 
       });
 

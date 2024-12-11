@@ -19,7 +19,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -38,15 +37,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Textarea } from "@/components/ui/textarea";
 import { CiCircleCheck } from "react-icons/ci";
-import { useMutation } from "react-query";
+import { useMutation, useQuery } from "react-query";
 import { PaymentApi } from "@/api/payment.api";
 import LoaderSubmitButton from "@/components/common/spinner/LoaderSubmitButton";
 import { AxiosError } from "axios";
+import { useToast } from "@/hooks/use-toast";
+import SuccessMessage from "@/components/common/Message/SuccessMessage";
+import ErrorMessage from "@/components/common/Message/ErrorMessage";
+import { AdminApi } from "@/api";
 
 enum PlanType {
   BASIC = "basic",
   Premium = "Premium",
- 
 }
 
 const planSchema = z.object({
@@ -107,28 +109,28 @@ const initialPlans = [
     },
   },
 ];
-
-
 interface PlanData {
-    featuresLimit: {
-        jobPostLimit: number;
-        videoCallLimit: number;
-        resumeAccess: number;
-    };
-    name: string;
-    price: number;
-    type: PlanType;
-    durationInDays: number;
-    jobPostLimit?: number;
-    videoCallLimit?: number;
-    resumeAccess?: number;
-    features: string[];
+  featuresLimit: {
+    jobPostLimit: number;
+    videoCallLimit: number;
+    resumeAccess: number;
+  };
+  name: string;
+  price: number;
+  type: PlanType;
+  durationInDays: number;
+  jobPostLimit?: number;
+  videoCallLimit?: number;
+  resumeAccess?: number;
+  features: string[];
 }
 
 export const PlanManagement: React.FC = () => {
   const [plans, setPlans] = useState(initialPlans);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [feature, setFeatures] = useState('')
+  const [feature, setFeatures] = useState("");
+  const { toast } = useToast();
+  
   const form = useForm<z.infer<typeof planSchema>>({
     resolver: zodResolver(planSchema),
     defaultValues: {
@@ -139,22 +141,35 @@ export const PlanManagement: React.FC = () => {
       jobPostLimit: 0,
       videoCallLimit: 0,
       resumeAccess: 0,
-      features: []
+      features: [],
     },
   });
 
   const planMutation = useMutation({
     mutationFn: PaymentApi.createPlan,
     onSuccess: (data) => {
-          console.log("plan created", data)
+      console.log("plan created", data);
+      setIsDialogOpen(false);
+      form.reset();
+      toast({
+       children: <SuccessMessage message="Plan has been created successfully.." />
+      })
     },
     onError: (err: AxiosError) => {
-        console.log("err", err)
-    }
+      console.log("err", err);
+      toast({
+        children: <ErrorMessage message="Something went wrong, please try again..." />
+       })
+    },
+  });
+
+  const { data } = useQuery({
+     queryKey: ["plans"],
+     queryFn: () => AdminApi.getSubscriptionPlans()
   })
 
   const onSubmit = (values: z.infer<typeof planSchema>) => {
-    console.log("values", values)
+    console.log("values", values);
     const newPlan: PlanData = {
       ...values,
       featuresLimit: {
@@ -165,12 +180,10 @@ export const PlanManagement: React.FC = () => {
     };
 
     delete newPlan.jobPostLimit;
-    delete newPlan.videoCallLimit
-    delete newPlan.resumeAccess
+    delete newPlan.videoCallLimit;
+    delete newPlan.resumeAccess;
 
-    planMutation.mutate({ newPlan })
-   
-    // form.reset();
+    planMutation.mutate({ newPlan });
   };
 
   return (
@@ -188,7 +201,10 @@ export const PlanManagement: React.FC = () => {
             <DialogTitle>Create New Plan</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 overflow-y-auto max-h-[80vh] scrollbar-hide p-2">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 overflow-y-auto max-h-[80vh] scrollbar-hide p-2"
+            >
               <div className="flex space-x-4">
                 <FormField
                   control={form.control}
@@ -219,7 +235,7 @@ export const PlanManagement: React.FC = () => {
                             <SelectValue placeholder="Select plan type" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent  className="">
+                        <SelectContent className="">
                           {Object.values(PlanType).map((type) => (
                             <SelectItem key={type} value={type}>
                               {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -273,59 +289,59 @@ export const PlanManagement: React.FC = () => {
               </div>
 
               <div className="flex space-x-4">
-              <FormField
-                control={form.control}
-                name="jobPostLimit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Job Post Limit</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Number of job posts"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="jobPostLimit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Job Post Limit</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Number of job posts"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="videoCallLimit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Featured Jobs</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Number of featured jobs"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="videoCallLimit"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Featured Jobs</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Number of featured jobs"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="resumeAccess"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Resume Access</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        placeholder="Number of resume accesses"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="resumeAccess"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Resume Access</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="Number of resume accesses"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <FormField
@@ -337,7 +353,6 @@ export const PlanManagement: React.FC = () => {
                       <FormLabel className="font-medium text-md">
                         Features
                       </FormLabel>
-                
                     </div>
                     <FormControl className="w-full">
                       <div className="space-y-4">
@@ -351,10 +366,12 @@ export const PlanManagement: React.FC = () => {
                           <Button
                             type="button"
                             onClick={() => {
-                                form.setValue('features', [...field.value, feature])
-                              setFeatures('')
-                            } 
-                            }
+                              form.setValue("features", [
+                                ...field.value,
+                                feature,
+                              ]);
+                              setFeatures("");
+                            }}
                             className="w-full self-end sm:w-auto px-4 py-2 bg-orange-700 text-white hover:bg-orange-800 transition-colors"
                           >
                             Add
@@ -381,7 +398,9 @@ export const PlanManagement: React.FC = () => {
                 )}
               />
 
-             <LoaderSubmitButton state={planMutation.isLoading} >Save</LoaderSubmitButton>
+              <LoaderSubmitButton state={planMutation.isLoading}>
+                Save
+              </LoaderSubmitButton>
             </form>
           </Form>
         </DialogContent>
@@ -397,29 +416,21 @@ export const PlanManagement: React.FC = () => {
             <TableHead>Price</TableHead>
             <TableHead>Duration</TableHead>
             <TableHead>Job Posts</TableHead>
-            <TableHead>Featured Jobs</TableHead>
             <TableHead>Resume Access</TableHead>
-            <TableHead>Email Support</TableHead>
-            <TableHead>Phone Support</TableHead>
-            <TableHead>Priority Listing</TableHead>
+            <TableHead>Vedio call limit</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {plans.map((plan) => (
+          { data && data?.map((plan) => (
             <TableRow key={plan.id}>
               <TableCell>{plan.id}</TableCell>
               <TableCell>{plan.name}</TableCell>
               <TableCell>{plan.type}</TableCell>
-              <TableCell>${plan.price.toFixed(2)}</TableCell>
+              <TableCell>₹{plan.price}</TableCell>
               <TableCell>{plan.durationInDays} days</TableCell>
-              <TableCell>{plan.features.jobPostLimit}</TableCell>
-              <TableCell>{plan.features.featuredJobs}</TableCell>
-              <TableCell>{plan.features.resumeAccess}</TableCell>
-              <TableCell>{plan.features.emailSupport ? "Yes" : "No"}</TableCell>
-              <TableCell>{plan.features.phoneSupport ? "Yes" : "No"}</TableCell>
-              <TableCell>
-                {plan.features.priorityListing ? "Yes" : "No"}
-              </TableCell>
+              <TableCell>{plan.featuresLimit.jobPostLimit} times</TableCell>
+              <TableCell>{plan.featuresLimit.resumeAccess} times</TableCell>
+              <TableCell>{plan.featuresLimit.videoCallLimit} times</TableCell>         
             </TableRow>
           ))}
         </TableBody>

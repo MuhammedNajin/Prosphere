@@ -22,12 +22,6 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation }) => {
           </div>
           <div className="flex items-center space-x-4">
             <button className="p-2 hover:bg-gray-100 rounded-full">
-              <MessageCircle className="w-5 h-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full">
-              <Star className="w-5 h-5 text-gray-600" />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full">
               <MoreVertical className="w-5 h-5 text-gray-600" />
             </button>
           </div>

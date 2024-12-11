@@ -6,7 +6,7 @@ import { authRoute } from './routes/authRoute';
 import { TestRoute } from './routes/test'
 
 const routes = createBrowserRouter([
-    userRoute,
+    ...userRoute,
     adminRoute,
     authRoute,
     ...companyRoute,

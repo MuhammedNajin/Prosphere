@@ -123,6 +123,15 @@ class AdminApi {
         }
     }
 
+    static getSubscriptionPlans = async () => {
+        try {
+            const response = await this.axios.get('/api/v1/payment/plans');
+            return response.data?.data;
+        } catch (error) {
+            throw error;
+        }
+    }
+
   
     
 }

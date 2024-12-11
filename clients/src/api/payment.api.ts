@@ -14,4 +14,13 @@ export class PaymentApi {
      return await this.axios.post("/api/v1/payment/plans", newPlan);
   }
 
+
+  static getPlan = async () => {
+     console.log("from create plan api", );
+     const response = await this.axios.get("/api/v1/payment/plans");
+     return response.data?.data;
+  }
+
+
+
 }

@@ -105,6 +105,8 @@ body {
 
 
 
+
+
 @layer base {
   * {
     @apply border-border;
@@ -121,6 +123,33 @@ body {
   font-weight: 100 900;
   font-display: swap;
 }
+
+
+.typing-dot {
+  height: 5px;
+  width: 5px;
+  border-radius: 100%;
+  margin-left: 4px;
+  display: inline-block;
+  background-color: #5C5E69;
+  animation: 1.2s typing-dot ease-in-out infinite;
+ }
+ .typing-dot:nth-of-type(2) {
+  animation-delay: 0.15s;
+ }
+ .typing-dot:nth-of-type(3) {
+  animation-delay: 0.25s;
+ }
+ @keyframes typing-dot {
+  15% {
+    transform: translateY(-35%);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(0%);
+    opacity: 1;
+  }
+ }
 
 
 

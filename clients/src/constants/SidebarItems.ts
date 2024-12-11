@@ -14,6 +14,7 @@ export function CompanySideBarItems(): SideBarItems[] {
    return [
         { icon: 'Home', label: 'Dashboard', path: `/company/${id}` },
         { icon: 'MessageCircle', label: 'Messages', path: '/company/message' },
+        { icon: 'Award', label: 'Subscription', path: '/company/plan' },
         { icon: 'Building2', label: 'Company Profile', path: `/company/profile/${id}/home` },
         { icon: 'Users', label: 'All Applications', path: `/company/application/${id}`},
         { icon: 'FileText', label: 'Job Listing', path: `/company/jobs/${id}` },
@@ -28,7 +29,6 @@ export  function UserSideBarItems(): SideBarItems[] {
         { icon: 'Home', label: 'Dashboard', path: '/'},
         { icon: 'MessageCircle', label: 'Messages', path: '/chat' },
         { icon: 'Briefcase', label: 'Jobs', path: '/jobs' },
-        { icon: 'Award', label: 'Get Premium', path: '#' },
         { icon: 'Users', label: 'My Application', path: '/myapplication'},
         { icon: 'Building', label: 'My companies', path: '/mycompany' },
     ]

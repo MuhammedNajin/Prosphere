@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Check } from 'lucide-react';
 import { loadStripe } from '@stripe/stripe-js'
-import { useMutation } from 'react-query';
+import { useMutation, useQuery } from 'react-query';
 import { PaymentApi } from '@/api/payment.api';
 import { AxiosError } from 'axios';
 import { useGetUser } from '@/hooks/useGetUser';
@@ -66,6 +66,11 @@ const plans: Plan[] = [
 const Premium: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const user = useGetUser();
+
+  const { data } = useQuery({
+    queryKey: ["premium"],
+    queryFn: () => PaymentApi.getPlan()
+  })
   const getColorClasses = (color: Plan['color']): string => {
     const colorMap = {
       blue: 'bg-blue-600',
@@ -97,7 +102,9 @@ const Premium: React.FC = () => {
     const data = {
         name: plan.name,
         id: user._id,
-        price: plan.price.monthly,
+        companyId: '67334008ddc1bd8e5253ae1e',
+        price: plan.price,
+        planId: plan.id
     }
     paymentMutation.mutate({ data })
   };
@@ -118,8 +125,7 @@ const Premium: React.FC = () => {
         </p>
       </div>
 
-      {/* Billing Toggle */}
-      <div className="flex justify-end mb-8">
+      {/* <div className="flex justify-end mb-8">
         <div className="inline-flex rounded-lg border border-gray-200 p-1">
           {(['monthly', 'yearly'] as const).map((cycle) => (
             <button
@@ -137,10 +143,10 @@ const Premium: React.FC = () => {
             </button>
           ))}
         </div>
-      </div>
+      </div> */}
 
       <div className="grid md:grid-cols-3 gap-8">
-        {plans.map((plan) => (
+        { data && data.map((plan) => (
           <div 
             key={plan.name}
             className="rounded-2xl bg-white p-8 shadow-lg border border-gray-100 transition-transform duration-200 hover:scale-105"
@@ -148,14 +154,15 @@ const Premium: React.FC = () => {
           
             <div className="mb-6 flex items-center">
               <div 
-                className={`h-3 w-3 rounded-full mr-2 ${getColorClasses(plan.color)}`}
+                className={`h-3 w-3 rounded-full mr-2 bg-orange-700`}
               />
               <h2 className="text-xl font-semibold">{plan.name}</h2>
             </div>
        
             <div className="mb-6">
               <span className="text-4xl font-bold">
-                ${billingCycle === 'monthly' ? plan.price.monthly : plan.price.yearly}
+                {/* ${billingCycle === 'monthly' ? plan.price.monthly : plan.price.yearly} */}
+                ₹{plan.price}
               </span>
               <span className="text-gray-500">/{billingCycle}</span>
             </div>
