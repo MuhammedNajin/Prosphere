@@ -1,20 +1,20 @@
 import { PlanEntity } from "@/domain/entities/plan.entity";
 import { IPlanRepository } from "@/domain/IRespository/IPlan.repository";
 import { IPlan } from "@/shared/types/plan.interface";
-import { ICreatePlanCase } from "@application/interface/I";
-import Stripe from "stripe";
+import { IEditPlanCase } from "../interface/IEditPlan.usecase";
 
 
-export class CreateSubscriptionUseCase implements ICreatePlanCase {
+export class EditPlanUseCase implements IEditPlanCase {
   constructor(private paymentRepo: IPlanRepository) {}
 
   public async execute(
-     planData: IPlan
-  ): Promise<void> {
+    id: number,
+     planData: object
+  ): Promise<IPlan | null> {
 
     try {
-       const planDTO = new PlanEntity(planData);
-      return await this.paymentRepo.createPlan(planDTO)
+       
+       return await this.paymentRepo.editPlan(id, planData)
 
     } catch (error) {
         

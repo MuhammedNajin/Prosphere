@@ -1,5 +1,6 @@
+import { IPlan } from "@/shared/types/plan.interface";
 
 
 export interface ICreatePlanCase {
-    execute(PlanDTO): Promise<void>
+    execute(PlanDTO: IPlan): Promise<void>
 }
