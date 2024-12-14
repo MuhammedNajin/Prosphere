@@ -17,7 +17,7 @@ export class CreatePaymentController {
     next: NextFunction
   ) => {
     try {
-      const { name, price, id } = req.body;
+      const { name, price, id, planId, companyId } = req.body;
       console.log(req.body)
     const customer = await this.stripe.customers.create({
         name,
@@ -36,7 +36,7 @@ export class CreatePaymentController {
                 product_data: {
                     name: name,
                 },
-                unit_amount: Math.round(price * 100)
+                unit_amount: Math.round(parseInt(price) * 100)
             },
             quantity: 1
         }
@@ -47,13 +47,15 @@ export class CreatePaymentController {
     const session = await this.stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'payment',
-        success_url: `${baseUrl}/payment-success`,
+        success_url: `${baseUrl}/company/payment/success`,
         cancel_url: `${baseUrl}/premium`,
         client_reference_id: id,
         line_items,
         customer: customer.id,
         metadata: {
-            id
+            id,
+            planId,
+            companyId,
         }
     })
 
