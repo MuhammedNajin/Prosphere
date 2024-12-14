@@ -1,7 +1,10 @@
-
-export enum PlanType {
-    BASIC = 'basic',
-    PREMIUM = 'premium'
+import { PlanType } from "./enums";
+import { ISubscription } from "./subscription.interface";
+export interface IPlanFeaturesLimit {
+  jobPostLimit: number;
+  resumeAccess: number;
+  videoCallLimit: number;
+  candidateNotes: boolean;
 }
 
 export interface IPlan {
@@ -10,17 +13,7 @@ export interface IPlan {
   price: number;
   type: PlanType;
   durationInDays: number;
-  jobPostLimit: number;
+  featuresLimit: IPlanFeaturesLimit;
   features: string[];
+  isActive: boolean;
 }
-
-
-export class PlanFeaturesLimit {
-    JobPostLimit: number;
-    resumeAccess: number;
-    videoCallLimit: number;
-  
-    constructor(props: PlanFeaturesLimit) {
-      Object.assign(this, props);
-    }
-  }

@@ -20,6 +20,12 @@ class UserRepository implements IUserRepository {
          const user = this.repository.create(userDTO);
          return await this.repository.save(user);
     }
+
+    async find(userId: string) {
+       return await this.repository.findOne({
+          where: { userId }
+       })
+    }
 }
 
 

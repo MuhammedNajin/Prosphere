@@ -6,6 +6,10 @@ import cors from 'cors'
 import AppRouter from '@/presentation/router';
 import { connectDB } from '@infrastructure/database/sql/connection'
 import planRepository from '../repository/plan.repository';
+import paymentRepository from '../repository/payment.repository';
+import subscriptionRepository from '../repository/subscription.repository';
+import companyRepository from '../repository/company.repository';
+import logger from '@presentation/middlewate/loggerMiddleware';
 dotenv.config();
 
 class Server {
@@ -47,7 +51,7 @@ class Server {
 
   private configureMiddleware(): void {
    
-    this.app.use(express.json());
+
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use((req, res, next) => {
        console.log("request", req.url, req.method);
@@ -66,8 +70,10 @@ class Server {
       });
     });
 
-    const router = new AppRouter(planRepository).router
-  
+    const router = new AppRouter(subscriptionRepository, planRepository, paymentRepository, companyRepository).router;
+
+
+    // this.app.use(logger);
     this.app.use('/api/v1', router);
   }
 
@@ -80,8 +86,6 @@ class Server {
         resolve();
       });
     });
-
-  
 
     process.exit(0);
   }

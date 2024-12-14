@@ -1,8 +1,15 @@
-
-
+import { ICompany } from "./company.interface";
 export interface IUser {
-    username: string;
-    phone: string;
+    id: number;
+    userId: string;
     email: string;
-    jobRole: string
+    username: string;
+    companies: ICompany[];
+    createdAt: Date;
+    updatedAt: Date;
+}
+export interface ICreateUserDto {
+    userId: string;
+    email: string;
+    username: string;
 }

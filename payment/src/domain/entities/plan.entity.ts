@@ -1,4 +1,5 @@
-import { PlanFeaturesLimit, PlanType } from "@/shared/types/plan.interface";
+import { PlanType } from "@/shared/types/enums";
+import { IPlanFeaturesLimit } from "@/shared/types/plan.interface";
 
 
 export class PlanEntity {
@@ -7,8 +8,7 @@ export class PlanEntity {
     readonly price: number;
     readonly type: PlanType;
     readonly durationInDays: number;
-    readonly jobPostLimit: number;
-    readonly featuresLimit: PlanFeaturesLimit;
+    readonly featuresLimit: IPlanFeaturesLimit;
     readonly features: string[];
   
     constructor(props: Omit<PlanEntity, 'id'>) {

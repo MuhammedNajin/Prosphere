@@ -1,4 +1,7 @@
+import { Subscription } from "@/infrastructure/database/sql/entities/subscription.entity";
+import { PaymentStatus } from "@/shared/types/enums";
+import { ISubscription } from "@/shared/types/subscription.interface";
 
 export interface IPaymentRepository {
-    create(payment): Promise<void>
+    create(subscription: Subscription, status: PaymentStatus): Promise<void>
 } 

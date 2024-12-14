@@ -1,23 +1,29 @@
 import { KafkaClient } from '@muhammednajinnprosphere/common';
-import { UserCreatedConsumer } from '@infrastructure/messageBroker/consumer/userCreated.consumer';
+import { UserCreatedConsumer } from '@/infrastructure/messageBroker/kafka/consumer/userCreated.consumer';
+import { CompanyCreatedConsumer } from './consumer/companyCreated.consumer';
 
 class MessageBroker {
   private kafka: KafkaClient;
 
   constructor() {
     this.kafka = new KafkaClient();
+ 
   }
 
   async connect() {
    
     await this.kafka.connect('payment-service', ['localhost:29092'], 'payment-service-group');
+
     console.log("connected to kafka");
     
     this.setupConsumers();
   }
 
-  private setupConsumers() {
-    new UserCreatedConsumer(this.kafka.consumer).listen();
+  private async setupConsumers() {
+    const userCreateConsumer = await this.kafka.getCosumer('payment-user-created-group')
+    const companyCreateConsumer = await this.kafka.getCosumer('payment-company-created-group')
+    new UserCreatedConsumer(userCreateConsumer!).listen();
+    new CompanyCreatedConsumer(companyCreateConsumer!).listen();
   }
 
   getKafkaClient() {

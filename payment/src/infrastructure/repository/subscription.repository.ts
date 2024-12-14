@@ -4,6 +4,7 @@ import { AppDataSource } from "../database/sql/connection";
 import { IPlan } from "@/shared/types/plan.interface";
 import { ISubscriptionRepository } from "@/domain/IRespository/ISubscription.repository";
 import { Subscription } from "../database/sql/entities/subscription.entity";
+import { ISubscription } from "@/shared/types/subscription.interface";
 
 
 class SubscriptionRepository implements ISubscriptionRepository {
@@ -17,9 +18,13 @@ class SubscriptionRepository implements ISubscriptionRepository {
          
     }
 
-    async create(subscription) {
-         const plan = this.repository.create(subscription);
-         return await this.repository.save(plan);
+    async create(subscription:  Omit<ISubscription, "createdAt" | "updatedAt" | "status">): Promise<Subscription> {
+        try {
+          const plan = this.repository.create(subscription);
+          return await this.repository.save(plan);
+        } catch (error) {
+          throw error;
+        }
     }
 }
 
