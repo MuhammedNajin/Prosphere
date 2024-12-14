@@ -1,65 +1,92 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 import { Plan } from './plan.entity';
-import { User } from './user.entity';
-import { Payment } from './payment.entity';
+import { Company } from './company.entitiy';
+import { PlanType, SubscriptionStatus } from '@/shared/types/enums';
 
-export enum SubscriptionStatus {
-  ACTIVE = 'active',
-  EXPIRED = 'expired',
-  CANCELLED = 'cancelled'
+interface PlanSnapshot {
+  name: string;
+  type: PlanType;
+  price: number;
+  featuresLimit: {
+    jobPostLimit: number;
+    resumeAccess: number;
+    videoCallLimit: number;
+    candidateNotes: boolean;
+  };
+  features: string[];
 }
 
 @Entity('subscriptions')
 export class Subscription {
-
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => User, user => user.subscriptions)
-  user: User;
 
-  @Column('varchar')
-  userId: string;
+  @Column('simple-json')
+  planSnapshot: PlanSnapshot;
 
-  @ManyToOne(() => Plan, plan => plan.subscriptions)
-  plan: Plan;
 
-  @Column('int')
-  planId: number;
+  @ManyToOne(() => Company, (company) => company.id)
+  company: Company;
 
-  @Column('date')
+
+  @Column('timestamp')
   startDate: Date;
 
-  @Column('date')
+  @Column('timestamp')
   endDate: Date;
+
 
   @Column({
     type: 'enum',
     enum: SubscriptionStatus,
-    default: SubscriptionStatus.ACTIVE
+    default: SubscriptionStatus.ACTIVE,
   })
   status: SubscriptionStatus;
 
-  @Column({ 
-    type: 'int',
-    default: 0 
-  })
-  jobPostsUsed: number;
+ 
+  @Column('simple-json')
+  usageStats: {
+    jobPostsUsed: number;
+    resumeDownloads: number;
+    videoCallsUsed: number;
+    featuredJobsUsed: number;
+    lastResetDate: Date;
+  };
 
-  @Column({ 
-    type: 'int',
-    default: 0 
-  })
-  resumeAccess: number;
+  
+  @Column('decimal', { precision: 10, scale: 2 })
+  amountPaid: number;
 
-
-  @Column({ 
-    type: 'int',
-    default: 0 
-  })
-  vedioCallUsed: number;
+  @Column('boolean', { default: false })
+  autoRenew: boolean;
 
 
-  @OneToMany(() => Payment, payment => payment.subscription)
-  payments: Payment[];
+  @Column('boolean', { default: false })
+  isTrial: boolean;
+
+  @Column('timestamp', { nullable: true })
+  trialEndsAt: Date;
+
+  
+  @Column('timestamp', { nullable: true })
+  cancelledAt: Date;
+
+  @Column('varchar', { nullable: true })
+  cancellationReason: string;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+
+  isActive(): boolean {
+    return (
+      this.status === SubscriptionStatus.ACTIVE &&
+      new Date() <= this.endDate &&
+      (!this.isTrial || new Date() <= this.trialEndsAt)
+    );
+  }
+
 }

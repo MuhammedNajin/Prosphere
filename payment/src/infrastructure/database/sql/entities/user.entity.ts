@@ -1,48 +1,29 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Subscription } from './subscription.entity';
-import { Payment } from './payment.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Company } from './company.entitiy';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column({
-    type: 'varchar'
+    type: 'varchar',
+    unique: true
   })
   userId: string
 
-  @Column({ 
-    type: 'varchar', 
-    length: 50, 
-    unique: true 
-  })
+  @Column('varchar', { unique: true })
+  email: string;
+  
+  @Column('varchar')
   username: string;
 
-  @Column({ 
-    type: 'varchar', 
-    length: 100, 
-    unique: true 
-  })
-  email: string;
+  @OneToMany(() => Company, (company) => company.companyId)
+  companies: Company[];
 
-  @Column({ 
-    type: 'varchar', 
-    length: 20, 
-    nullable: true 
-  })
-  phone: string;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @Column({ 
-    type: 'varchar', 
-    length: 100, 
-    nullable: true 
-  })
-  jobRole: string;
-
-  @OneToMany(() => Subscription, subscription => subscription.user)
-  subscriptions: Subscription[];
-
-  @OneToMany(() => Payment, payment => payment.user)
-  payments: Payment[];
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

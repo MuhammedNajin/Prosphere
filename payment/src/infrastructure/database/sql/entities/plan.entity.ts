@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { Subscription } from './subscription.entity';
-import { PlanType } from '@/shared/types/plan.interface';
+import { PlanType } from '@/shared/types/enums';
 
 @Entity('plans')
 export class Plan {
@@ -23,19 +23,17 @@ export class Plan {
   @Column('int')
   durationInDays: number;
 
-  @Column('int', { default: 0 })
-  jobPostLimit: number;
-
   @Column('simple-json')
   featuresLimit: {
-    JobPostLimit: number;
+    jobPostLimit: number;
     resumeAccess: number;
-    videoCallLimit: number; 
+    videoCallLimit: number;
+    candidateNotes: boolean;
   };
 
   @Column('varchar', { array: true })
-  features: string[]
+  features: string[];
 
-  @OneToMany(() => Subscription, (subscription) => subscription.plan)
-  subscriptions: Subscription[];
+  @Column('boolean', { default: true })
+  isActive: boolean;
 }

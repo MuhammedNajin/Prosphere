@@ -4,6 +4,7 @@ import { Subscription } from './entities/subscription.entity';
 import { Plan } from './entities/plan.entity';
 import { User } from './entities/user.entity';
 import 'dotenv/config';
+import { Company } from './entities/company.entitiy';
 
 const AppDataSource = new DataSource({
     type: 'postgres',
@@ -13,7 +14,7 @@ const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD as string,
     database: process.env.DB_NAME as string,
     logging: true,
-    entities: [Payment, Subscription, Plan, User],
+    entities: [Payment, Subscription, Plan, User, Company],
     synchronize: process.env.NODE_ENV !== "production",
 })
 
