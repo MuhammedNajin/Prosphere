@@ -47,7 +47,7 @@ export const PlanManagement: React.FC = () => {
             <TableHead>Price</TableHead>
             <TableHead>Duration</TableHead>
             <TableHead>Job Posts</TableHead>
-            <TableHead>Resume Access</TableHead>
+            <TableHead>Message Limit</TableHead>
             <TableHead>Vedio call limit</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
@@ -62,7 +62,7 @@ export const PlanManagement: React.FC = () => {
                 <TableCell>₹{plan.price}</TableCell>
                 <TableCell>{plan.durationInDays} days</TableCell>
                 <TableCell>{plan.featuresLimit.jobPostLimit} times</TableCell>
-                <TableCell>{plan.featuresLimit.resumeAccess} times</TableCell>
+                <TableCell>{plan.featuresLimit.messageLimit} times</TableCell>
                 <TableCell>{plan.featuresLimit.videoCallLimit} times</TableCell>
                 <TableCell><TableActionsPopover  onEdit={handleEdit} plan={plan}/></TableCell>
               </TableRow>

@@ -55,11 +55,11 @@ const planSchema = z.object({
   videoCallLimit: z.coerce
     .number()
     .int()
-    .min(0, { message: "Featured jobs must be non-negative" }),
-  resumeAccess: z.coerce
+    .min(0, { message: "Video call limit must be non-negative" }),
+  messageLimit: z.coerce
     .number()
     .int()
-    .min(0, { message: "Resume access must be non-negative" }),
+    .min(0, { message: "Message limit must be non-negative" }),
   features: z.array(z.string()),
 });
 
@@ -69,7 +69,7 @@ interface SubscriptionFormProps {
   initialData?: PlanData & {
     jobPostLimit?: number;
     videoCallLimit?: number;
-    resumeAccess?: number;
+    messageLimit?: number;
   };
 }
 
@@ -90,7 +90,7 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         durationInDays: 30,
         jobPostLimit: 0,
         videoCallLimit: 0,
-        resumeAccess: 0,
+        messageLimit: 0,
         features: [],
       },
     });
@@ -104,7 +104,7 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
           durationInDays: initialData.durationInDays || 30,
           jobPostLimit: initialData.featuresLimit?.jobPostLimit || 0,
           videoCallLimit: initialData.featuresLimit?.videoCallLimit || 0,
-          resumeAccess: initialData.featuresLimit?.resumeAccess || 0,
+          messageLimit: initialData.featuresLimit?.messageLimit || 0,
           features: initialData.features || [],
         });
       }
@@ -119,7 +119,6 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
       if (values.durationInDays !== initial.durationInDays) 
         changes.durationInDays = values.durationInDays;
   
-  
       const featuresLimit: Partial<typeof initial.featuresLimit> = {};
       let hasFeatureLimitChanges = false;
   
@@ -131,8 +130,8 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         featuresLimit.videoCallLimit = values.videoCallLimit;
         hasFeatureLimitChanges = true;
       }
-      if (values.resumeAccess !== initial.featuresLimit?.resumeAccess) {
-        featuresLimit.resumeAccess = values.resumeAccess;
+      if (values.messageLimit !== initial.featuresLimit?.messageLimit) {
+        featuresLimit.messageLimit = values.messageLimit;
         hasFeatureLimitChanges = true;
       }
   
@@ -140,7 +139,6 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         changes.featuresLimit = featuresLimit;
       }
   
-    
       if (JSON.stringify(values.features) !== JSON.stringify(initial.features)) {
         changes.features = values.features;
       }
@@ -150,7 +148,6 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
   
     const onSubmit = (values: z.infer<typeof planSchema>) => {
       if (initialData) {
-
         const changedData = getChangedFields(values, initialData);
         
         if (Object.keys(changedData).length > 0) {
@@ -162,19 +159,18 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
           });
         }
       } else {
-   
         const newPlan: PlanData = {
           ...values,
           featuresLimit: {
             jobPostLimit: values.jobPostLimit,
             videoCallLimit: values.videoCallLimit,
-            resumeAccess: values.resumeAccess,
+            messageLimit: values.messageLimit,
           },
         };
   
         delete newPlan.jobPostLimit;
         delete newPlan.videoCallLimit;
-        delete newPlan.resumeAccess;
+        delete newPlan.messageLimit;
   
         planMutation.mutate(() => PaymentApi.createPlan(newPlan));
       }
@@ -195,7 +191,6 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
             />
           ),
         });
-       
       },
       onError: (err: AxiosError) => {
         console.log("err", err);
@@ -205,7 +200,7 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
         }
         toast({
           className: "bg-red-400",
-          title: <ErrorMessage message={message} /> ,
+          title: <ErrorMessage message={message} />,
         });
       },
     });
@@ -337,11 +332,11 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
                 name="videoCallLimit"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>Featured Jobs</FormLabel>
+                    <FormLabel>Video Call Limit</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="Number of featured jobs"
+                        placeholder="Number of video calls"
                         {...field}
                       />
                     </FormControl>
@@ -352,14 +347,14 @@ const SubscriptionForm: React.FC<SubscriptionFormProps> = ({
 
               <FormField
                 control={form.control}
-                name="resumeAccess"
+                name="messageLimit"
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>Resume Access</FormLabel>
+                    <FormLabel>Message Limit</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="Number of resume accesses"
+                        placeholder="Number of messages"
                         {...field}
                       />
                     </FormControl>
