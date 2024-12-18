@@ -3,7 +3,7 @@ import { createCustomLogger, customTimestampFormat } from "@muhammednajinnprosph
 import winston from "winston";
 import path from "node:path";
 
-const customLogger = createCustomLogger("api-gateway", __dirname);
+export const customLogger = createCustomLogger("api-gateway", __dirname);
 
 const logFormat = `
 {
