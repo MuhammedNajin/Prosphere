@@ -17,7 +17,7 @@ class PlanRepository implements IPlanRepository {
          
     }
 
-    async createPlan(planDTO: IPlan): Promise<IPlan> {
+    async createPlan(planDTO: IPlan): Promise<Plan> {
        try {
 
          const exist = await this.repository.findOne({

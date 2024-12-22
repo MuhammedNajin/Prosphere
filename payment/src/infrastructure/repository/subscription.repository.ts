@@ -1,17 +1,19 @@
 import { Repository } from "typeorm";
-import { Plan } from "../database/sql/entities/plan.entity";
 import { AppDataSource } from "../database/sql/connection";
-import { IPlan } from "@/shared/types/plan.interface";
 import { ISubscriptionRepository } from "@/domain/IRespository/ISubscription.repository";
 import { Subscription } from "../database/sql/entities/subscription.entity";
 import { ISubscription } from "@/shared/types/subscription.interface";
+import { Company } from "../database/sql/entities/company.entitiy";
+import { UsageMetrics } from "@/shared/types/enums";
+import { ICompany } from "@/shared/types/company.interface";
 
 
 class SubscriptionRepository implements ISubscriptionRepository {
     private repository: Repository<Subscription>
-
+    private companyRepository: Repository<Company>
     constructor() {
          this.repository = AppDataSource.getRepository(Subscription)
+         this.companyRepository = AppDataSource.getRepository(Company)
     }
 
     private handleDBError() {
@@ -25,6 +27,56 @@ class SubscriptionRepository implements ISubscriptionRepository {
         } catch (error) {
           throw error;
         }
+    }
+
+    async getbyCompanyId(companyId: string): Promise<ISubscription | null | ICompany> {
+      try {
+
+        const company = await this.companyRepository.findOne({
+           where: { companyId }
+        });
+
+        if(!company) {
+          return null;
+        }
+
+        const subscription = await this.repository.findOne({
+           where: { id: company.id }
+        })
+
+        return { subscription: subscription, company: company }
+
+      } catch (error) {
+        console.log(error)
+        throw error
+      }
+    }
+
+
+    async updateFeaturesLimit(id: string, usage_stats: UsageMetrics) {
+       try {
+         const subscription = await this.repository.findOne({
+             where: {
+               id: parseInt(id),
+             }
+          })
+
+          console.log("subscription", subscription, usage_stats);
+
+          if(!subscription) {
+             return null;
+          }
+
+          if(subscription?.usageStats[usage_stats]) {
+            subscription.usageStats[usage_stats]++
+          }
+         
+         await this.repository.save(subscription);
+
+       } catch (error) {
+          console.log(error);
+          throw error;
+       }
     }
 }
 
