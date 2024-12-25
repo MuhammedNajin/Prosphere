@@ -77,6 +77,12 @@ const JobDescription: React.FC = () => {
     }
   }, [state])
 
+  useEffect(() => {
+    if(!isCompany) {
+      JobApi.jobSeen(id as string);
+    }
+  },[])
+
   const { data, isLoading } = useQuery({
     queryKey: ["job-description"],
     queryFn: () => JobApi.getJobDetails(id as string),

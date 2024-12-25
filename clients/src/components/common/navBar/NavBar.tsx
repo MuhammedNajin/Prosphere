@@ -27,7 +27,7 @@ const Header = () => {
         toast({
           title: data.title,
           description: data.message,
-          className: cn('top-0 right-0 flex fixed md:max-w-[420px] md:top-4 md:right-4'),
+          className: cn('top-0 right-0 flex fixed md:max-w-2xl md:top-4 md:right-4'),
           action: <ToastAction onClick={() => console.log("clicked")} altText="Try again">See more...</ToastAction>
         });
     })
@@ -52,7 +52,11 @@ const Header = () => {
         {isLoggedIn ? (
          <div className="flex gap-x-2 items-center">
            <div className="relative" onClick={() => navigate('/notification')}>
-            <span className="absolute -top-2 -right-1 bg-orange-700 rounded-full px-1 text-white">{count}</span>
+          {
+             count > 0 && (
+              <span className="absolute -top-2 -right-1 bg-orange-700 rounded-full px-1 text-white">{count}</span>
+             )
+          }
            <Bell size={25} />
            </div>
            <Dropdown />

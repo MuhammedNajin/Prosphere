@@ -1,15 +1,45 @@
+import { endOfYear, startOfYear } from 'date-fns';
 import React, { useState } from 'react';
 
-const YearPicker = () => {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+interface YearPickerProps {
+  onYearChange: React.Dispatch<React.SetStateAction<{ startDate: Date, endDate: Date }>>;
+}
+
+const YearPicker: React.FC<YearPickerProps> = ({ onYearChange }) => {
   const [isOpen, setIsOpen] = useState(false);
-
-  // Generate array of years (current year ± 50 years)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  
+  // Generate array of years (current year ± 10 years)
   const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 101 }, (_, i) => currentYear - 50 + i);
+  const years = Array.from({ length: 21 }, (_, i) => {
+    const year = currentYear - 10 + i;
+    return {
+      label: year.toString(),
+      date: new Date(year, 0, 1)
+    };
+  });
 
-  const handleYearSelect = (year) => {
+  const handleYearSelect = (date: Date) => {
+    const year = date.getFullYear();
     setSelectedYear(year);
+    
+    // Create start and end dates for the selected year
+    const startDate = startOfYear(date);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = endOfYear(date);
+    endDate.setHours(23, 59, 59, 999);
+
+    onYearChange({
+      startDate,
+      endDate
+    });
+
+    console.log('Year Range:', {
+      startDate: startDate.toString(),
+      endDate: endDate.toString()
+    });
+    
     setIsOpen(false);
   };
 
@@ -34,11 +64,11 @@ const YearPicker = () => {
           <div className="absolute z-10 w-full mt-1 max-h-60 overflow-y-auto bg-white border rounded-md shadow-lg">
             {years.map((year) => (
               <button
-                key={year}
-                onClick={() => handleYearSelect(year)}
+                key={year.label}
+                onClick={() => handleYearSelect(year.date)}
                 className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
               >
-                {year}
+                {year.label}
               </button>
             ))}
           </div>
@@ -46,8 +76,11 @@ const YearPicker = () => {
       </div>
 
       {selectedYear && (
-        <div className="mt-1 text-sm">
-          Selected: {selectedYear}
+        <div className="mt-4 text-sm">
+          <div>Selected: {selectedYear}</div>
+          <div className="mt-2 text-gray-600">
+            Range: {startOfYear(new Date(selectedYear, 0, 1)).toLocaleDateString()} - {endOfYear(new Date(selectedYear, 0, 1)).toLocaleDateString()}
+          </div>
         </div>
       )}
     </div>

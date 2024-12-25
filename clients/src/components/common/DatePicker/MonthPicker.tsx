@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
+import { format, startOfMonth, endOfMonth } from 'date-fns'
 import 'react-datepicker/dist/react-datepicker.css';
 
-const MonthYearPicker = () => {
+
+interface MonthYearPickerProps {
+   onMonthChange: React.Dispatch<React.SetStateAction<{ startDate: Date, endDate: Date }>>
+}
+
+const MonthYearPicker: React.FC<MonthYearPickerProps> = ({ onMonthChange }) => {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const handleChange = (date) => {
     setSelectedDate(date);
-    console.log(new Date(date).getDate())
+    console.log("month picker", new Date(date).toISOString(), startOfMonth(date), endOfMonth(date))
+    console.log(new Date(new Date(date).toISOString()));
+    onMonthChange({ 
+      startDate: startOfMonth(date),
+      endDate: endOfMonth(date)
+     });
   };
 
   return (

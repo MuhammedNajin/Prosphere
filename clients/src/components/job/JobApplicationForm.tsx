@@ -21,7 +21,7 @@ import { ApplicationApi } from "@/api/application.api";
 import ResumeFile from "./ResumeFile";
 import { useProfile } from "@/hooks/useResume";
 import { useDispatch } from "react-redux";
-import { setUser } from "@/redux/reducers/authSlice";
+import { setResume } from "@/redux/reducers/authSlice";
 import { useMutation } from "react-query";
 import LoaderSubmitButton from "../common/spinner/LoaderSubmitButton";
 import { useToast } from "@/hooks/use-toast";
@@ -130,7 +130,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
       if (filename) {
         const resumeKey = `${user._id}${filename[0].name}`;
         form.setValue("resume", resumeKey);
-        dispatch(setUser(resumeKey));
+        dispatch(setResume(resumeKey));
         queryClient.invalidateQueries({ queryKey: ['isApplied'] });
         toast({
           title: (

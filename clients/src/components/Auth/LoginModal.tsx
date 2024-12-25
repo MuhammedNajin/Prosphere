@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { ApiService } from "../../api";
 import { Toaster, toast } from "react-hot-toast";
 import * as z from "zod";
-import { setUser, signInThunk } from "@/redux/reducers/authSlice";
+import { setResume, signInThunk } from "@/redux/reducers/authSlice";
 
 interface Modal {
   closeModal: () => void;

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   CircleCheckIcon,
   CircleDashed,
@@ -15,7 +15,12 @@ import { useGetUser } from "@/hooks/useGetUser";
 import { SocketContext } from "@/context/socketContext";
 import { ChatApi } from "@/api/Chat.api";
 import { useQuery, useQueryClient } from "react-query";
-import { MESSAGE_STATUS } from "@/types/chat";
+import {
+  ChatRole,
+  Conversation,
+  MESSAGE_STATUS,
+  selectedConversation,
+} from "@/types/chat";
 import { generateObjectId } from "@/lib/utilities/generateDocumentId";
 import {
   DropdownMenu,
@@ -24,9 +29,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import TypingIndicator from "./TypingIndicator";
+import { useSelectedCompany } from "@/hooks/useSelectedCompany";
 
-interface ChatAreaProps {
-  conversation?: unknown;
+interface ChatAreaProps extends ChatRole {
+  conversation: selectedConversation;
+  typing: boolean;
+  setTyping: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 interface MessageContent {
@@ -35,7 +43,7 @@ interface MessageContent {
 }
 
 interface Message {
-  _id: string;
+  id: string;
   content: MessageContent;
   conversation: string;
   sender: string;
@@ -44,16 +52,26 @@ interface Message {
   createdAt: string;
 }
 
-const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
+const ChatArea: React.FC<ChatAreaProps> = ({
+  conversation,
+  typing,
+  setTyping,
+  context,
+}) => {
   const user = useGetUser();
   const [content, setContent] = useState("");
   const { chatSocket } = useContext(SocketContext);
   const queryClient = useQueryClient();
-
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const company = useSelectedCompany();
   const { data } = useQuery({
     queryKey: ["chat", conversation],
-    queryFn: () => ChatApi.getChat(conversation.conversationId),
+    queryFn: () => ChatApi.getChat(conversation?.id as string, user?._id as string),
   });
+
+  useEffect(() => {
+    console.log("chat data", data);
+  }, [data]);
 
   const isToday = (date) => {
     const today = new Date();
@@ -143,19 +161,27 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
     }
   };
 
-  const handleMessageAction = {
-    reply: (msg: Message) => {
-      console.log('Reply to:', msg);
-      // Implement reply logic
-    },
-    delete: (msg: Message) => {
-      console.log('Delete message:', msg);
-      // Implement delete logic
-    },
-    deleteForEveryone: (msg: Message) => {
-      console.log('Delete for everyone:', msg);
-      // Implement delete for everyone logic
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      const container = chatContainerRef.current;
+      container.scrollTo({
+        top: container.scrollHeight,
+        behavior: "smooth",
+      });
     }
+  };
+
+  const deleteMessage = (id: string) => {
+    queryClient.setQueryData<Message[]>(["chat", conversation], (oldData) => {
+      if (!oldData) return [];
+      return oldData.filter((msg) => {
+        if (msg.id !== id) {
+          return msg;
+        }
+        return false;
+      });
+    });
+    setTimeout(scrollToBottom, 100);
   };
 
   const addNewMessage = (newMessage: Message) => {
@@ -163,18 +189,36 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
       if (!oldData) return [newMessage];
       return [...oldData, newMessage];
     });
+    setTimeout(scrollToBottom, 100);
   };
 
   const changeMessageStatus = (id: string, status: string) => {
     queryClient.setQueryData<Message[]>(["chat", conversation], (oldData) => {
       if (!oldData) return [];
       return oldData.map((msg) => {
-        if (msg._id === id) {
+        if (msg.id === id) {
           return { ...msg, status };
-        }
-        return msg;
+        } else return msg;
       });
     });
+  };
+
+  const handleMessageAction = {
+    reply: (msg: Message) => {
+      console.log("Reply to:", msg);
+    },
+
+    delete: async (msg: Message) => {
+      console.log("Delete message:", msg);
+      await ChatApi.delete(msg.id, user?._id);
+      deleteMessage(msg.id);
+    },
+
+    deleteForEveryone: async (msg: Message) => {
+      console.log("Delete for everyone:", msg);
+      await ChatApi.deleteForEveryOne(msg.id);
+      deleteMessage(msg.id);
+    },
   };
 
   const readMessage = () => {
@@ -185,6 +229,13 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
   };
 
   useEffect(() => {
+    if (typing) {
+      const timer = setTimeout(() => setTyping(false), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [typing]);
+
+  useEffect(() => {
     if (!chatSocket?.connected) return;
 
     chatSocket.on("private_message", (data) => {
@@ -193,45 +244,57 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
     });
 
     function handleReadMessage() {
-      chatSocket.emit("read_message", {
-        conversationId: conversation.conversationId,
-        sender: conversation?.id,
+      chatSocket?.emit("read_message", {
+        conversationId: conversation?.id,
+        sender: conversation?.receiverId,
       });
     }
 
     handleReadMessage();
 
-    chatSocket.on("deliver_message", (conversationId: string) => {
-      changeMessageStatus(conversationId, MESSAGE_STATUS.DELIVERED);
+    chatSocket.on("deliver_message", (msgId: string) => {
+      console.log("deliver_message", msgId);
+
+      changeMessageStatus(msgId, MESSAGE_STATUS.DELIVERED);
     });
 
     chatSocket.on("read_message", (conversationId: string) => {
+      console.log("read_message event lis", conversationId);
       readMessage();
     });
 
+    chatSocket.on("typing", () => {
+      console.log("typing from client");
+
+      setTyping(true);
+    });
+
     chatSocket.emit("join_conversation", {
-      conversationId: conversation.conversationId,
+      conversationId: conversation.id,
     });
 
     return () => {
       chatSocket.off("direct_message");
       chatSocket.off("private_message");
       chatSocket.emit("leave_conversation", {
-        conversationId: conversation.conversationId
+        conversationId: conversation.id,
       });
+      setTyping(false);
     };
   }, [chatSocket?.connected]);
 
   const handleSend = async () => {
     if (!content) return;
-
+    console.log("context", context);
     const id = generateObjectId();
+    console.log("msg id", id);
+
     const newConv = conversation?.newConv ?? false;
     const newMessage = {
-      _id: id,
-      conversation: conversation.conversationId,
+      id: id,
+      conversation: conversation.id,
       sender: user._id,
-      receiver: conversation?.id,
+      receiver: conversation?.receiverId,
       content: {
         type: "text",
         text: content,
@@ -241,24 +304,43 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
       replyTo: null,
       newConv: newConv,
       receiverDetails: newConv ? newConv : undefined,
+      context,
+      companyId: company?._id,
     };
 
     chatSocket?.emit("direct_message", newMessage);
     addNewMessage(newMessage);
-    await ChatApi.sendMessage({
-      id,
-      sender: user._id,
-      receiver: conversation?.id,
-      content: { type: "text", text: content },
-      conversationId: conversation.conversationId,
-    });
+    await ChatApi.sendMessage(
+      {
+        id,
+        sender: user._id,
+        receiver: conversation?.receiverId,
+        content: { type: "text", text: content },
+        conversationId: conversation?.id,
+        context,
+        companyId: company?._id,
+      },
+      content
+    );
 
     setContent("");
   };
 
+  const handleTyping = (e) => {
+    setContent(e.target.value);
+    if (content.length > 0) {
+      chatSocket?.emit("typing", { convId: conversation.id });
+    }
+  };
   const MessageComponent = ({ msg }: { msg: Message }) => {
     const [showActions, setShowActions] = useState(false);
     const isOwnMessage = msg?.sender === user?._id;
+
+    const currentTime = new Date();
+    const messageTime = new Date(msg.createdAt);
+    const timeDifferenceMs = currentTime - messageTime;
+    const twoHoursMs = 2 * 60 * 60 * 1000;
+    const canDeleteForEveryone = timeDifferenceMs <= twoHoursMs;
 
     const messageStyles = isOwnMessage
       ? "bg-orange-700 text-white before:border-l-orange-700 before:border-t-orange-700"
@@ -267,16 +349,21 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
     const timeStyles = isOwnMessage ? "text-gray-200" : "text-gray-500";
 
     return (
-      <div className={`flex items-start ${isOwnMessage ? 'justify-end' : ''} space-x-3`}>
+      <div
+        className={`flex items-start ${
+          isOwnMessage ? "justify-end" : ""
+        } space-x-3`}
+      >
         <div className="flex gap-x-1 max-w-md items-end relative group">
           <div
             className={`flex gap-x-2 shadow rounded-md p-2 pb-1 relative
               before:content-[''] before:absolute before:top-0 
               before:w-0 before:h-0 before:border-[8px] 
               before:border-solid before:border-b-transparent 
-              ${isOwnMessage 
-                ? 'before:right-[-8px] before:border-r-transparent' 
-                : 'before:left-[-8px] before:border-l-transparent'
+              ${
+                isOwnMessage
+                  ? "before:right-[-8px] before:border-r-transparent"
+                  : "before:left-[-8px] before:border-l-transparent"
               }
               ${messageStyles}`}
             onMouseEnter={() => setShowActions(true)}
@@ -285,7 +372,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
             <div className="h-6">
               <p className="text-sm self-start">{msg?.content?.text}</p>
             </div>
-            
+
             <div className="flex justify-end items-center mt-1 space-x-1 min-w-[65px]">
               <span className={`text-[11px] self-end ${timeStyles}`}>
                 {new Date(msg?.createdAt).toLocaleTimeString("en-US", {
@@ -304,17 +391,25 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => handleMessageAction.reply(msg)} className="gap-2">
+                    <DropdownMenuItem
+                      onClick={() => handleMessageAction.reply(msg)}
+                      className="gap-2"
+                    >
                       <Reply className="w-4 h-4" />
                       <span>Reply</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleMessageAction.delete(msg)} className="gap-2 text-red-600">
+                    <DropdownMenuItem
+                      onClick={() => handleMessageAction.delete(msg)}
+                      className="gap-2 text-red-600"
+                    >
                       <Trash className="w-4 h-4" />
                       <span>Delete</span>
                     </DropdownMenuItem>
-                    {isOwnMessage && (
-                      <DropdownMenuItem 
-                        onClick={() => handleMessageAction.deleteForEveryone(msg)} 
+                    {isOwnMessage && canDeleteForEveryone && (
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleMessageAction.deleteForEveryone(msg)
+                        }
                         className="gap-2 text-red-600"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -334,14 +429,35 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
 
   return (
     <>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 chat-scrollbar">
+      <div
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto p-4 space-y-4 chat-scrollbar"
+      >
         {data?.map((msg, index) => (
           <React.Fragment key={msg?._id}>
             {renderDateHeader(msg, data[index - 1])}
             <MessageComponent msg={msg} />
           </React.Fragment>
         ))}
-        <TypingIndicator />
+        <div className={`flex items-start space-x-3`}>
+          {typing && (
+            <div className="flex gap-x-1 max-w-md items-end relative group">
+              <div
+                className={`flex gap-x-2 shadow rounded-md p-2 pb-1 relative
+              before:content-[''] before:absolute before:top-0 
+              before:w-0 before:h-0 before:border-[8px] 
+              before:border-solid before:border-b-transparent 
+              before:left-[-8px] before:border-l-transparent
+              bg-gray-200 text-gray-200 before:border-r-gray-200 before:border-t-gray-200
+              `}
+              >
+                <div className="flex justify-end items-center py-1">
+                  <TypingIndicator />
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="p-4 pb-0 border-t border-gray-200 bg-white">
@@ -352,7 +468,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ conversation }) => {
           <div className="relative w-full flex flex-1">
             <input
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={handleTyping}
               type="text"
               placeholder="Reply message"
               className="flex-1 px-4 py-2 bg-gray-100 rounded-lg focus:outline-none"

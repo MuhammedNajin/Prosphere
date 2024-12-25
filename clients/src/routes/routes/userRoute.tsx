@@ -3,7 +3,7 @@ import Home from "@/components/company/Profile/Home";
 import Dashboard from "@/components/Dashboard/Dashboard";
 import MyApplication from "@/components/job/MyApplication";
 import UserLayout from "@/layout/UserLayout";
-import ChatPage from "@/pages/Chat/ChatPage";
+import UserChatPage from "@/pages/Chat/UserChatPage";
 import CompanyCreationPage from "@/pages/company/CompanyCreationPage";
 import CompanyProfilePage from "@/pages/company/CompanyProfilePage";
 import MyCompanyPage from "@/pages/company/MycompanyPage";
@@ -78,6 +78,6 @@ export const userRoute = [
   
   {
     path: "/chat",
-    element: <ChatPage />,
+    element: <UserChatPage />
   },
 ]

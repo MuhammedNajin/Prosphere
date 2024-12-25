@@ -71,7 +71,7 @@ const authSlice = createSlice({
       state.status = '';
       state.role = 'none';
     },
-    setUser: (state, action: PayloadAction<string>) => {
+    setResume: (state, action: PayloadAction<string>) => {
       // Ensure resume is always an array before pushing
       if (!Array.isArray(state.resume)) {
         state.resume = [];
@@ -94,7 +94,8 @@ const authSlice = createSlice({
       .addCase(signInThunk.fulfilled, (state, action) => {
         state.user = action.payload.userCredential;
         // Ensure resume is assigned as an array
-        state.resume = Array.isArray(action.payload.profile) 
+        console.log("action.payload", action.payload)
+        state.resume = Array.isArray(action.payload?.profile?.resumeKey) 
           ? action.payload.profile 
           : [];
         state.status = "success";
@@ -122,5 +123,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { googleAuth, logout, setUser } = authSlice.actions;
+export const { googleAuth, logout, setResume } = authSlice.actions;
 export const authReducer = authSlice.reducer;

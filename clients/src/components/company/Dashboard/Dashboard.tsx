@@ -1,263 +1,284 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useQuery } from "react-query";
+import {
+  AreaChart,
+  Area,
+  CartesianGrid,
+  XAxis,
+  ResponsiveContainer,
+} from "recharts";
+import { startOfYear, endOfYear, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from "date-fns";
+
+// Component imports
 import JobUpdates from "./JobCard";
-import TotalJobsApplied from "./TotalJobsApplied.tsx";
-import JobsAppliedStatus from "./TotalJobsApplied.tsx";
-import UpcomingInterviews from "./UpcomingInterviews.tsx";
-import RecentApplicationsHistory from "./RecentApplicationsHistory.tsx";
+import RecentApplicationsHistory from "./RecentApplicationsHistory";
+import { useGetUser } from "@/hooks/useGetUser";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
   ChartContainer,
   ChartLegend,
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart.tsx";
-import { AreaChart, Area, CartesianGrid, XAxis } from "recharts";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar } from "@/components/ui/calendar.tsx";
-import test from "node:test";
-import YearPicker from "@/components/common/DatePicker/YearPicker.tsx";
-import MonthYearPicker from "@/test.tsx";
-import WeekPicker from "@/components/common/DatePicker/WeekPicker.tsx";
+} from "@/components/ui/chart";
+import WeekPicker from "@/components/common/DatePicker/WeekPicker";
+import MonthYearPicker from "@/components/common/DatePicker/MonthPicker";
+import YearPicker from "@/components/common/DatePicker/YearPicker";
+
+// API and type imports
+import { CompanyApi } from "@/api";
+import { Time_Frame, GraphOptions } from "@/types/company";
+
+// Type definitions for our component's state and props
+interface GraphData {
+  date: string;
+  jobApplied?: number;
+  jobSeen?: number;
+}
+
+interface DateRange {
+  startDate: Date;
+  endDate: Date;
+}
+
+interface ChartConfigItem {
+  label: string;
+  color: string;
+}
+
+interface ChartConfig {
+  jobApplied: ChartConfigItem;
+  jobSeen: ChartConfigItem;
+}
 
 const Dashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("week");
-  const [date, setDate] = React.useState<Date | undefined>(new Date())
-  const stats = [
-    {
-      count: 76,
-      title: "New candidates to review",
-      iconSrc:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/18e839e282525adda515e2efa073d09607f4f5abea2a3f99a2834204105ec623?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732",
-      bgColor: "bg-indigo-600 text-white",
-    },
-    {
-      count: 3,
-      title: "Schedule for today",
-      iconSrc:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/b9a465b44902e234c8e36e22b829c40b6512e1fdd7d225dd27bfb1727fa78c02?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732",
-      bgColor: "bg-emerald-300 text-white",
-    },
-    {
-      count: 24,
-      title: "Messages received",
-      iconSrc:
-        "https://cdn.builder.io/api/v1/image/assets/TEMP/c5c3403c69c7945b73de5a8fabefbc27ef02fce2cbbf25baafbe44ce4ab71874?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732",
-      bgColor: "bg-sky-400 text-white",
-    },
-  ];
+  // User context and routing
+  const { id } = useParams<{ id: string }>();
+  const user = useGetUser();
 
-  const chartData = [
-    { month: "January", desktop: 186, mobile: 80 },
-    { month: "February", desktop: 305, mobile: 200 },
-    { month: "March", desktop: 237, mobile: 120 },
-    { month: "April", desktop: 73, mobile: 190 },
-    { month: "May", desktop: 209, mobile: 130 },
-    { month: "June", desktop: 214, mobile: 140 },
-  ];
+  // State management
+  const [activeTab, setActiveTab] = useState<Time_Frame>(Time_Frame.YEAR);
+  const [graphOption, setGraphOption] = useState<GraphOptions>(GraphOptions.OVERVIEW);
+  const [graphData, setGraphData] = useState<GraphData[]>([]);
+  const [greeting, setGreeting] = useState("");
+  const [dateRange, setDateRange] = useState<DateRange>({
+    startDate: startOfYear(new Date()),
+    endDate: new Date(),
+  });
 
-  const chartConfig = {
-    desktop: {
-      label: "Desktop",
-      color: "#2563eb",
+  // Chart configuration
+  const chartConfig: ChartConfig = {
+    jobApplied: {
+      label: "Application",
+      color: "#9E4A06",
     },
-    mobile: {
-      label: "Mobile",
-      color: "#60a5fa",
+    jobSeen: {
+      label: "View",
+      color: "#F8AE56",
     },
   };
 
+  // Data fetching with React Query
+  const { data: jobStats } = useQuery({
+    queryKey: ["jobStats", dateRange, activeTab],
+    queryFn: () => CompanyApi.getJobStats(id!, dateRange, activeTab),
+    enabled: !!id,
+  });
+
+  const { data: viewStats } = useQuery({
+    queryKey: ["view", dateRange, activeTab],
+    queryFn: () => CompanyApi.getJobVeiwStats(id!, dateRange, activeTab),
+    enabled: !!id,
+  });
+
+  // Set greeting based on time of day
+  useEffect(() => {
+    const hour = new Date().getHours();
+    const newGreeting = hour >= 17 ? "Good evening" : 
+                       hour >= 12 ? "Good afternoon" : 
+                       "Good morning";
+    setGreeting(newGreeting);
+  }, []);
+
+  // Process and combine job stats and view stats
+  useEffect(() => {
+    if (!jobStats && !viewStats) return;
+
+    const processedData: GraphData[] = jobStats?.map((el: { date: string; count: number }, index: number) => ({
+      date: el.date,
+      jobApplied: el.count,
+      jobSeen: viewStats?.[index]?.viewCount
+    })) ?? [];
+
+    setGraphData(processedData);
+  }, [jobStats, viewStats]);
+
+  // Handle tab changes and update date range
+  const handleActiveTab = (value: Time_Frame) => {
+    setActiveTab(value);
+    
+    const dateRanges: Record<Time_Frame, DateRange> = {
+      [Time_Frame.MONTH]: {
+        startDate: startOfMonth(new Date()),
+        endDate: endOfMonth(new Date()),
+      },
+      [Time_Frame.WEEK]: {
+        startDate: startOfWeek(new Date()),
+        endDate: endOfWeek(new Date()),
+      },
+      [Time_Frame.YEAR]: {
+        startDate: startOfYear(new Date()),
+        endDate: endOfYear(new Date()),
+      },
+    };
+
+    setDateRange(dateRanges[value]);
+  };
+
+  // Tab configuration
+  const tabs = [
+    { id: GraphOptions.OVERVIEW, label: "Overview" },
+    { id: GraphOptions.JOBSEEN, label: "Jobs View" },
+    { id: GraphOptions.JOBAPPLED, label: "Jobs Applied" },
+  ];
+
   return (
     <main className="flex flex-col bg-white">
+      {/* Header Section */}
       <header className="flex flex-col pb-6">
         <div className="flex flex-1 flex-wrap gap-10 justify-between items-center p-8">
           <div className="flex flex-col self-stretch my-auto min-w-[240px]">
             <h1 className="text-2xl font-semibold leading-tight text-slate-800">
-              Good morning, Maria
+              {greeting}, {user?.username}
             </h1>
-            <p className="mt-2 text-base font-medium leading-relaxed text-slate-500 ">
-              Here is your job listings statistic report from July 19 - July 25.
+            <p className="mt-2 text-base font-medium leading-relaxed text-slate-500">
+              Here is your job listings statistic report.
             </p>
-          </div>
-          <div className="flex gap-7 justify-between items-center self-stretch px-4 py-3 my-auto text-base leading-relaxed bg-white border border-solid border-zinc-200 text-slate-800 w-[180px]">
-            <span className="self-stretch my-auto">Jul 19 - Jul 25</span>
-            <img
-              loading="lazy"
-              src="https://cdn.builder.io/api/v1/image/assets/TEMP/bb4ef2bacf14cf777b13b4dc7d3471f64c3cfd92bb502e18601c475e521baa85?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732"
-              className="object-contain shrink-0 self-stretch my-auto w-5 aspect-square"
-              alt=""
-            />
           </div>
         </div>
       </header>
-      <section className="flex flex-col  mx-auto">
-        <div className="flex flex-wrap gap-6 items-start text-white ">
-          {stats.map(({ count, title, iconSrc, bgColor }, index) => (
-            <div
-              className={`flex gap-3.5 items-center p-6 ${bgColor} min-w-[240px] max-md:px-5`}
-            >
-              <span className="self-stretch my-auto text-5xl font-semibold leading-none max-md:text-4xl">
-                {count}
-              </span>
-              <p className="my-auto text-lg font-medium leading-7 w-[200px]">
-                {title}
-              </p>
-              <img
-                loading="lazy"
-                src={iconSrc}
-                className="object-contain shrink-0 self-stretch my-auto w-6 aspect-square"
-                alt=""
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-      <section className="flex flex-wrap gap-6 items-start px-8 pb-8 max-md:px-5 ">
-        <section className="flex overflow-hidden flex-col pb-6 bg-white border border-solid border-zinc-200 min-w-[240px] w-[728px] ">
-          <div className="flex flex-col first-letter:justify-between  pt-6 w-full ">
-            <div className="flex justify-between">
-              <div className="flex flex-col self-stretch pl-3">
-                <h2 className="text-xl font-semibold leading-tight text-slate-800">
-                  Job statistics
-                </h2>
-                <p className="mt-1 text-sm leading-relaxed text-slate-500">
-                  Showing Jobstatistic Jul 19-25
-                </p>
-              </div>
-              <div className="self-end">
-                <Tabs
-                  value={activeTab}
-                  onValueChange={setActiveTab}
-                  className="w-full"
-                >
-                  <TabsList>
-                    <TabsTrigger
-                      value="week"
-                      className={`px-4 py-2 rounded-t-md ${
-                        activeTab === "week"
-                          ? "bg-blue-500 text-white"
-                          : "bg-white hover:bg-white"
-                      }`}
-                    >
-                      Week
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="month"
-                      className={`px-4 py-2 rounded-t-md ${
-                        activeTab === "month"
-                          ? "bg-blue-500 text-white"
-                          : "bg-white hover:bg-white"
-                      }`}
-                    >
-                      Month
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="year"
-                      className={`px-4 py-2 rounded-t-md ${
-                        activeTab === "year"
-                          ? "bg-blue-500 text-white"
-                          : "bg-white hover:bg-white"
-                      }`}
-                    >
-                      Year
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="week" className="p-4">
-                    <WeekPicker />
-                  </TabsContent>
-                  <TabsContent value="month" className="p-4">
-                    <MonthYearPicker />
-                  </TabsContent>
-                  <TabsContent value="year" className="p-4">
-                    <YearPicker />
-                  </TabsContent>
-                </Tabs>
-              </div>
-            </div>
-            <nav className="flex flex-wrap gap-10 items-start pl-6 mt-4 max-w-full text-base font-semibold leading-relaxed bg-white shadow-sm text-slate-500 w-[727px] ">
-              <a
-                href="#overview"
-                className="flex flex-col whitespace-nowrap text-slate-800 w-[74px]"
-              >
-                <span className="self-center">Overview</span>
-                <div className="flex mt-2 w-full bg-indigo-600 rounded-none fill-indigo-600 min-h-[4px]" />
-              </a>
-              <a href="#jobs-view">Jobs View</a>
-              <a href="#jobs-applied">Jobs Applied</a>
 
-              <ChartContainer config={chartConfig} className="h-[300px] w-full">
-                <AreaChart accessibilityLayer data={chartData}>
-                  <CartesianGrid vertical={false} />
+      {/* Main Content Section */}
+      <section className="flex flex-wrap gap-6 items-start px-8 pb-8 mt-6">
+        {/* Statistics Card */}
+        <Card className="w-full max-w-[728px] bg-white border border-solid rounded-lg border-zinc-200">
+          <CardHeader className="flex justify-between items-start p-6">
+            <div className="flex flex-col">
+              <CardTitle className="text-xl font-semibold leading-tight text-slate-800">
+                Job Statistics
+              </CardTitle>
+              <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                Showing Job Statistics {dateRange.startDate.toLocaleDateString()} - {dateRange.endDate.toLocaleDateString()}
+              </p>
+            </div>
+
+            {/* Time Period Selector */}
+            <div className="flex-shrink-0">
+              <Tabs
+                value={activeTab}
+                onValueChange={handleActiveTab}
+                className="w-full"
+              >
+                <TabsList className="bg-gray-100 p-1 rounded-lg">
+                  <TabsTrigger value="week">Week</TabsTrigger>
+                  <TabsTrigger value="month">Month</TabsTrigger>
+                  <TabsTrigger value="year">Year</TabsTrigger>
+                </TabsList>
+
+                <div className="mt-4">
+                  <TabsContent value="week">
+                    <WeekPicker onWeekChange={setDateRange} />
+                  </TabsContent>
+                  <TabsContent value="month">
+                    <MonthYearPicker onMonthChange={setDateRange} />
+                  </TabsContent>
+                  <TabsContent value="year">
+                    <YearPicker onYearChange={setDateRange} />
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </div>
+          </CardHeader>
+
+          {/* Chart Navigation */}
+          <div className="px-6 border-t border-gray-200">
+            <nav className="flex space-x-8">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`relative py-4 px-1 ${
+                    graphOption === tab.id
+                      ? "text-orange-600"
+                      : "text-gray-500 hover:text-gray-700"
+                  }`}
+                  onClick={() => setGraphOption(tab.id)}
+                >
+                  <span className="font-medium text-sm">{tab.label}</span>
+                  {graphOption === tab.id && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-orange-600" />
+                  )}
+                </button>
+              ))}
+            </nav>
+          </div>
+
+          {/* Chart Area */}
+          <CardContent className="p-6">
+            <ChartContainer config={chartConfig} className="h-[400px] w-full">
+              <ResponsiveContainer>
+                <AreaChart data={graphData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
                   <XAxis
-                    dataKey="month"
+                    dataKey="date"
                     tickLine={false}
-                    tickMargin={10}
+                    tickMargin={11}
                     axisLine={false}
                     tickFormatter={(value) => value.slice(0, 3)}
+                    interval="preserveStartEnd"
                   />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <ChartLegend content={<ChartLegendContent />} />
+                  
+                  {/* Gradient Definitions */}
                   <defs>
-                    <linearGradient
-                      id="colorDesktop"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="5%"
-                        stopColor="var(--color-desktop)"
-                        stopOpacity={0.8}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="var(--color-desktop)"
-                        stopOpacity={0.1}
-                      />
+                    <linearGradient id="colorJobApplied" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={chartConfig.jobApplied.color} stopOpacity={0.8} />
+                      <stop offset="95%" stopColor={chartConfig.jobApplied.color} stopOpacity={0.1} />
                     </linearGradient>
-                    <linearGradient
-                      id="colorMobile"
-                      x1="0"
-                      y1="0"
-                      x2="0"
-                      y2="1"
-                    >
-                      <stop
-                        offset="5%"
-                        stopColor="var(--color-mobile)"
-                        stopOpacity={0.8}
-                      />
-                      <stop
-                        offset="95%"
-                        stopColor="var(--color-mobile)"
-                        stopOpacity={0.1}
-                      />
+                    <linearGradient id="colorJobSeen" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={chartConfig.jobSeen.color} stopOpacity={0.8} />
+                      <stop offset="95%" stopColor={chartConfig.jobSeen.color} stopOpacity={0.1} />
                     </linearGradient>
                   </defs>
-                  <Area
-                    type="monotone"
-                    dataKey="desktop"
-                    stroke="var(--color-desktop)"
-                    fill="url(#colorDesktop)"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="mobile"
-                    stroke="var(--color-mobile)"
-                    fill="url(#colorMobile)"
-                  />
+
+                  {/* Chart Areas */}
+                  {(graphOption === GraphOptions.OVERVIEW || graphOption === GraphOptions.JOBAPPLED) && (
+                    <Area
+                      type="monotone"
+                      dataKey="jobApplied"
+                      stroke={chartConfig.jobApplied.color}
+                      fill="url(#colorJobApplied)"
+                    />
+                  )}
+                  {(graphOption === GraphOptions.OVERVIEW || graphOption === GraphOptions.JOBSEEN) && (
+                    <Area
+                      type="monotone"
+                      dataKey="jobSeen"
+                      stroke={chartConfig.jobSeen.color}
+                      fill="url(#colorJobSeen)"
+                    />
+                  )}
                 </AreaChart>
-              </ChartContainer>
-            </nav>
-          </div>
-        </section>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+        
         <JobUpdates />
       </section>
-      <section className="flex flex-wrap gap-6 items-start px-8 pb-8 max-md:px-5 ">
-        <TotalJobsApplied />
-        <JobsAppliedStatus />
-        <UpcomingInterviews />
-      </section>
+
       <RecentApplicationsHistory />
     </main>
   );

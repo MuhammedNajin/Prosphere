@@ -6,6 +6,7 @@ import { useMutation, useQuery } from 'react-query';
 import { PaymentApi } from '@/api/payment.api';
 import { AxiosError } from 'axios';
 import { useGetUser } from '@/hooks/useGetUser';
+import { useParams } from 'react-router-dom';
 interface Plan {
   name: string;
   color: 'blue' | 'green' | 'purple';
@@ -66,7 +67,7 @@ const plans: Plan[] = [
 const Premium: React.FC = () => {
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const user = useGetUser();
-
+  const { id } = useParams()
   const { data } = useQuery({
     queryKey: ["premium"],
     queryFn: () => PaymentApi.getPlan()
@@ -102,7 +103,7 @@ const Premium: React.FC = () => {
     const data = {
         name: plan.name,
         id: user._id,
-        companyId: '67334008ddc1bd8e5253ae1e',
+        companyId: id,
         price: plan.price,
         planId: plan.id
     }

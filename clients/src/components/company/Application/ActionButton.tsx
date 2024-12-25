@@ -1,12 +1,13 @@
 import { Applicant } from '@/types/application';
 import { MessageSquareText } from 'lucide-react';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 interface ActionButtonProps {
    applicant: Applicant
 }
 const ActionButtons: React.FC<ActionButtonProps> = ({ applicant }) => {
+  const { id } = useParams()
   const navigate = useNavigate();
   return (
     <div className="flex gap-2 mt-5 w-full">
@@ -15,7 +16,7 @@ const ActionButtons: React.FC<ActionButtonProps> = ({ applicant }) => {
       </button>
       <button
       onClick={(e) => {
-         navigate('/company/message', { state: { applicant }})
+         navigate(`/company/message/${id}`, { state: { applicant }})
       }} 
         className="flex items-center justify-center p-2.5 border text-orange-700  border-orange-700 rounded-md hover:bg-orange-700 hover:text-white hover:shadow-sm aspect-square"
         aria-label="Message"

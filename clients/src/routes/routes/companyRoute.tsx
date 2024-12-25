@@ -21,9 +21,11 @@ import Dashboard from "@/components/company/Dashboard/Dashboard"
 import JobInspectPage from "@/pages/company/JobInspectPage"
 import ApplicationTable from "@/components/company/Jobs/ApplicationTable"
 import JobDescription from "@/components/job/JobDescription"
-import ChatPage from "@/pages/Chat/ChatPage"
+
 import PremiumPage from "@/pages/User/Premium"
 import { PaymentSuccessPage } from "@/pages/payment/Payment"
+import CompanyChatPage from "@/pages/Chat/CompanyChatPage"
+import MemberManagementPage from "@/components/company/Profile/Team"
 
 export const companyRoute = [
     {
@@ -41,20 +43,16 @@ export const companyRoute = [
         },
 
         {
-          path: "message",
-          element: <ChatPage />
+          path: "message/:id",
+          element: <CompanyChatPage />
         },
 
         {
-          path: "plan",
+          path: "plan/:id",
           element: <PremiumPage />
        },
 
-        {
-          path: "payment/success",
-          element: <PaymentSuccessPage />
-        },
-
+      
         {
           path: "profile/:id",
           element: <CompanyWrapper><CompanyProfilePage /></CompanyWrapper>,
@@ -66,6 +64,10 @@ export const companyRoute = [
             {
               path: "about",
               element: <CompanyOverview />
+            },
+            {
+              path: "team",
+              element: <MemberManagementPage />
             }
           ]
         },
@@ -120,6 +122,14 @@ export const companyRoute = [
             }
           ]
         }
-      ]
-    }
+      ],
+     
+
+
+    },
+
+    {
+      path: "/company/payment/success",
+      element: <PaymentSuccessPage />
+    },
   ];

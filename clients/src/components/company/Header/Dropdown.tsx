@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext, useEffect } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,8 @@ import { ChevronDown, LogOut, Plus, Settings, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { setSelectedCompany } from '@/redux/reducers/companySlice';
 import { useDispatch } from 'react-redux';
+import { useSubscriptionValidity } from '@/hooks/useSubscriptionValidity';
+import { subscriptionContext } from '@/context/subscriptionContext';
 
 interface CompanyDropdownProps {
    onClose: React.Dispatch<React.SetStateAction<boolean>>
@@ -19,7 +21,12 @@ interface CompanyDropdownProps {
 const CompanyDropdown:React.FC<CompanyDropdownProps> = ({ onClose }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
+  const { job } = useSubscriptionValidity();
+  const { setSubscription } = useContext(subscriptionContext);
+  useEffect(() => {
+     console.log("job", job);
+  }, [])
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex bg-gray-200 items-center gap-2 px-2 py-1 md:px-2 md:py-2 hover:bg-gray-400 rounded-full transition-colors outline-none shadow-sm min-w-28 justify-between">
@@ -36,7 +43,12 @@ const CompanyDropdown:React.FC<CompanyDropdownProps> = ({ onClose }) => {
         <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem 
-         onClick={() => onClose(true)}
+         onClick={() => {
+          if(job) {
+            onClose(true)
+          } else 
+             setSubscription({ state: true, currentFeature: 'job posting'})
+         }}
          className="cursor-pointer">
         <Plus size={20} />
         <span className="self-stretch my-auto">Post a job</span>

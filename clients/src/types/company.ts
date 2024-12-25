@@ -62,3 +62,22 @@ export enum CompanyStatus {
 export enum Message {
   denied = "Access denied"
 }
+
+export enum GraphOptions {
+   OVERVIEW = 'overview',
+   JOBAPPLED = 'jobApplied',
+   JOBSEEN = 'jobSeen'
+}
+
+export enum Time_Frame {
+   YEAR = 'year',
+   MONTH = 'month',
+   WEEK = 'week',
+}
+
+
+export enum UsageStatsType {
+  JOB_POSTS_USED = 'job_posts_used',
+  VIDEO_CALLS_USED = 'video_calls_used',
+  MESSAGES_USED = 'messages_used'
+}

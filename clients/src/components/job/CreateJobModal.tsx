@@ -32,14 +32,16 @@ import { useParams } from "react-router-dom";
 import { popularSkills } from "@/constants/popularSkill";
 import { CircleCheck, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import LoaderSubmitButton from "../common/spinner/LoaderSubmitButton";
 import { useMutation } from "react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Job } from "@/types/job";
 import SuccessMessage from "../common/Message/SuccessMessage";
 import { queryClient } from "@/main";
 import ErrorMessage from "../common/Message/ErrorMessage";
-
+import { useSubscription } from "@/hooks/useSubscription";
+import { setTrailLimit } from '@/redux/reducers/companySlice'
+import { UsageStatsType } from "@/types/company";
+import { useDispatch } from "react-redux";
 interface CreateJobModalProps {
   isOpen: boolean;
   onClose: React.Dispatch<React.SetStateAction<boolean>>;
@@ -246,10 +248,14 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
   };
 
   const { id } = useParams();
+  const dispatch = useDispatch()
 
   const jobCreationMutation = useMutation({
     mutationFn: job ? JobApi.updateJob : JobApi.postJob,
     onSuccess: () => {
+       if(!job) {
+          dispatch(setTrailLimit(UsageStatsType.JOB_POSTS_USED));
+       }
       toast({
         title: <SuccessMessage  message='Job posted successfully...'/>,
         
@@ -267,12 +273,15 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     },
   });
 
+  const subscription = useSubscription();
+  const subscriptionId  = subscription?.isTrail ? subscription?.company?.company_id : subscription?.subscription?.id
+
   const onSubmit = async (formData: z.infer<typeof formSchema>) => {
     console.log(formData);
     if(job) {
-       jobCreationMutation.mutate({ formData, companyId: id, id: job._id });
+       jobCreationMutation.mutate({ formData, companyId: id, id: job._id,  });
     } else {
-       jobCreationMutation.mutate({ formData, id });
+       jobCreationMutation.mutate({ formData, id,  subscriptionId, trail: subscription.isTrail });
      }
   };
 

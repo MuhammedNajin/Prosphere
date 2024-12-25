@@ -1,6 +1,13 @@
+import { endOfWeek, startOfWeek } from 'date-fns';
 import React, { useState } from 'react';
 
-const WeekPicker = () => {
+
+interface WeekPickerProps {
+  onWeekChange: React.Dispatch<React.SetStateAction<{ startDate: Date, endDate: Date }>>
+}
+
+
+const WeekPicker: React.FC<WeekPickerProps> = ({ onWeekChange }) => {
   const [selectedDate, setSelectedDate] = useState(null);
   
   const getWeekNumber = (date) => {
@@ -27,6 +34,10 @@ const WeekPicker = () => {
   const handleDateChange = (e) => {
     const date = new Date(e.target.value);
     setSelectedDate(date);
+    onWeekChange({
+      startDate: startOfWeek(date),
+      endDate: endOfWeek(date),
+    })
   };
 
   return (

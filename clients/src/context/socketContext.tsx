@@ -3,7 +3,6 @@ import React, { createContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
 
-// Create context for sockets
 export const SocketContext = createContext<{ chatSocket: Socket | null; notificationSocket: Socket | null }>({
   chatSocket: null,
   notificationSocket: null,
@@ -20,7 +19,6 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     let notificationSocketInstance: Socket | null = null;
 
     if (user) {
-      // Initialize chat socket
       chatSocketInstance = io('http://localhost:6002', {
         transports: ["websocket", "polling"],
         reconnectionAttempts: 5,
@@ -38,11 +36,9 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         console.error('Chat Connection error:', error);
       });
 
-      // Initialize notification socket
       notificationSocketInstance = io('http://localhost:4000', {
         transports: ["websocket", "polling"],
         reconnectionAttempts: 5,
-    
       });
 
       notificationSocketInstance.on('connect', () => {
@@ -57,7 +53,6 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     }
 
     return () => {
-      // Cleanup sockets on unmount or when user changes
       if (chatSocketInstance) {
         chatSocketInstance.disconnect();
         setChatSocket(null);

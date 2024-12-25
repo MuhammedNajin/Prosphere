@@ -1,107 +1,119 @@
 import React from 'react';
+import { JobApi } from '@/api';
+import { ArrowRight, MapPin, Clock, Briefcase, TrendingUp } from 'lucide-react';
+import { useQuery } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 
-interface JobCardProps {
-  logo: string;
-  title: string;
-  company: string;
-  location: string;
-  jobType: string;
-  tags: string[];
-  applicants: number;
-  capacity: number;
-}
+// Move helper functions outside component to avoid recreating them on each render
+const formatSalary = (amount) => {
+  if (amount >= 10000000) return `${(amount / 10000000).toFixed(1)}Cr`;
+  if (amount >= 100000) return `${(amount / 100000).toFixed(1)}L`;
+  return `${(amount / 1000).toFixed(0)}K`;
+};
 
-const JobCard: React.FC<JobCardProps> = ({ logo, title, company, location, jobType, tags, applicants, capacity }) => (
-  <div className="flex flex-col flex-1 shrink py-6 pr-5 pl-6 bg-white border border-solid basis-0 border-zinc-200 min-w-[240px] max-md:pl-5">
-    <div className="flex flex-col w-full max-w-[205px]">
-      <div className="flex gap-10 justify-between items-start w-full text-sm font-semibold text-emerald-300 whitespace-nowrap">
-        <img loading="lazy" src={logo} className="object-contain shrink-0 w-12 aspect-square" alt={`${company} logo`} />
-        <span className="gap-2 self-stretch px-2.5 py-1.5 bg-emerald-300 bg-opacity-10 rounded-[80px]">{jobType}</span>
-      </div>
-      <div className="flex flex-col mt-4">
-        <h3 className="text-lg font-semibold text-slate-800">{title}</h3>
-        <div className="flex gap-2 justify-center items-center self-start text-base text-slate-500">
-          <span className="self-stretch my-auto">{company}</span>
-          <span className="self-stretch my-auto">{location}</span>
-        </div>
-      </div>
-    </div>
-    <div className="flex gap-2 items-start self-start mt-6 text-sm font-semibold whitespace-nowrap">
-      {tags.map((tag, index) => (
-        <span key={index} className={`gap-2 self-stretch px-2.5 py-1.5 text-${tag.toLowerCase()} border border-${tag.toLowerCase()} border-solid rounded-[80px]`}>
-          {tag}
-        </span>
-      ))}
-    </div>
-    <div className="flex flex-col mt-6 w-full text-sm text-center text-slate-500">
-      <img loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/c93041f14af7fc08ccdf57b13f7671b35a8d18fc2b5cabb850d2ca7e2953fe71?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732" className="object-contain w-full aspect-[33.33]" alt="Application progress bar" />
-      <p className="self-start mt-2">
-        <span className="font-semibold text-slate-800">{applicants} applied </span>
-        <span className="text-slate-500">of {capacity} capacity</span>
-      </p>
-    </div>
-  </div>
-);
-
-const JobUpdates: React.FC = () => {
-  const jobs = [
+const JobUpdates = () => {
+  // Keep all hooks at the top level
+  const { id } = useParams();
+  const navigate = useNavigate();
+  
+  // Ensure useQuery has consistent options
+  const { data: jobs = [] } = useQuery(
+    ['jobs', id], // Add id to query key for proper caching
+    () => JobApi.getjobByCompany(),
     {
-      logo: "https://cdn.builder.io/api/v1/image/assets/TEMP/b1f0ef93df9440e774b9c43001ef6c0cebf747419e4b37568ce0a82e4f38a5e0?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732",
-      title: "Social Media Assistant",
-      company: "Nomad",
-      location: "Paris, France",
-      jobType: "Full-Time",
-      tags: ["Marketing", "Design"],
-      applicants: 5,
-      capacity: 10
-    },
-    {
-      logo: "https://cdn.builder.io/api/v1/image/assets/TEMP/3b7426b22e86307adec7f009a144499267f3db213954b50a07d37756229fe084?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732",
-      title: "Brand Designer",
-      company: "Nomad",
-      location: "Paris, France",
-      jobType: "Full-Time",
-      tags: ["Business", "Design"],
-      applicants: 5,
-      capacity: 10
-    },
-    {
-      logo: "https://cdn.builder.io/api/v1/image/assets/TEMP/c24a6dd137c84ccca6588a70a32d66960c38f4700d0d55d2205f87bc66fff494?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732",
-      title: "Interactive Developer",
-      company: "Terraform",
-      location: "Berlin, Germany",
-      jobType: "Full-Time",
-      tags: ["Marketing", "Design"],
-      applicants: 5,
-      capacity: 10
-    },
-    {
-      logo: "https://cdn.builder.io/api/v1/image/assets/TEMP/921d4cd4372f852a87b427ae3618136a959c572be42566d14c2e41204ed3e545?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732",
-      title: "Product Designer",
-      company: "ClassPass",
-      location: "Berlin, Germany",
-      jobType: "Full-Time",
-      tags: ["Business", "Design"],
-      applicants: 5,
-      capacity: 10
+      // Add stable query options
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 30 * 60 * 1000, // 30 minutes
+      refetchOnWindowFocus: false,
+      retry: 2,
     }
-  ];
+  );
+
+  // Prepare job cards data before rendering
+  const displayJobs = React.useMemo(() => {
+    return jobs.slice(0, 3).map((job) => ({
+      ...job,
+      formattedSalary: {
+        from: formatSalary(job?.salary?.from),
+        to: formatSalary(job?.salary?.to)
+      }
+    }));
+  }, [jobs]);
+
+  // Handler for navigation
+  const handleViewAll = React.useCallback(() => {
+    navigate(`/company/jobs/${id}`);
+  }, [navigate, id]);
 
   return (
-    <section className="flex flex-col mt-6 w-full border border-solid border-zinc-200 max-w-[1106px] max-md:max-w-full">
-      <div className="flex flex-wrap gap-10 justify-between items-start p-6 w-full font-semibold bg-white shadow-sm max-md:px-5 max-md:max-w-full">
-        <h2 className="text-xl leading-tight text-slate-800">Job Updates</h2>
-        <a href="#view-all" className="flex gap-2 items-center text-base leading-relaxed text-indigo-600">
-          <span className="self-stretch my-auto">View All</span>
-          <img loading="lazy" src="https://cdn.builder.io/api/v1/image/assets/TEMP/7d09976ba153d5f9151e87ea7b95f986fd2286bbc2ee738bca2f229d18eb4531?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732" className="object-contain shrink-0 self-stretch my-auto w-6 aspect-square" alt="" />
-        </a>
-      </div>
-      <div className="flex flex-wrap gap-6 items-start p-6 w-full leading-relaxed max-md:px-5 max-md:max-w-full">
-        {jobs.map((job, index) => (
-          <JobCard key={index} {...job} />
-        ))}
-      </div>
-    </section>
+    <Card className="w-full max-w-[1106px] bg-gradient-to-br from-white to-zinc-50/50">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+          Job Updates
+        </CardTitle>
+        <button
+          onClick={handleViewAll}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-orange-600 transition-colors hover:text-orange-700 hover:bg-orange-50 rounded-full"
+        >
+          View All
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </CardHeader>
+      
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
+          {displayJobs.map((job, index) => (
+            <div
+              key={job.id || index}
+              className="group relative bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-zinc-100 hover:border-orange-100 hover:scale-[1.02]"
+            >
+              <div className="flex justify-between items-start mb-6">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
+                  <MapPin className="w-3 h-3 mr-1" />
+                  {job.jobLocation}
+                </span>
+                <span className="inline-flex items-center text-xs font-medium text-slate-600">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {job.employment}
+                </span>
+              </div>
+
+              <h3 className="text-lg font-semibold text-slate-800 mb-4 line-clamp-2 group-hover:text-orange-600 transition-colors">
+                {job?.jobTitle}
+              </h3>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <Briefcase className="w-4 h-4 text-slate-400" />
+                  <span className="font-medium text-slate-700">
+                    ₹{job?.formattedSalary?.from} - {job?.formattedSalary?.to}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <TrendingUp className="w-4 h-4 text-slate-400" />
+                  <span>{job?.experience} years experience</span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-2">
+                {job.skills.slice(0, 3).map((skill, idx) => (
+                  <span
+                    key={`${job?.id}-${idx}`}
+                    className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium hover:bg-blue-100 transition-colors"
+                  >
+                    {skill?.name}
+                  </span>
+                ))}
+              </div>
+              
+              <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-orange-50 to-transparent rounded-tr-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

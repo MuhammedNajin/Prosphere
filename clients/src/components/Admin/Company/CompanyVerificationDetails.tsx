@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
   Building2,
@@ -29,8 +28,7 @@ import DocumentReviewModal from "./DocumentModal";
 import { CompanyStatus } from "@/types/company";
 import {
   Select,
-  SelectContent,
-  SelectItem,
+  SelectContent,  
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -101,7 +99,7 @@ const CompanyVerificationDetails = () => {
                   <Calendar className="w-4 h-4" />
                   <span>
                     Submitted:{" "}
-                    {format(data?.ownerVerificationDoc?.uploadedAt, "PPP")}
+                    {format(data?.ownerVerificationDoc?.uploadedAt || new Date(), "PPP")}
                   </span>
                   <span className="mx-2">•</span>
                   <span>ID: VR-2024-001</span>

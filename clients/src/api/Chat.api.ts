@@ -1,26 +1,38 @@
 import axiosInstance, { AxiosInstance } from "./config";
-import { MessageAttrs } from "@/types/chat";
+import { MessageAttrs, ROLE } from "@/types/chat";
 
 export class ChatApi {
   private static axios: AxiosInstance = axiosInstance;
 
-  static sendMessage = async (data: MessageAttrs) => {
+  static sendMessage = async (data: MessageAttrs, context: string) => {
     console.log("chat", data);
-    return await this.axios.post("/api/v1/chat/message", data);
+    return await this.axios.post(`/api/v1/chat/messages?context=${context}`, data);
   };
 
-  static getConversation = async (id: string) => {
+  static deleteForEveryOne = async (id: string) => {
+    console.log("delete everyone", id);
+    return await this.axios.delete(`/api/v1/chat/messages/${id}`);
+  };
+
+  static delete = async (id: string, userId: string) => {
+    console.log("delete everyone", id, userId);
+    return await this.axios.put(`/api/v1/chat/messages/${id}`, { userId });
+  };
+
+  
+  static getConversation = async (userId: string, context: ROLE, companyId: string) => {
     try {
-      const response = await this.axios.get(`/api/v1/chat/conversation/${id}`);
+      console.log("calling getConversation", context, userId, companyId);
+      const response = await this.axios.get(`/api/v1/chat/conversation/${userId}?context=${context}&companyId=${companyId}`);
       return response?.data?.data;
     } catch (error) {
       throw error;
     }
   };
 
-  static getChat = async (conversationId: string) => {
+  static getChat = async (conversationId: string, userId: string) => {
     try {
-      const response = await this.axios.get(`/api/v1/chat/${conversationId}`);
+      const response = await this.axios.get(`/api/v1/chat/${conversationId}?userId=${userId}`);
       return response?.data?.data;
     } catch (error) {
       console.log(error);

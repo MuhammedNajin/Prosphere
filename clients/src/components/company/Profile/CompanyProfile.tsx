@@ -172,7 +172,7 @@ const CompanyProfile: React.FC = () => {
             <NavigationLink to="home">Home</NavigationLink>
             <NavigationLink to="about">About</NavigationLink>
             <NavigationLink>Jobs</NavigationLink>
-            <NavigationLink>People</NavigationLink>
+            <NavigationLink to="team">People</NavigationLink>
           </div>
 
           <Outlet context={{ companyProfile: company.data }} />

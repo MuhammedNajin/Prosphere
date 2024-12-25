@@ -50,8 +50,8 @@ const items = [
     icon: Calendar,
   },
   {
-    title: "Job",
-    url: "#",
+    title: "Subscription",
+    url: "/admin/subscription",
     icon: Search,
   },
 ];
