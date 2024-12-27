@@ -15,3 +15,14 @@ export enum UsageMetrics {
    VideoCallsUsed = "videoCallsUsed",
    MessagesUsed = "messagesUsed",
  }
+
+ export enum Trail_Status {
+    TRUE = 'true',
+    False = 'false',
+ }
+
+ export enum Feature_Limit {
+   Job_Post_Limit = 'jobPostLimit',
+   Video_Call_Limit = 'videoCallLimit',
+   Message_Limit = 'messageLimit'
+ }

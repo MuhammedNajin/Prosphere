@@ -2,7 +2,7 @@ import { Application, Request, Response } from "express";
 import { createProxyMiddleware, RequestHandler, responseInterceptor } from "http-proxy-middleware";
 import { AuthRouteConfig, ProxyConfig } from "../type/interface";
 import { customLogger } from "../logger/morgan";
-import { URL, UsageMetrics } from "../type/enums";
+import { Trail_Status, URL, UsageMetrics } from "../type/enums";
 import { StatusCode } from "@muhammednajinnprosphere/common";
 import grpcPaymentClient from "../grpc/grpcPaymentClient";
 
@@ -36,7 +36,7 @@ export const setupProxies = (app: Application, routes: AuthRouteConfig[]) => {
                             const companyId = data?.job.companyId;
                             const { id, trail } = req.query; 
                             customLogger.debug('job post dtails ', { companyId, stats: UsageMetrics.JobPostsUsed, query: req.query });
-                            if(trail === "true") {
+                            if(trail === Trail_Status.TRUE) {
                                console.log("heloo")
                               try {
                                await grpcPaymentClient.updateTrailLimit(id, UsageMetrics.JobPostsUsed)
@@ -44,8 +44,10 @@ export const setupProxies = (app: Application, routes: AuthRouteConfig[]) => {
                                 console.log(" errror ", error);
                                 
                               }
+                            } else if(trail === Trail_Status.False) {
+                               await grpcPaymentClient.updateFeaturesLimit(companyId, UsageMetrics.JobPostsUsed); 
                             }
-                            // grpcPaymentClient.updateFeaturesLimit(companyId, UsageMetrics.JobPostsUsed)
+                            
                         } 
                      }
                     return response;

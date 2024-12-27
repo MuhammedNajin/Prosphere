@@ -63,9 +63,20 @@ export const ROUTES = [
       changeOrigin: true,
     },
   },
+
+
   {
     url: "/api/v1/job/company",
     auth: "company",
+    proxy: {
+      target: `${jobDomain}/api/v1/job/company`,
+      changeOrigin: true,
+    },
+  },
+    
+  {
+    url: "/api/v1/job/company/jobs",
+    auth: "subscription",
     proxy: {
       target: `${jobDomain}/api/v1/job/company`,
       changeOrigin: true,
@@ -109,10 +120,10 @@ export const ROUTES = [
   },
 
   {
-    url: "/api/v1/notification",
+    url: "/api/v1/notifications",
     auth: "",
     proxy: {
-      target: `${notificationDomain}/api/v1/notification`,
+      target: `${notificationDomain}/api/v1/notifications`,
       changeOrigin: true,
     },
   },
