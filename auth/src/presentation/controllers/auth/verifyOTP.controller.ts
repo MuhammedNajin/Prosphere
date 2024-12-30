@@ -1,36 +1,37 @@
 import { Request, Response, NextFunction } from "express";
 import { Dependencies } from "@domain/entities/interfaces";
 import Token from "@infra/libs/token";
-import { BadRequestError } from "@muhammednajinnprosphere/common";
+import { BadRequestError, StatusCode } from "@muhammednajinnprosphere/common";
+import { OTP_ERROR_STATE, ROLE, TOKEN_TYPE } from "@/shared/types/enums";
 
 const verifyOTPController = (dependencies: Dependencies) => {
   const {
-    useCases: { verifyOtpUseCase, verifyUserUseCase },
+    useCases: { verifyOtpUseCase, verifyUserUseCase, signupUseCase },
     messageBroker: { UserCreatedProducer, kafka },
     rpc: { grpcClient }
   } = dependencies;
 
   const verifyOtp = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { otp, userId } = req.body;
+      const { otp, email } = req.body;
       console.log(req.body);
-      // change: take userId from cokiee or token
-      const { message } = await verifyOtpUseCase(dependencies).execute({
-        userId,
-        otp,
-      });
+    
+      const state = await verifyOtpUseCase(dependencies).execute({ email, otp });
 
 
-      if (message === "expired") {
-        throw new BadRequestError("Otp expired, resent otp");
-      } else if(message === "invalid") {
+      if (state === OTP_ERROR_STATE.EXPIRIED) { 
+        throw new BadRequestError("Otp expired, resent otp"); 
+
+      } else if(state === OTP_ERROR_STATE.INVALID) {
         throw new BadRequestError("Invalid otp, enter valid otp")
-      }
 
-      const verified = await verifyUserUseCase(dependencies).execute(userId);
+      }
+      
+
+      const verified = await signupUseCase(dependencies).execute(email);
 
       if (!verified) {
-        throw new Error("user not verified");
+        throw new Error("Something went wrong, try again");
       }
 
        await new UserCreatedProducer(kafka.producer).produce({
@@ -39,6 +40,8 @@ const verifyOTPController = (dependencies: Dependencies) => {
          email: verified.email,
          jobRole: verified.phone,
          phone: verified.phone,
+         location: verified.location,
+         gender: verified.gender,
        })
 
       // await grpcClient.CreateUser({
@@ -53,23 +56,26 @@ const verifyOTPController = (dependencies: Dependencies) => {
         id: verified._id,
         username: verified.username,
         email: verified.email,
-        role: "user" as "user"
+        role: ROLE.USER
       };
       const { accessToken, refreshToken } = Token.generateJwtToken(payload);
-      res.cookie("accessToken", accessToken, {
+      res.cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
       });
       
-      res.cookie("refreshToken", refreshToken, {
+      res.cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
       });
 
-      res.status(200).json(verified);
+      res
+       .status(StatusCode.OK)
+       .json(verified);
       
     } catch (error) {
       console.log(error);
+
       next(error)
     }
   };

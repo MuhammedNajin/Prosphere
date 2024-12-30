@@ -4,9 +4,11 @@ import dependecies from '@infra/config/dependencies'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { errorHandler, NotFoundError } from '@muhammednajinnprosphere/common';
+import { createServer } from 'http';
 
 
 const app = express();
+
 app.use(cors({
     origin: ["http://localhost:5173"],
     credentials: true
@@ -19,6 +21,15 @@ app.use((req, res,  next) => {
    
     next();
 })
+
+
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'UP',
+        timestamp: new Date().toISOString(),
+        message: 'Service is running successfully',
+    });
+});
 
 app.use("/api/v1", routes(dependecies));
 

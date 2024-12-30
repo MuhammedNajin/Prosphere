@@ -4,6 +4,8 @@ import { IUser } from "@domain/entities/interfaces";
 export default {
 
   async setOtp(otp: string, email: string) {
+    console.log(" redis ", otp, email);
+    
     await redisClient.setEx(`otp${email}`, 60, otp);
   },
 
@@ -12,7 +14,7 @@ export default {
   },
 
   async setUser(email: string, user: IUser) {
-    await redisClient.setEx(`user${email}`, 300, JSON.stringify(user));
+    await redisClient.setEx(`user${email}`, 3600, JSON.stringify(user));
   },
 
   async getUser(email: string) {

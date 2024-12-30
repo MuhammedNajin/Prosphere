@@ -18,7 +18,7 @@ export const adminRoutes = (dependencies: any) => {
     );
 
 
-  router.patch("/block/:email",
+  router.patch("/block/:id",
     blockUserController
   );
 

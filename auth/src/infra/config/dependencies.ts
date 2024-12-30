@@ -1,4 +1,4 @@
-import { userRepository, otpRepository } from "@infra/repository";
+import { userRepository, otpRepository, redisRepository } from "@infra/repository";
 
 
 import {
@@ -40,6 +40,7 @@ console.log(useCases);
 const repository: Repository = {
   userRepository,
   otpRepository,
+  redisRepository
 };
 
 const messageBroker = {

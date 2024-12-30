@@ -15,10 +15,8 @@ export const sentMailUseCase = (depedencies: any) => {
   const execute = async (message: Mail) => {
     try {
 
-  
-
-      const info = await transporter.sendMail(message);
-      return info;
+      return await transporter.sendMail(message);
+    
     } catch (error) {
       console.log(error);
       return false;

@@ -10,8 +10,8 @@ import { Dependencies } from '@domain/entities/interfaces';
 
     const blockUsers = async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { email } = req.params;
-          const blocked = await blockUserUseCase(dependencies).execute(email);
+            const { id } = req.params;
+          const blocked = await blockUserUseCase(dependencies).execute(id);
           if(!blocked) {
             throw new Error("something went wrong")
           }

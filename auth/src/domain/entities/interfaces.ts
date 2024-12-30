@@ -32,6 +32,7 @@ export interface UseCases {
 export interface Repository {
   userRepository: any;
   otpRepository: any;
+  redisRepository: any;
 }
 
 export interface Service {
@@ -56,7 +57,7 @@ export interface TokenData {
 }
 
 export interface IOtp {
-  userId: string;
+  email: string;
   otp: string;
 }
 

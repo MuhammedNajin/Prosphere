@@ -6,7 +6,7 @@ import { generateOTPEmail, getMessage } from "@infra/libs/genarateMail";
 const resentOTPController = (dependencies: Dependencies) => {
   const {
     useCases: { sentMailUseCase,  },
-    repository: { otpRepository}
+    repository: { otpRepository, redisRepository}
   } = dependencies;
 
   const resentOtp = async (req: Request, res: Response, next: NextFunction) => {
@@ -15,7 +15,7 @@ const resentOTPController = (dependencies: Dependencies) => {
       console.log("resent-otp contoller: ", req.body);
 
       const otp = OTP.generate(6);
-      await otpRepository.saveOtp({ userId: userId, otp });
+      await redisRepository.setOtp(otp, email);
       const mail = generateOTPEmail(email, otp, "minute");
       const message = getMessage({ userEmail: email , subject:"Verification code", mail });
       const sentotp = await sentMailUseCase(dependencies).execute(message);

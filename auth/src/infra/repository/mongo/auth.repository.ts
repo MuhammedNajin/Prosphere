@@ -1,10 +1,17 @@
 import { IUser } from "@domain/entities/interfaces";
 import Password from "@infra/libs/password";
 import { Auth } from "../../database";
+import { BadRequestError, NotAuthorizedError } from "@muhammednajinnprosphere/common";
 
 export default {
   getUser: async (user: any) => {
     const userDetials = await Auth.findOne({ email: user.email });
+
+    const phone = await Auth.findOne({ phone: user.phone });
+    console.log("phone", phone, user.phone)
+    if(phone) {
+       throw new BadRequestError("Phone already exist's")
+    }
     return userDetials;
   },
 
@@ -24,6 +31,10 @@ export default {
         user.password,
         existingUser.password
       );
+
+      if(existingUser.isBlocked) {
+         throw new NotAuthorizedError('Your accont is blocked by admin, please contact support');
+      }
 
       console.log("passwordMatches", passwordMatches);
 
@@ -108,8 +119,8 @@ export default {
     return users;
   },
 
-  async blockUser(email: string) {
-    const user = await Auth.findOne({ email });
+  async blockUser(_id: string) {
+    const user = await Auth.findOne({ _id });
     console.log("user ", user);
 
     if (!user) {

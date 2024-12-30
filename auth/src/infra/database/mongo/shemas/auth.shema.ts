@@ -8,7 +8,7 @@ interface authAttrs {
   password?: string;
   jobRole?: string;
   location?: null;
-  authType?: string
+  authType?: string;
 }
 
 export interface AuthModel extends Model<AuthDoc> {
@@ -31,69 +31,85 @@ export interface AuthDoc extends Document {
   isAdmin: boolean;
 }
 
-const authSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: [true, "username is required"],
-  },
+const authSchema = new mongoose.Schema(
+  {
+    username: {
+      type: String,
+      required: [true, "username is required"],
+    },
 
-  email: {
-    type: String,
-    required: [true, "email is required"],
-    unique: [true, " email should be uniqe"],
-  },
+    email: {
+      type: String,
+      required: [true, "email is required"],
+      unique: [true, " email should be uniqe"],
+    },
 
-  phone: {
-    type: String,
-    unique: [true, "phone should be unique"],
-  },
+    phone: {
+      type: String,
+      unique: [true, "phone should be unique"],
+    },
 
-  password: {
-    type: String,
-  },
+    password: {
+      type: String,
+    },
 
-  jobRole: {
-    type: String,
-  },
+    jobRole: {
+      type: String,
+    },
 
-  authType: {
-    type: String,
-    enum: ["default", "linkedIn", "google"],
-    default: "default",
-  },
+    authType: {
+      type: String,
+      enum: ["default", "linkedIn", "google"],
+      default: "default",
+    },
 
-  location: {
-    type: String,
-  },
+    gender : {
+       type: String,
+    },
 
-  companyName: {
-    type: String,
-  },
-  forgetPasswordToken: {
-    type: String,
-  },
+    location: {
+      placename: {
+        type: String,
+      },
 
-  forgetPasswordTokenExpireAt: {
-    type: Date,
-    default: Date.now(),
-  },
-  
-  verified: {
-    type: Boolean,
-    default: false,
-  },
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+      coordinates: {
+        type: [Number],
+      },
+    },
 
-  isBlocked: {
-    type: Boolean,
-    default: false,
-  },
+    companyName: {
+      type: String,
+    },
+    forgetPasswordToken: {
+      type: String,
+    },
 
-  isAdmin: {
-    type: Boolean,
-    default: false,
+    forgetPasswordTokenExpireAt: {
+      type: Date,
+      default: Date.now(),
+    },
+
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
+
+    isAdmin: {
+      type: Boolean,
+      default: false,
+    },
   },
-},
-{ timestamps: true }
+  { timestamps: true }
 );
 
 authSchema.pre("save", async function (next) {

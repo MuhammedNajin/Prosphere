@@ -100,7 +100,6 @@ export const getMessage = ({
     subject: string;
     mail: any;
   }) => {
-    console.log("user", userEmail, subject, mail, process.env.SENDER_MAIL);
     
     let message = {
       from: process.env.SENDER_MAIL,

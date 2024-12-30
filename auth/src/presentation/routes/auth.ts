@@ -19,7 +19,6 @@ export const authRoutes = (dependencies: any) => {
     resetPasswordController,
     adminLoginController,
     refreshTokenController,
-    generateCompanyAccessTokenController
   } = authController(dependencies);
 
   router.post("/login",

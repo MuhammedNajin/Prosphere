@@ -10,8 +10,8 @@ export const getUserUseCase = (dependencies: Dependencies) => {
     throw new Error("dependency required, missing dependency");
   }
 
-  const execute = ({ email }: Pick<IUser, "email">) => {
-    return userRepository.getUser({ email });
+  const execute = ({ email, phone }: Pick<IUser, "email" | "phone">) => {
+    return userRepository.getUser({ email, phone });
   };
 
   return {
