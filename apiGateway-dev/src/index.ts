@@ -11,7 +11,7 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { createServer, IncomingMessage } from 'http'
 import { Socket } from 'net';
 import { GrpcPaymentClient } from "./grpc/grpcPaymentClient";
-
+import ratelimitRouter from './ratelimit'
 dotenv.config();
 
 const app = express();
@@ -33,6 +33,9 @@ app.use(cookieParser());
 // })
 
 app.use(loggerMiddleware);
+
+
+app.use('/api/v1', ratelimitRouter);
 
 const wsChatConnectionProxy = createProxyMiddleware({
   target: 'http://localhost:8080',
