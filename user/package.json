@@ -5,7 +5,8 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx watch src/index.ts",
+    "custom": "npm i @muhammednajinnprosphere/common@latest"
   },
   "keywords": [],
   "author": "",
@@ -13,7 +14,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.654.0",
     "@aws-sdk/s3-request-presigner": "^3.654.0",
-    "@muhammednajinnprosphere/common": "^1.0.35",
+    "@grpc/grpc-js": "^1.12.2",
+    "@grpc/proto-loader": "^0.7.13",
+    "@muhammednajinnprosphere/common": "^1.0.119",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/mongoose": "^5.11.96",
@@ -34,7 +37,8 @@
     "otp-generator": "^4.0.1",
     "redis": "^4.7.0",
     "sharp": "^0.33.5",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "winston-logstash": "^1.2.1"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.7",

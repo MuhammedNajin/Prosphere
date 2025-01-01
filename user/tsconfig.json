@@ -31,9 +31,9 @@
   "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "@domain/*": ["src/domain/*"], // Alias for the domain folder
-      "@application/*": ["src/application/*"], // Alias for the application folder
-      "@infra/*": ["src/infra/*"], // Alias for the infra folder
+      "@domain/*": ["src/domain/*"],
+      "@application/*": ["src/application/*"],
+      "@infra/*": ["src/infra/*"],
       "@presentation/*": ["src/presentation/*"]
     },                                   /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
