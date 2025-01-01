@@ -19,6 +19,17 @@ export const updateProfileUseCase = (dependencies: any) => {
          array: boolean
         }) => {
 
+
+            // Validate _id
+      // if (!_id || !Types.ObjectId.isValid(_id)) {
+      //   throw new Error('Invalid company ID');
+      // }
+
+      // Validate body
+      if (!body || Object.keys(body).length === 0) {
+        throw new Error('Update payload cannot be empty');
+      }
+
        return await profileRepository.updateProfile(email, body, { isArray: array });    
     }
     return {

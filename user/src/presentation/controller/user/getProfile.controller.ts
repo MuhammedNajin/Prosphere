@@ -17,12 +17,9 @@ export const getProfileController = (dependencies: any) => {
   ) => {
     try {
       
-        const { email } = req.params;
-        console.log(email);
+       const { id } = req.params
 
-        const profile = await getProfileUseCase(dependencies).execute({
-            email
-        })
+        const profile = await getProfileUseCase(dependencies).execute(id)
         
         if(!profile) {
             throw new Error("not found error");

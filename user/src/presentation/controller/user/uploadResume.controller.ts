@@ -1,3 +1,4 @@
+import { StatusCode } from "@muhammednajinnprosphere/common";
 import express, { NextFunction, Request, Response } from "express";
 
 export const uploadResumeController = (dependencies: any) => {
@@ -7,32 +8,28 @@ export const uploadResumeController = (dependencies: any) => {
     useCases: { getProfileUseCase, uploadResumeUseCase },
   } = dependencies;
 
-  const createUser = async (
+  const uploadResume = async (
     req: Request,
     res: Response,
     next: NextFunction
   ) => {
     try {
-      console.log("body", req.query);
       console.log("files", req.file);
-      const { email } = req.query;
-
-      const profile = await getProfileUseCase(dependencies).execute({
-        email,
-      });
-
-      console.log("Profile", profile)
-
+      
+      const { id } = JSON.parse(req.headers['x-user-data'] as string)
       const resume = await uploadResumeUseCase(dependencies).execute({
         file: req.file,
-        profile,
-        email,
+        id,
       });
 
-      res.status(201).json({ resume });
+      res
+       .status(StatusCode.CREATED)
+       .json({ resume });
+       
     } catch (error) {
       console.log(error);
+      next(error)
     }
   };
-  return createUser;
+  return uploadResume;
 };

@@ -1,13 +1,21 @@
+import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
 import express, { NextFunction, Request, Response } from "express";
 
+
 export const uploadProfilePhotoController = (dependencies: any) => {
-  console.log("signup");
+  console.log("signup", dependencies);
 
   const {
-    useCases: { getProfileUseCase, uploadProfilePhotoUseCase },
+    useCases: { getProfileUseCase, uploadProfilePhotoUseCase, deleteFileUseCase },
+    messageBroker: { ProfileUpdateProducer, kafka }
   } = dependencies;
+  
 
-  const createUser = async (
+  if(!ProfileUpdateProducer || !kafka) {
+     throw new Error("argument missing at uploadProfilePhoto controller ")
+  }
+
+  const uploadFile = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -15,23 +23,36 @@ export const uploadProfilePhotoController = (dependencies: any) => {
     try {
       console.log("body", req.query);
       console.log("files", req.file);
-      const { key, email } = req.query;
+      const { key, exisitingKey } = req.query;
+      
+       const { id  } = JSON.parse(req.headers['x-user-data'] as string);
 
-      const profile = await getProfileUseCase(dependencies).execute({
-        email,
-      });
+        if(exisitingKey) {
+           await deleteFileUseCase(dependencies).execute(exisitingKey);
+        }
 
       const avatar = await uploadProfilePhotoUseCase(dependencies).execute({
         file: req.file,
-        profile,
-        email,
-        key
+        key,
+        id
       });
+      console.log(" avatar", avatar);
+      
 
-      res.status(201).json({ avatar });
+      if(key === 'profileImageKey') {
+         await new ProfileUpdateProducer(kafka.producer).produce({
+            id,
+            avatar: avatar?.bucketKey
+         })
+      }
+
+      res
+       .status(StatusCode.CREATED)
+       .json(ResponseUtil.success(avatar?.imageUrl));
     } catch (error) {
       console.log(error);
+      next(error)
     }
   };
-  return createUser;
+  return uploadFile;
 };

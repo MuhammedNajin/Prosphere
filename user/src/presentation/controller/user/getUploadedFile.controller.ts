@@ -5,7 +5,7 @@ export const getUploadedFileController = (dependencies: any) => {
   console.log("signup");
   
   const {
-    useCases: { getUploadFileUseCase },
+    useCases: { getUploadedFileUseCase },
   } = dependencies;
   
   
@@ -16,12 +16,13 @@ export const getUploadedFileController = (dependencies: any) => {
   ) => {
     try {
         const { key } = req.params;
-        const file = await getUploadFileUseCase(dependencies).execute(key)
+        console.log(key, "key")
+        const file = await getUploadedFileUseCase(dependencies).execute(key)
         
         if(!file) {
             throw new Error("not found error");
         }
-
+       console.log(file)
         res.status(200).json(file);
         
     } catch (error) {

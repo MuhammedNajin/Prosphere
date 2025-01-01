@@ -1,4 +1,6 @@
 
+
+
 export const getProfileUseCase = (dependencies: any) => {
     const {
       repository: { profileRepository},
@@ -9,9 +11,8 @@ export const getProfileUseCase = (dependencies: any) => {
       throw new Error("dependency required, missing dependency");
     }
   
-    const execute = async ({ email }) => {
-       const profile =  await profileRepository.getProfile(email);
-       return profile;
+    const execute = async (id: string) => {
+      return await profileRepository.getProfile(id);
     }
     return {
       execute,

@@ -20,7 +20,7 @@ export const profileRoutes = (dependencies: any) => {
   router.post('/resume', upload.single('resume'), uploadResumeController);
   router.get('/file/:key', getUploadedFileController);
   router.put('/about', aboutController);
-  router.get('/:email', getProfileController);
+  router.get('/:id', getProfileController);
   router.put('/:email', updateProfileController)
   return router;
 };

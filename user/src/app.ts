@@ -22,6 +22,14 @@ app.use((req, res,  next) => {
     next();
 })
 
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'UP',
+        timestamp: new Date().toISOString(),
+        message: 'Service is running successfully',
+    });
+});
+
 app.use("/api/v1", routes(dependecies));
 
 
