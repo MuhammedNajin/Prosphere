@@ -1,6 +1,5 @@
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { generateFileName } from './generateFileName';
 import dotenv from 'dotenv'
 
 dotenv.config();
@@ -39,13 +38,13 @@ class S3Operations {
   }
 
   getImageUrlFromBucket = async (key: string) => {
-    let imageUrl = await getSignedUrl(
+    const imageUrl = await getSignedUrl(
       this.s3,
       new GetObjectCommand({
         Bucket: this.bucketName,
         Key: key
       }),
-      { expiresIn: 30 }
+      { expiresIn: 60 }
     );
     return imageUrl;
   }

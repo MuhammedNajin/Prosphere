@@ -1,6 +1,5 @@
 import { KafkaConsumer, Topics, UserCreatedEvent } from '@muhammednajinnprosphere/common'
 import { Consumer, KafkaMessage } from 'kafkajs';
-
 export class UserCreatedConsumer extends KafkaConsumer<UserCreatedEvent> {
     topic: Topics.userCreated = Topics.userCreated;
     dependencies: any;
@@ -25,13 +24,8 @@ export class UserCreatedConsumer extends KafkaConsumer<UserCreatedEvent> {
               useCases: { createProfileUseCase }
            } = this.dependencies;
           
-           const profile = await createProfileUseCase(this.dependencies).execute({
-             _id,
-             email,
-             jobRole,
-             phone,
-             username,
-           })
+           
+           const profile = await createProfileUseCase(this.dependencies).execute(data)
 
            console.log("onMessage", profile);
        } catch (error) {

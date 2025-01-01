@@ -1,15 +1,14 @@
 import Profile from "../database/shemas/profile.schema";
 import { UserProfile } from "@domain/entities/profile";
 import { IUserProfile } from "@domain/entities/interface";
-import { redisClient } from '@infra/config/database'
-
+import { UserCreatedEvent } from "@muhammednajinnprosphere/common";
 
 interface UploadProfilePhotoArgs {
    email: string,
    query: any,
 }
 export default {
-  uploadFile: async ({email, query}: UploadProfilePhotoArgs) => {
+  uploadFile: async ({ id , query}: UploadProfilePhotoArgs) => {
     let updates: unknown = { $set: query };
     const key = 'resumeKey'
     console.log("quey", query[key]);
@@ -18,16 +17,16 @@ export default {
       updates = { $push: query[key]}
     }
     
-    const profile = await Profile.findOneAndUpdate({ email }, updates, {
+    const profile = await Profile.findOneAndUpdate({ _id: id }, updates, {
       new: true,
     });
 
-    return profile;
+    return profile; 
   },
 
-  setResume: async (email: string, key: string) => {
-    await Profile.findOneAndUpdate({email}, {
-       $push: { resumeKey: key }
+  setResume: async (_id: string, key: string) => {
+    await Profile.findOneAndUpdate({ _id }, {
+      $addToSet: { resumeKey: key }
     })
   },
 
@@ -40,22 +39,13 @@ export default {
     return user;
   },
    
-  setCache: async (key: string, url: string) => {
-     await redisClient.setEx(`image:${key}`, 36000, url)
+
+  createProfile: async (user: UserCreatedEvent['data']) => {
+    return await Profile.build(user).save();
   },
 
-  getCache: async (key: string) => {
-    return await redisClient.get(`image:${key}`)
-  },
-
-  createProfile: async (user: IUserProfile) => {
-    const profile = new UserProfile(user);
-    console.log("profile", profile);
-    return await Profile.build(profile).save();
-  },
-
-  getProfile: async (email: string) => {
-    return await Profile.findOne({ email });
+  getProfile: async (_id: string) => {
+    return await Profile.findOne({ _id });
   },
 
   updateProfile: async (
