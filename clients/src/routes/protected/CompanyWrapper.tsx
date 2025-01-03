@@ -1,14 +1,18 @@
-import React from 'react';
 import { useLocation, Navigate } from 'react-router-dom';
 import { useSelectedCompany } from '@/hooks/useSelectedCompany';
 import { VerificationAlert } from '@/components/company/Verification/VerificationAlertDialoag';
+import React from 'react';
 
 const VERIFICATION_ROUTES = [
   '/company/verification',
   '/company/verification/'
 ];
 
-const CompanyWrapper = ({ children }) => {
+interface CompanyWrapperProps {
+   children: React.ReactNode
+}
+
+const CompanyWrapper: React.FC<CompanyWrapperProps> = ({ children }) => {
   const company = useSelectedCompany();
   const location = useLocation();
   
