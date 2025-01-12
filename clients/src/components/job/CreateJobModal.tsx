@@ -190,10 +190,14 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     if (!errors) return;
 
     const firstErrorField = getFirstErrorField(errors);
+    console.log("firstErrorField gettting error here", firstErrorField);
+    
     if (firstErrorField) {
       form.setFocus(firstErrorField);
-
+   
       const element = document.getElementsByName(firstErrorField)[0];
+      console.log("hi element", element);
+      
       if (element) {
         element.scrollIntoView({ behavior: "smooth", block: "center" });
       }
@@ -254,7 +258,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     mutationFn: job ? JobApi.updateJob : JobApi.postJob,
     onSuccess: () => {
        if(!job) {
-          dispatch(setTrailLimit(UsageStatsType.JOB_POSTS_USED));
+          dispatch(setTrailLimit(UsageStatsType.JOB_POSTS_Limit));
        }
       toast({
         title: <SuccessMessage  message='Job posted successfully...'/>,
@@ -266,8 +270,8 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     },
     onError: (error) => {
       toast({
-        title: <ErrorMessage message='Failed to post job. try again' />
-        
+        title: <ErrorMessage message='Failed to post job. try again' />,
+        className:"bg-red-500 text-white"
       });
       console.error("Error updating education:", error);
     },
@@ -361,7 +365,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose} modal>
-      <DialogContent className="w-[90%] h-[90hv] md:max-w-4xl top-[50%] border shadow-none rounded-sm md:max-h-[90vh] p-4 sm:p-6">
+      <DialogContent className="w-[90%] h-[90hv] md:max-w-4xl bg-white top-[50%] border shadow-none rounded-sm md:max-h-[90vh] p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle className="text-xl font-semibold">
             Post a Job
