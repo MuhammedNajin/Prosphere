@@ -1,4 +1,5 @@
-import axiosInstance, { AxiosInstance } from "./config";
+import { AxiosInstance, HttpStatusCode } from "axios";
+import axiosInstance from "./config";
 
 export class ApplicationApi {
     private static axios: AxiosInstance = axiosInstance;
@@ -22,8 +23,25 @@ export class ApplicationApi {
       return await this.axios.put(`/api/v1/job/company/application/${id}`, data)
    }
 
-   static getMyApplicatons = async (id: string) => {
-       return await this.axios.get(`/api/v1/job/application/my-application/${id}`);
+   static getMyApplicatons = async (filter: string, search: string, page = 1, pageSize = 1) => {
+
+      const queryParams = new URLSearchParams({
+         filter,
+         search,
+         page: String(page),
+         pageSize: String(pageSize)
+      });
+
+      const response =  await this.axios.get(`/api/v1/job/application/my-application?${queryParams}`);
+      if(response.status === HttpStatusCode.Ok) {
+         return {
+            jobs: response.data.application || [],
+            currentPage: page,
+            totalPages: Math.ceil((response.data.total || 0) / pageSize),
+            hasMore: page < Math.ceil((response.data.total || 0) / pageSize),
+            total: response.data.total || 0,
+          };
+      }
    }
 
    static isApplied = async (jobId: string) => {

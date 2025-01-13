@@ -1,6 +1,5 @@
-import { useSubscriptionValidity } from "@/hooks/useSubscriptionValidity";
-import axiosInstance, { AxiosInstance } from "./config";
-import { useSubscription } from "@/hooks/useSubscription";
+import axiosInstance from "./config";
+import { AxiosInstance } from "axios";
 
 class JobApi {
   private static axios: AxiosInstance = axiosInstance;

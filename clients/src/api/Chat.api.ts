@@ -1,4 +1,5 @@
-import axiosInstance, { AxiosInstance } from "./config";
+import { AxiosInstance } from "axios";
+import axiosInstance from "./config";
 import { MessageAttrs, ROLE } from "@/types/chat";
 
 export class ChatApi {

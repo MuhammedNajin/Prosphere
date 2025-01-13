@@ -1,5 +1,6 @@
 import { NotificationType } from "@/types/notification";
-import axiosInstance, { AxiosInstance } from "./config";
+import axiosInstance from "./config";
+import { AxiosInstance } from "axios";
 
 class NotificationApi {
   private static axios: AxiosInstance = axiosInstance;

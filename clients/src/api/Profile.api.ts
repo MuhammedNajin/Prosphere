@@ -1,4 +1,5 @@
-import axiosInstance, { AxiosInstance } from "./config";
+import { AxiosInstance } from "axios";
+import axiosInstance from "./config";
 
 class ProfileApi {
     private static axios: AxiosInstance = axiosInstance

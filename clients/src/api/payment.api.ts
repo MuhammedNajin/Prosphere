@@ -1,5 +1,6 @@
 import { PlanData } from "@/types/subscription";
-import axiosInstance, { AxiosInstance } from "./config";
+import axiosInstance from "./config";
+import { AxiosInstance } from "axios";
 
 export class PaymentApi {
   private static axios: AxiosInstance = axiosInstance;
@@ -28,6 +29,14 @@ export class PaymentApi {
      console.log("from create plan api", );
      const response = await this.axios.get("/api/v1/payment/plans");
      return response.data?.data;
+  }
+
+  static checkSession = async (sessionId: string) => {
+     return this.axios.get(`/api/v1/payment/chekout-session?session_id=${sessionId}`);
+  }
+
+  static getCurrentPlan = async (companyId: string) => {
+     return this.axios.get(`/api/v1/payment/current-subscription/${companyId}`);
   }
 
 }

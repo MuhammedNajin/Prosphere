@@ -1,5 +1,5 @@
-import { AxiosError } from "axios";
-import axiosInstance, { AxiosInstance } from "./config"
+import { AxiosError, AxiosInstance, HttpStatusCode } from "axios";
+import axiosInstance from "./config"
 
 export interface IOtp {
     userId: string,
@@ -11,7 +11,7 @@ class ApiService {
 
     static signUp = async ({ data }) => {
       return await this.axios.post('/api/v1/auth/signup', data);
-    }
+    }   
 
     static verifyOtp = async (data: IOtp, { rejectWithValue }) => {
         try {
@@ -36,17 +36,20 @@ class ApiService {
 static signIn = async (data: { email: string, password: string},  { rejectWithValue }) => {
         try {
             const response = await this.axios.post('/api/v1/auth/login', data);
+            console.log("response", response);
             if(response.status === 200) {
+                console.log(response);
                 return response.data;
             }
         } catch (error) {
-            console.log(error);
-            if(error instanceof AxiosError) {
+            console.log("error in the api", error);
+            if(error instanceof AxiosError && error.status !== HttpStatusCode.TooManyRequests) {
                 const { errors } = error?.response.data;
                 console.log(errors);
                 
                 return rejectWithValue(errors[0].message)
             }
+            return rejectWithValue("Too many requests")
         }
     }
 

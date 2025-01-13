@@ -1,4 +1,5 @@
-import axiosInstance, { AxiosInstance } from "./config";
+import { AxiosInstance } from "axios";
+import axiosInstance from "./config";
 
 class CompanyApi {
   private static axios: AxiosInstance = axiosInstance;
@@ -95,6 +96,7 @@ class CompanyApi {
    throw error;
  }
  }
+
  static getJobVeiwStats = async (companyId: string, dateRange: { startDate: Date, endDate: Date }, timeFrame = 'year') => {
   try {
     const response = await this.axios.get(`/api/v1/job/company/view?companyId=${companyId}&startDate=${dateRange.startDate}&endDate=${dateRange.endDate}&timeFrame=${timeFrame}`)
@@ -104,6 +106,46 @@ class CompanyApi {
    throw error;
  }
  }
+
+ static searchUsers = async (searchQuery: string) => {
+   try {
+      const response = await this.axios.get(`/api/v1/company/employee?search=${searchQuery}`);
+      return response.data?.data;
+   } catch (error) {
+     console.log(error);
+     throw error;
+   }
+ }
+
+ static getEmployees = async () => {
+   try {
+      const response = await this.axios.get(`/api/v1/company/employees`);
+      return response.data?.data;
+   } catch (error) {
+     console.log(error);
+     throw error;
+   }
+ }
+
+ static addMember = async (id: string) => {
+    try {
+      console.log("id, addMemberMutation", id)
+      return await this.axios.put(`/api/v1/company/employee/${id}`);
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+ }
+
+ static getFiles = async (keys: string[]) => {
+    try {
+        const response = await this.axios.post(`/api/v1/company/files`, { keys });
+        return response.data?.data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
 
 }
 

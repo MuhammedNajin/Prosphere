@@ -1,7 +1,7 @@
 
 
-import { AxiosError } from "axios";
-import axiosInstance, { AxiosInstance } from "./config"
+import { AxiosError, AxiosInstance } from "axios";
+import axiosInstance from "./config"
 
 
 
@@ -69,9 +69,9 @@ class AdminApi {
         }
     }
 
-    static blockUser = async (email: string) => {
+    static blockUser = async (id: string) => {
         try {
-            const response = await this.axios.patch(`/api/v1/admin/block/${email}`,);
+            const response = await this.axios.patch(`/api/v1/admin/block/${id}`,);
             return response.data
         } catch (error) {
             console.log(error)
