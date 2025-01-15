@@ -17,12 +17,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+
 import { useMutation } from 'react-query';
 import SuccessMessage from '../common/Message/SuccessMessage';
 import ErrorMessage from '../common/Message/ErrorMessage';
 import { useToast } from '@/hooks/use-toast';
 import { queryClient } from '@/main';
+import { Axios, AxiosError, HttpStatusCode } from 'axios';
 
 const skillSchema = z.object({
   skills: z.array(z.object({
@@ -113,8 +114,20 @@ function SkillForm({ skills, onClose }: SkillFormProps) {
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       onClose(false)
     },
-    onError: (error) => {
-      console.error('Error updating profile:', error);
+    onError: (error: AxiosError) => {
+      console.error('Full error object:', error);
+      console.error('Response data:', error.response?.data);
+      console.error('Response status:', error.response?.status);
+    
+      if (error.response?.status === HttpStatusCode.BadRequest) {
+        const errorMessage = error.response.data?.errors?.[0]?.message || 'Invalid request';
+        console.log('Error message being used:', errorMessage);
+        toast({
+          title: <ErrorMessage  message={errorMessage} />,
+          className: 'bg-red-500 text-white',
+        });
+        return;
+      }
       toast({
         title: <ErrorMessage message='Failed to update Skills. Please try again.' />
         
@@ -169,12 +182,15 @@ function SkillForm({ skills, onClose }: SkillFormProps) {
                 </div>
               </FormControl>
               <div className="flex flex-wrap gap-2 mt-2">
-                {fields.map((field, index) => (
+                { fields.map((field, index) => (
                   <Badge key={field.id} variant="secondary" className="text-sm text-orange-500 border border-orange-500 py-[5px]">
                     {field.name}
                     <select
                       value={field.proficiency}
-                      onChange={(e) => form.setValue(`skills.${index}.proficiency`, e.target.value)}
+                      onChange={(e) => {
+                         console.log(e.target.value)
+                         form.setValue(`skills.${index}.proficiency`, e.target.value)
+                      }}
                       className="ml-2 bg-transparent border-none text-sm"
                       disabled={updateSkillsMutation.isLoading}
                     >

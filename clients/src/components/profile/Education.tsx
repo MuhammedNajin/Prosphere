@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { PlusIcon, PencilIcon } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -12,27 +12,6 @@ interface Education {
   logo: string;
 }
 
-const educations: Education[] = [
-  {
-    id: 1,
-    school: "Harvard University",
-    degree: "Postgraduate degree",
-    field: "Applied Psychology",
-    years: "2010 - 2012",
-    description: "As an Applied Psychologist in the field of Consumer and Society, I am specialized in creating business opportunities by observing, analysing, researching and changing behaviour.",
-    logo: "/api/placeholder/48/48",
-  },
-  {
-    id: 2,
-    school: "University of Toronto",
-    degree: "Bachelor of Arts",
-    field: "Visual Communication",
-    years: "2005 - 2009",
-    logo: "/api/placeholder/48/48",
-  },
-];
-
-
 interface ExperiencesSectionProps {
     educations?: [{}];
     setModal: React.Dispatch<React.SetStateAction<boolean>>
@@ -41,6 +20,10 @@ interface ExperiencesSectionProps {
 }
 
 const EducationSection: React.FC<ExperiencesSectionProps> = ({setContent, setIndex, educations, setModal }) => {
+
+  useEffect(() => {
+     console.log("educations", educations);
+  }, [educations])
   return (
     <div className="bg-white p-6 rounded border">
       <div className="flex justify-between items-center mb-6">
@@ -50,13 +33,13 @@ const EducationSection: React.FC<ExperiencesSectionProps> = ({setContent, setInd
             setContent('Add Education')
             setModal(true)
           }}
-         className="p-2 bg-blue-50 rounded-md">
-          <PlusIcon className="w-5 h-5 text-blue-600" />
+         className="p-2 bg-orange-50 rounded-md">
+          <PlusIcon className="w-5 h-5 text-orange-600" />
         </button>
       </div>
       
       {educations.map((edu, index) => (
-        <div key={Date.now()} className="mb-6 last:mb-0">
+        <div key={Date.now() + index} className="mb-6 last:mb-0">
           <div className="flex items-start">
             <img src="https://logo.clearbit.com/twitter.com" alt={edu.school} className="w-12 h-12 mr-4" />
             <div className="flex-grow">
@@ -66,7 +49,12 @@ const EducationSection: React.FC<ExperiencesSectionProps> = ({setContent, setInd
                   <p className="text-gray-600">
                     {edu.degree}, {edu.fieldOfStudy}
                   </p>
-                  <p className="text-gray-500">{format(edu.startDate, "PPP")}</p>
+                  <p className="mt-2 text-gray-700">
+                              {edu.currentlyStudying
+                                ? `${format(edu?.startDate || Date.now(), "PPP")} - Present`
+                                : `${format(edu.startDate || Date.now(), "PPP")} - ${format(edu.endDate || Date.now(), "PPP")}`
+                              }
+                            </p>
                 </div>
                 <button
                  onClick={() => {
@@ -87,7 +75,7 @@ const EducationSection: React.FC<ExperiencesSectionProps> = ({setContent, setInd
         </div>
       ))}
       
-      <button className="w-full text-center text-blue-600 mt-4">
+      <button className="w-full text-center text-orange-600 mt-4">
         Show 2 more educations
       </button>
     </div>

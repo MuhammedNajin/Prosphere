@@ -19,9 +19,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Form,
   FormControl,
@@ -37,6 +36,7 @@ import SuccessMessage from '../common/Message/SuccessMessage';
 import ErrorMessage from '../common/Message/ErrorMessage';
 import LoaderSubmitButton from '../common/spinner/LoaderSubmitButton';
 import { queryClient } from '@/main';
+import { AxiosError, HttpStatusCode } from 'axios';
 
 interface PositionForm {
   position: {
@@ -101,10 +101,7 @@ function PositionForm({ position, onClose }: PositionForm = { position: null }) 
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: FormData) => {
-      const positionData = { experience: data };
-      return await ProfileApi.updateProfile({data: positionData, email: user.email, array: true});
-    },
+    mutationFn: ProfileApi.updateProfile,
     onSuccess: () => {
       toast({
         title: <SuccessMessage message='Experience updated successfully'/>,
@@ -113,17 +110,31 @@ function PositionForm({ position, onClose }: PositionForm = { position: null }) 
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       onClose(false)
     },
-    onError: (error) => {
-      console.error('Error updating profile:', error);
+    onError: (error: AxiosError) => {
+      console.error('Full error object:', error);
+      console.error('Response data:', error.response?.data);
+      console.error('Response status:', error.response?.status);
+    
+      if (error.response?.status === HttpStatusCode.BadRequest) {
+        const errorMessage = error.response.data?.errors?.[0]?.message || 'Invalid request';
+        console.log('Error message being used:', errorMessage);
+        toast({
+          title: <ErrorMessage  message={errorMessage} />,
+          className: 'bg-red-500 text-white',
+        });
+        return;
+      }
+    
       toast({
-        title: <ErrorMessage message='Failed to update position. Please try again.' />
-        
+        title: <ErrorMessage message='Failed to update position. Please try again.' />,
+        className: 'bg-red-500 text-white',
       });
-    },
+    }
   });
 
   const onSubmit = (data: FormData) => {
-    mutation.mutate(data);
+    const positionData = { experience: data };
+    mutation.mutate({ data: positionData, email: user.email, array: true });
   };
 
   const currentlyWorking = form.watch("currentlyWorking");

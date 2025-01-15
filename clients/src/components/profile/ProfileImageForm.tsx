@@ -1,26 +1,30 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { Camera, ImagePlus, Trash2, Save } from 'lucide-react';
+import React, { useState, useRef, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Camera, ImagePlus, Trash2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProfileApi } from '@/api/Profile.api';
-import { useMutation } from 'react-query';
-import { IMAGEKEY } from '@/types/profile';
-import { useToast } from '@/hooks/use-toast';
-import ErrorMessage from '../common/Message/ErrorMessage';
-import { queryClient } from '@/main';
+import { ProfileApi } from "@/api/Profile.api";
+import { useMutation, useQueryClient } from "react-query";
+import { IMAGEKEY } from "@/types/profile";
+import { useToast } from "@/hooks/use-toast";
+import ErrorMessage from "../common/Message/ErrorMessage";
 
 interface ProfileImageFormProps {
-   avatarKey: string,
-   avatarUrl: string
-   onClose: React.Dispatch<React.SetStateAction<boolean>>
+  avatarKey: string;
+  avatarUrl: string;
+  onClose: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const ProfileImageForm: React.FC<ProfileImageFormProps> = ({ avatarKey, avatarUrl, onClose }) => {
-  const { user } = useSelector((state) => state.auth);
+const ProfileImageForm: React.FC<ProfileImageFormProps> = ({
+  avatarKey,
+  avatarUrl,
+  onClose,
+}) => {
+
   const [preview, setPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = useRef(null);
-  const { toast } = useToast()
+  const { toast } = useToast();
+  const client = useQueryClient();
   const handleFileSelect = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -38,7 +42,7 @@ const ProfileImageForm: React.FC<ProfileImageFormProps> = ({ avatarKey, avatarUr
       setPreview(null);
       setSelectedFile(null);
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     } catch (error) {
       console.error("Error deleting profile photo:", error);
@@ -46,38 +50,34 @@ const ProfileImageForm: React.FC<ProfileImageFormProps> = ({ avatarKey, avatarUr
   };
 
   useEffect(() => {
-     setPreview(avatarUrl)
-  }, [])
+    setPreview(avatarUrl);
+  }, []);
 
   const profileImageMutation = useMutation({
     mutationFn: ProfileApi.uploadProfilePhoto,
     onSuccess: (data) => {
       console.log("Upload successful:", data);
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      onClose(false)
-      
+      client.invalidateQueries("profile");
+      onClose(false);
     },
     onError: (error) => {
       console.log("Upload failed:", error);
       toast({
-        title: (
-          <ErrorMessage message='Opps!, Somehing went wrong try again'/>
-        )
-      })
+        title: <ErrorMessage message="Opps!, Somehing went wrong try again" />,
+      });
     },
   });
 
   const handleSave = async () => {
     if (!selectedFile) return;
 
-    // Create FormData object
     const formData = new FormData();
-    formData.append('image', selectedFile);
+    formData.append("image", selectedFile);
 
     profileImageMutation.mutate({
       data: formData,
-      key: IMAGEKEY.AVATAR, 
-      existingKey: avatarKey ?? null
+      key: IMAGEKEY.AVATAR,
+      existingKey: avatarKey ?? null,
     });
   };
 
@@ -125,7 +125,7 @@ const ProfileImageForm: React.FC<ProfileImageFormProps> = ({ avatarKey, avatarUr
             >
               <Save className="h-5 w-5" />
               <span className="text-xs">
-                {profileImageMutation.isLoading ? 'Saving...' : 'Save'}
+                {profileImageMutation.isLoading ? "Saving..." : "Save"}
               </span>
             </Button>
           </>

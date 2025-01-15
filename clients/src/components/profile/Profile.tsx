@@ -39,7 +39,7 @@ import EducationForm from "./EducationForm";
 import SkillForm from "./SkitllsForm";
 import AboutForm from "./AboutForm";
 import { CiCalculator1, CiLocationOn } from "react-icons/ci";
-import  ProfileImageForm from "./ProfileImageForm";
+import ProfileImageForm from "./ProfileImageForm";
 import ExperiencesSection from "./Experience";
 import SkillsSection from "./Skills";
 import EducationSection from "./Education";
@@ -49,6 +49,7 @@ import { CoverImageModal } from "./CoverImageForm";
 import { useQuery } from "react-query";
 import { ModalContent } from "@/types/profile";
 import ProfileSkeleton from "../Skeleton/UserProfile.skeleton";
+import { format } from "date-fns";
 
 const Profile: React.FC = () => {
   const [modal, setModal] = useState<boolean>(false);
@@ -56,39 +57,38 @@ const Profile: React.FC = () => {
   const [modalContent, setModalContent] = useState("");
   const [index, setIndex] = useState(-1);
   const { user } = useSelector((state) => state.auth);
-  const [avatarUrl, setAvatarUrl] = useState('');
-  const [coverImage, setCoverImage] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [coverImage, setCoverImage] = useState("");
+
   const { data, isLoading } = useQuery(
     ["profile"],
     () => ProfileApi.getProfile(user._id),
     {}
   );
 
-  
-  console.log("data", data);
-
   useEffect(() => {
-      if(data && data.coverImageKey) {
-       ProfileApi.getUploadedFile(data.coverImageKey)
-       .then((url) => {
-        console.log("url", url)
-           setCoverImage(url)
-       })
-       
-      }
+    if (data && data.coverImageKey) {
+      ProfileApi.getUploadedFile(data.coverImageKey).then((url) => {
+        console.log("url", url);
+        setCoverImage(url);
+      });
+    }
 
-      if(data && data.profileImageKey) {
-        ProfileApi.getUploadedFile(data.profileImageKey)
-       .then((url) => {
-        console.log("url", url)
+    if (data && data.profileImageKey) {
+      ProfileApi.getUploadedFile(data.profileImageKey).then((url) => {
+        console.log("url", url);
         setAvatarUrl(url);
-       })
-      }
-
+      });
+    }
   }, [data]);
 
-  if(isLoading) {
-    return <ProfileSkeleton />
+  const handleEditCoverImage = () => {
+    setModalContent(ModalContent.EditCoverImage)
+    setShowModal(true);
+  }
+
+  if (isLoading) {
+    return <ProfileSkeleton />;
   }
 
   return (
@@ -101,7 +101,7 @@ const Profile: React.FC = () => {
           {(modalContent === ModalContent.AddPosition ||
             modalContent === ModalContent.EditPosition) && (
             <PositionForm
-            onClose={setShowModal}
+              onClose={setShowModal}
               position={
                 data && modalContent === ModalContent.EditPosition
                   ? data.experience[index]
@@ -137,7 +137,7 @@ const Profile: React.FC = () => {
           {(modalContent === ModalContent.AddAbout ||
             modalContent === ModalContent.EditAbout) && (
             <AboutForm
-            onClose={setShowModal}
+              onClose={setShowModal}
               about={
                 data && modalContent === ModalContent.EditAbout
                   ? data.about
@@ -146,12 +146,14 @@ const Profile: React.FC = () => {
             />
           )}
 
-          {(modalContent === ModalContent.AddCoverImage ||
-            modalContent === ModalContent.EditCoverImage) && <h1></h1>}
 
           {(modalContent === ModalContent.AddProfileImage ||
             modalContent === ModalContent.EditProfileImage) && (
-            <ProfileImageForm avatarKey={data.profileImageKey} avatarUrl={avatarUrl} onClose={setShowModal} />
+            <ProfileImageForm
+              avatarKey={data.profileImageKey}
+              avatarUrl={avatarUrl}
+              onClose={setShowModal}
+            />
           )}
 
           {modalContent === ModalContent.EditProfile && (
@@ -162,13 +164,15 @@ const Profile: React.FC = () => {
             <ContactInfoModalContent />
           )}
 
-          {modalContent === ModalContent.EditCoverImage && <CoverImageModal currentImageUrl={coverImage} onClose={setShowModal} coverKey={data.coverImageKey}/>}
+          {modalContent === ModalContent.EditCoverImage && (
+            <CoverImageModal
+              currentImageUrl={coverImage}
+              onClose={setShowModal}
+              coverKey={data.coverImageKey}
+            />
+          )}
         </DialogContent>
       </Dialog>
-
-      {/* <header>
-        <nav className="bg-slate-400 h-24"></nav>
-      </header> */}
 
       <div className=" max-w-[50rem]">
         <div className="">
@@ -178,10 +182,16 @@ const Profile: React.FC = () => {
                 <div className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 flex items-center justify-center hover:bg-orange-200 hover:text-white">
                   {data && data.coverImageKey ? (
                     <button className="p-1 rounded-full hover:bg-gray-200 ">
-                      <Pencil className="w-4 h-4 text-orange-700 hover:text-white" />
+                      <Pencil onClick={() => {
+                         handleEditCoverImage()
+                      }} className="w-4 h-4 text-orange-700 hover:text-white" />
                     </button>
                   ) : (
-                    <button className="p-1 rounded-full">
+                    <button 
+                    onClick={() => {
+                      handleEditCoverImage()
+                    }}
+                    className="p-1 rounded-full">
                       <Camera className="w-4 h-4 text-orange-700 hover:text-white" />
                     </button>
                   )}
@@ -196,40 +206,74 @@ const Profile: React.FC = () => {
                   className="overflow-hidden rounded"
                   alt=""
                 />
-                <div className="w-40 h-40 flex justify-center items-center top-36 bg-slate-600 object-cover rounded-full absolute left-1/2 -translate-x-1/2 border-4 border-white">
-                  {data && data.profileImageKey ? (
-                    <img
-                      onClick={(e) => setModal(!modal)}
-                      src={data && data.profileImageKey ? `${avatarUrl}`: ""}
-                      className="rounded-full"
-                      style={{ width: "100%", height: "100%" }}
-                      alt=""
+                <div
+                  className="w-40 h-40 flex justify-center items-center top-36 bg-slate-600 object-cover rounded-full absolute left-1/2 -translate-x-1/2 border-4 border-white group overflow-hidden transition-all duration-300 ease-in-out
+                      hover:border-orange-500 hover:shadow-lg hover:shadow-orange-200/5"
+                >
+                  <div className="relative w-full h-full">
+                    {data && data.profileImageKey ? (
+                      <img
+                        onClick={() => setModal(!modal)}
+                        src={data.profileImageKey ? `${avatarUrl}` : ""}
+                        className="rounded-full w-full h-full object-cover 
+                         transition-transform duration-300 group-hover:scale-105"
+                        alt="Profile"
+                      />
+                    ) : (
+                      <h1 className="text-6xl font-semibold text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                        {user.username[0]}
+                      </h1>
+                    )}
+
+                    <div
+                      className="absolute inset-0 bg-gray-600 opacity-0 group-hover:opacity-70 
+                         transition-all duration-300 rounded-full "
                     />
-                  ) : (
-                    <h1 className="text-6xl font-semibold text-white">
-                      {user.username[0]}
-                    </h1>
-                  )}
+
+                    <button
+                      onClick={() => {
+                        let args = data?.profileImageKey
+                          ? ModalContent.EditProfileImage
+                          : ModalContent.AddProfileImage;
+
+                        setModalContent(args);
+                        setShowModal(!showModal);
+                      }}
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
+                           rounded-full p-3 opacity-0 scale-50
+                           group-hover:opacity-100 group-hover:scale-100
+                           transition-all duration-300 ease-out
+                           hover:shadow-lg hover:scale-110
+                           flex items-center justify-center"
+                    >
+                      <Pencil
+                        className="text-white transition-colors duration-300"
+                        size={26}
+                      />
+                    </button>
+                  </div>
                 </div>
               </div>
               <div className="flex gap-y-1 w-full mt-14 sm:mt-0 px-4 py-2 border">
                 <div className="mt-2 p-2 flex-1">
                   <div>
-                    <h1 className="text-2xl font-semibold">{user.username}</h1>
+                    <h1 className="text-2xl font-semibold">{data.username}</h1>
                     <h2 className="text-lg font-medium text-zinc-500">
-                      {user.jobRole}
+                      {data.jobRole}
                     </h2>
                   </div>
                   <div className="flex flex-col mt-1 justify-start gap-y-1 text-zinc-400 tracking-wider">
                     <div className="flex gap-x-2 items-center">
                       <CiLocationOn />
-                      <h3 className="text-xs">Kozhikode, kerala, india</h3>
+                      <h3 className="text-xs">{data?.location?.placename}</h3>
                     </div>
 
                     <div className="flex justify-start gap-y-1">
                       <div className="flex gap-x-1 items-center">
                         <CiCalculator1 className="text-xs" />
-                        <p className="mr-3 text-xs">Joined october 2023</p>
+                        <p className="mr-3 text-xs">
+                          {format(data.createdAt, "PPP")}
+                        </p>
                       </div>
                       <div className="flex gap-1 items-center">
                         <FaPhone size={12} className="text-xs" />
@@ -246,28 +290,22 @@ const Profile: React.FC = () => {
                     </div>
                   </div>
                   <div className="flex mt-3 gap-x-3">
-                    {/* <button className="inline-flex gap-x-1 items-center text-base justify-center px-4 py-[4px] rounded-full bg-gradient-to-b from-orange-500 to-orange-600 text-white focus:ring-2 focus:ring-orange-400 hover:shadow-xl transition duration-200">
-                      <Plus size={14} className="font-bold" />
-                      Connect
-                    </button> */}
-
                     <Popover>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger>
                             <PopoverTrigger asChild>
-                            <button className="inline-flex gap-x-1 items-center text-base justify-center px-4 py-[4px] rounded-full bg-gradient-to-b from-orange-500 to-orange-600 text-white focus:ring-2 focus:ring-orange-400 hover:shadow-xl transition duration-200">
-                            <CircleEllipsis size={20} className="" />
-                      More
-                    </button>
-                              
-                              </PopoverTrigger>
-                            </TooltipTrigger>
-                            <TooltipContent className="border-1 bg-orange-600 text-white shadow-xl">
-                              <p>Add profile section</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
+                              <button className="inline-flex gap-x-1 items-center text-base justify-center px-4 py-[4px] rounded-full bg-gradient-to-b from-orange-500 to-orange-600 text-white focus:ring-2 focus:ring-orange-400 hover:shadow-xl transition duration-200">
+                                <CircleEllipsis size={20} className="" />
+                                More
+                              </button>
+                            </PopoverTrigger>
+                          </TooltipTrigger>
+                          <TooltipContent className="border-1 bg-orange-600 text-white shadow-xl">
+                            <p>Add profile section</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       <PopoverContent className="w-60 shadow-none">
                         <div className="flex flex-col gap-y-[1.5rem]">
                           <div className="flex gap-x-3 items-center">
@@ -333,7 +371,7 @@ const Profile: React.FC = () => {
                           <div className="flex gap-x-3 items-center">
                             <GraduationCap className="size-5" />
                             <h4
-                              onClick={(e) => {
+                              onClick={() => {
                                 setModalContent("Add Education");
                                 setShowModal(!showModal);
                               }}
@@ -366,7 +404,7 @@ const Profile: React.FC = () => {
             </div>
           </div>
           <div className="mt-2">
-            {data && data.about ? (
+            {data?.about ? (
               <About
                 setContent={setModalContent}
                 about={data.about}
@@ -381,15 +419,22 @@ const Profile: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <button className="p-1 rounded-full hover:bg-gray-200">
+                  <button
+                    className="p-1 rounded-full hover:bg-gray-200"
+                    onClick={() => {
+                      setModalContent(ModalContent.AddAbout);
+                      setShowModal(true);
+                    }}
+                  >
                     <Plus size={24} />
                   </button>
                 </div>
               </div>
             )}
           </div>
+
           <div className="mt-2">
-            {data && data.experience.length > 0 ? (
+            {data?.experience?.length > 0 ? (
               <ExperiencesSection
                 setContent={setModalContent}
                 setModal={setShowModal}
@@ -399,22 +444,28 @@ const Profile: React.FC = () => {
             ) : (
               <div className="flex justify-between p-4 px-8 rounded mt-4 border items-center">
                 <div>
-                  <h1 className="text-lg font-bold font-clash">Expereince</h1>
+                  <h1 className="text-lg font-bold font-clash">Experience</h1>
                   <p className="text-xs text-gray-600">
-                    {" "}
                     Provide details about your relevant work history
                   </p>
                 </div>
                 <div>
-                  <button className="p-1 rounded-full hover:bg-gray-200">
+                  <button
+                    className="p-1 rounded-full hover:bg-gray-200"
+                    onClick={() => {
+                      setModalContent(ModalContent.AddPosition);
+                      setShowModal(true);
+                    }}
+                  >
                     <Plus size={24} />
                   </button>
                 </div>
               </div>
             )}
           </div>
+
           <div className="mt-2">
-            {data && data.education.length > 0 ? (
+            {data?.education?.length > 0 ? (
               <EducationSection
                 setContent={setModalContent}
                 setIndex={setIndex}
@@ -430,15 +481,22 @@ const Profile: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <button className="p-1 rounded-full hover:bg-gray-200">
+                  <button
+                    className="p-1 rounded-full hover:bg-gray-200"
+                    onClick={() => {
+                      setModalContent(ModalContent.AddEducation);
+                      setShowModal(true);
+                    }}
+                  >
                     <Plus size={24} />
                   </button>
                 </div>
               </div>
             )}
           </div>
+
           <div className="mt-2">
-            {data && data.skills.length > 0 ? (
+            {data?.skills?.length > 0 ? (
               <SkillsSection
                 skills={data.skills}
                 setContent={setModalContent}
@@ -453,7 +511,13 @@ const Profile: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <button className="p-1 rounded-full hover:bg-gray-200">
+                  <button
+                    className="p-1 rounded-full hover:bg-gray-200"
+                    onClick={() => {
+                      setModalContent(ModalContent.AddSkill);
+                      setShowModal(true);
+                    }}
+                  >
                     <Plus size={24} />
                   </button>
                 </div>

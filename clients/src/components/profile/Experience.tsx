@@ -1,6 +1,7 @@
 import React from 'react';
 import { PlusIcon, PencilIcon } from 'lucide-react';
 import { format } from 'date-fns';
+import { calculateDuration } from '@/lib/utilities/calculateDuration';
 
 interface Experience {
   id: number;
@@ -13,28 +14,6 @@ interface Experience {
   logo: string;
 }
 
-const experiences: Experience[] = [
-  {
-    id: 1,
-    role: "Product Designer",
-    company: "Twitter",
-    type: "Full-Time",
-    duration: "Jun 2019 - Present (1y 1m)",
-    location: "Manchester, UK",
-    description: "Created and executed social media plan for 10 brands utilizing multiple features and content types to increase brand outreach, engagement, and leads.",
-    logo: "https://logo.clearbit.com/twitter.com",
-  },
-  {
-    id: 2,
-    role: "Growth Marketing Designer",
-    company: "GoDaddy",
-    type: "Full-Time",
-    duration: "Jun 2011 - May 2019 (8y)",
-    location: "Manchester, UK",
-    description: "Developed digital marketing strategies, activation plans, proposals, contests and promotions for client initiatives",
-    logo: "https://logo.clearbit.com/godaddy.com",
-  },
-];
 
 interface ExperiencesSectionProps {
      experiences?: [{}];
@@ -55,42 +34,71 @@ const ExperiencesSection: React.FC<ExperiencesSectionProps> = ({ experiences, se
             setContent('Add Position')
             setModal(true)
           }}
-         className="p-2 bg-blue-50 rounded-md">
-          <PlusIcon className="w-5 h-5 text-blue-600" />
+         className="p-2 bg-orange-50 rounded-md">
+          <PlusIcon className="w-5 h-5 text-orange-600" />
         </button>
       </div>
       
-      {experiences.map((exp, index) => (
-        <div key={Date.now()} className="mb-6 last:mb-0">
-          <div className="flex items-start">
-            <img src="https://logo.clearbit.com/godaddy.com" alt="Company Logo" className="w-12 h-12 rounded-full mr-4" />
-            <div className="flex-grow">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800">{exp.position}</h3>
-                  <p className="text-gray-600">
-                    {exp.companyName} • {exp.employmentType} • {exp.duration}
-                  </p>
-                  <p className="text-gray-500">{exp.locationType}</p>
-                </div>
-                <button
-                 onClick={() => {
-                    setContent('Edit Position')
-                    setModal(true)
-                    setIndex(index)
-                  }}
-                 className="p-2">
-                  <PencilIcon className="w-4 h-4 text-gray-400" />
-                </button>
-              </div>
-              <p className="mt-2 text-gray-700">{exp.currentlyWorking ? format(exp.startDate, "PPP"): ""}</p>
-            </div>
-          </div>
-          {exp.id !== experiences.length && <hr className="my-6 border-gray-200" />}
-        </div>
+      {experiences && experiences.map((exp, index) => (
+       <div 
+       key={`${index}-${Date.now()}`} 
+       className="mb-6 last:mb-0"
+     >
+       <div className="flex items-start gap-4">
+         <img 
+           src="https://logo.clearbit.com/godaddy.com" 
+           alt={`${exp.companyName} logo`}
+           className="w-12 h-12 rounded-full flex-shrink-0"
+         />
+ 
+         <div className="flex-grow">
+
+           <div className="flex justify-between items-start">
+             <div className="space-y-1">
+               <h3 className="text-lg font-semibold capitalize text-gray-800">
+                 {exp.position}
+               </h3>
+               <p className="text-gray-600">
+                 <span className="font-medium capitalize">{exp.companyName}</span>
+                 <span className="mx-2">•</span>
+                 <span>{exp.employmentType}</span>
+                 <span className="mx-2">•</span>
+                 <span>{calculateDuration(exp.startDate, exp.currentlyWorking ? new Date() : exp.endDate)}</span>
+               </p>
+               <p className="text-gray-500">
+                 {exp.locationType}
+               </p>
+             </div>
+
+             <button
+               onClick={() => {
+                 setContent('Edit Position');
+                 setModal(true);
+                 setIndex(index);
+               }}
+               className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+               aria-label="Edit position"
+             >
+               <PencilIcon className="w-4 h-4 text-gray-400" />
+             </button>
+           </div>
+ 
+           <p className="mt-4 text-gray-700">
+             {exp.currentlyWorking 
+               ? `${format(exp.startDate, "PPP")} - Present`
+               : `${format(exp.startDate, "PPP")} - ${format(exp.endDate, "PPP")}`
+             }
+           </p>
+         </div>
+       </div>
+ 
+       {exp.id !== experiences.length && (
+         <hr className="my-6 border-gray-200" />
+       )}
+     </div>
       ))}
       
-      <button className="w-full text-center text-blue-600 mt-4">
+      <button className="w-full text-center text-orange-600 mt-4">
         Show 3 more experiences
       </button>
     </div>

@@ -1,7 +1,6 @@
 import React from 'react'
 import { ProfileApi } from "@/api/Profile.api";
 import { useSelector } from "react-redux";
-import { Button } from "@/components/ui/button";
 import { Textarea } from '@/components/ui/textarea'
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -15,19 +14,24 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import LoaderSubmitButton from '../common/spinner/LoaderSubmitButton';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
+import { useToast } from '@/hooks/use-toast';
 
 interface AboutFormProps {
     about?: string
     onClose: React.Dispatch<React.SetStateAction<boolean>>
 }
 
+const formSchema = z.object({
+    about: z.string().min(10, "About Me should be at least 10 characters long"),
+  });
+
+  type AboutFormData = z.infer<typeof formSchema>;
+
 function AboutForm({ about, onClose } : AboutFormProps) {
     const { user } = useSelector((state) => state.auth);
-    const formSchema = z.object({
-      about: z.string().min(10, "About Me should be at least 10 characters long"),
-    });
-        
+   const { toast } = useToast()
+   const client = useQueryClient();  
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -38,14 +42,20 @@ function AboutForm({ about, onClose } : AboutFormProps) {
     const aboutMutation = useMutation({
       mutationFn: ProfileApi.updateProfile,
       onSuccess: (data, ) => {
+            client.invalidateQueries('profile')
             onClose(false)
+            toast({
+                title: "About Me updated successfully",
+                duration: 5000,
+                className: "bg-green-500 text-white",
+            })
       }, 
       onError: (err) => {
          console.log("err", err);
       }
     })
     
-    async function onSubmit(data) {
+    async function onSubmit(data: AboutFormData) {
         console.log("data", data);
         aboutMutation.mutate({ data, email: user.email });
     }
@@ -73,7 +83,7 @@ function AboutForm({ about, onClose } : AboutFormProps) {
                     )}
                 />
                 <div className="flex justify-end">
-                    <LoaderSubmitButton >
+                    <LoaderSubmitButton state={aboutMutation.isLoading}>
                         Save
                     </LoaderSubmitButton>
                 </div>

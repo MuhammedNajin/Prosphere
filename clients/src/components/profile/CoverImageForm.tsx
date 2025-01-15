@@ -1,12 +1,11 @@
-import React, { useState, useRef, createRef } from 'react';
-import { ImageIcon, Upload } from "lucide-react";
+import React, { useState, useRef, createRef } from "react";
+import { Upload } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import Cropper, { ReactCropperElement } from "react-cropper";
 import "cropperjs/dist/cropper.css";
-
 import {
   Form,
   FormControl,
@@ -14,17 +13,14 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
-import { ProfileApi } from '@/api/Profile.api';
-import { useSelector } from 'react-redux';
-import { IMAGEKEY } from '@/types/profile';
-import { useMutation } from 'react-query';
 
-const MAX_FILE_SIZE = 5000000; // 5MB
+import { ProfileApi } from "@/api/Profile.api";
+import { IMAGEKEY } from "@/types/profile";
+import { useMutation, useQueryClient } from "react-query";
+import { useToast } from "@/hooks/use-toast";
+import { ApiError } from "@/api";
+
+const MAX_FILE_SIZE = 5000000;
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const formSchema = z.object({
@@ -47,16 +43,22 @@ type FormValues = z.infer<typeof formSchema>;
 interface CoverImageModalProps {
   currentImageUrl?: string;
   onClose: React.Dispatch<React.SetStateAction<boolean>>;
-  coverKey: string
+  coverKey: string;
 }
 
-export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverImageModalProps) {
-  const [previewUrl, setPreviewUrl] = useState<string>(currentImageUrl || '');
+export function CoverImageModal({
+  onClose,
+  currentImageUrl,
+  coverKey,
+}: CoverImageModalProps) {
+  const [previewUrl, setPreviewUrl] = useState<string>(currentImageUrl || "");
   const [isCropping, setIsCropping] = useState(false);
   const [cropResult, setCropResult] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cropperRef = createRef<ReactCropperElement>();
- 
+  const client = useQueryClient();
+  const { toast } = useToast();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -67,13 +69,20 @@ export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverIma
   const uploadMutation = useMutation({
     mutationFn: ProfileApi.uploadProfilePhoto,
     onSuccess: () => {
+      client.invalidateQueries("profile");
       handleReset();
-      onClose(false); // Close the modal on success
+      onClose(false);
     },
-    onError: () => {
-      form.setError('image', {
-        type: 'manual',
-        message: 'Failed to upload image. Please try again.',
+    onError: (err: ApiError) => {
+      const error = err.response.data?.errors?.[0].message;
+
+      toast({
+        title: "Opp!, something went wrong",
+        description: error,
+      });
+      form.setError("image", {
+        type: "manual",
+        message: "Failed to upload image. Please try again.",
       });
     },
   });
@@ -88,7 +97,7 @@ export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverIma
         setIsCropping(true);
       };
       reader.readAsDataURL(file);
-      form.setValue('image', files, {
+      form.setValue("image", files, {
         shouldValidate: true,
       });
     }
@@ -100,34 +109,35 @@ export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverIma
       const croppedImage = croppedCanvas.toDataURL();
       setCropResult(croppedImage);
       setIsCropping(false);
-      
-      // Convert base64 to blob and then to File
+
       croppedCanvas.toBlob((blob) => {
         if (blob) {
-          const file = new File([blob], 'cropped-cover-image.jpg', { type: 'image/jpeg' });
+          const file = new File([blob], "cropped-cover-image.jpg", {
+            type: "image/jpeg",
+          });
           const dataTransfer = new DataTransfer();
           dataTransfer.items.add(file);
-          form.setValue('image', dataTransfer.files, { shouldValidate: true });
+          form.setValue("image", dataTransfer.files, { shouldValidate: true });
         }
-      }, 'image/jpeg');
+      }, "image/jpeg");
     }
   };
 
   const onSubmit = async (data: FormValues) => {
     uploadMutation.mutate({
-      data, 
+      data,
       key: IMAGEKEY.COVER,
-      existingKey: coverKey ?? null
-     });
+      existingKey: coverKey ?? null,
+    });
   };
 
   const handleReset = () => {
     form.reset();
-    setPreviewUrl('');
+    setPreviewUrl("");
     setCropResult(null);
     setIsCropping(false);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -137,7 +147,7 @@ export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverIma
         <FormField
           control={form.control}
           name="image"
-          render={({ field: { ref } }) => (
+          render={ () => (
             <FormItem>
               <FormControl>
                 <div className="flex flex-col items-center justify-center">
@@ -147,7 +157,7 @@ export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverIma
                         ref={cropperRef}
                         className="h-[400px] w-full"
                         zoomTo={0.5}
-                        initialAspectRatio={16/9}
+                        initialAspectRatio={16 / 9}
                         preview=".img-preview"
                         src={previewUrl}
                         viewMode={1}
@@ -160,7 +170,11 @@ export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverIma
                         guides={true}
                       />
                       <div className="flex justify-end gap-2">
-                        <Button type="button" variant="outline" onClick={() => setIsCropping(false)}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsCropping(false)}
+                        >
                           Cancel
                         </Button>
                         <Button type="button" onClick={getCropData}>
@@ -197,7 +211,7 @@ export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverIma
                   )}
                   <input
                     type="file"
-                    accept={ACCEPTED_IMAGE_TYPES.join(',')}
+                    accept={ACCEPTED_IMAGE_TYPES.join(",")}
                     className="hidden"
                     ref={fileInputRef}
                     onChange={handleFileChange}
@@ -217,15 +231,6 @@ export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverIma
           )}
         />
 
-        {(form.formState.errors.image || uploadMutation.error) && (
-          <Alert variant="destructive">
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              {form.formState.errors.image?.message || 'Failed to upload image. Please try again.'}
-            </AlertDescription>
-          </Alert>
-        )}
-
         <div className="flex justify-end gap-4">
           <Button
             type="button"
@@ -239,9 +244,9 @@ export function CoverImageModal({ onClose, currentImageUrl, coverKey }: CoverIma
           </Button>
           <Button
             type="submit"
-            disabled={uploadMutation.isPending || !form.formState.isValid}
+            disabled={!uploadMutation.isSuccess || !form.formState.isValid}
           >
-            {uploadMutation.isLoading ? 'Uploading...' : 'Upload'}
+            {uploadMutation.isLoading ? "Uploading..." : "Upload"}
           </Button>
         </div>
       </form>

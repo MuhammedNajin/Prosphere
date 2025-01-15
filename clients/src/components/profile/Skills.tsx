@@ -19,16 +19,16 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, setContent, setMo
   console.log("skills", skills);
   return (
     <div className="bg-white p-6 rounded border">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-3">
         <h2 className="text-lg font-bold text-gray-800">Skills</h2>
-        <div className="flex space-x-2">
+        <div className="flex flex-col space-y-2">
           <button
             onClick={() => {
                 setContent('Add Skill')
                 setModal(true)
               }}
-           className="p-2 bg-blue-50 rounded-md">
-            <PlusIcon className="w-5 h-5 text-blue-600" />
+           className="p-2 bg-orange-50 rounded-md">
+            <PlusIcon className="w-5 h-5 text-orange-600" />
           </button>
           <button
           onClick={() => {
@@ -36,7 +36,7 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, setContent, setMo
             setModal(true)
           }}
            className="p-2 bg-gray-100 rounded-md">
-            <PencilIcon className="w-5 h-5 text-gray-600" />
+            <PencilIcon size={16} className=" text-gray-600" />
           </button>
         </div>
       </div>
@@ -52,7 +52,11 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ skills, setContent, setMo
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Badge className="flex-shrink-0 px-1 py-1 flex items-center justify-center" />
+                <span className="inline-flex items-center justify-center px-3 py-1 bg-orange-100 text-orange-600 rounded-full text-sm">  
+                  <Badge variant="secondary" className="h-5 w-5 rounded-full flex items-center justify-center">
+                    {skill.proficiency.charAt(0)}
+                  </Badge>
+                </span>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>{skill.proficiency}</p>
