@@ -1,11 +1,21 @@
+import { GetjobByCompanyArgs } from "@/types/job";
 import axiosInstance from "./config";
 import { AxiosInstance } from "axios";
 
 class JobApi {
   private static axios: AxiosInstance = axiosInstance;
 
-  static postJob = async ({ formData, id, trail, subscriptionId }: { formData: any, id: string, trail: boolean, subscriptionId: string}) => {
-   
+  static postJob = async ({
+    formData,
+    id,
+    trail,
+    subscriptionId,
+  }: {
+    formData: any;
+    id: string;
+    trail: boolean;
+    subscriptionId: string;
+  }) => {
     console.log("job posting ", formData);
     const minSalary = formData["minSalary"];
     const maxSalary = formData["maxSalary"];
@@ -116,10 +126,33 @@ class JobApi {
     }
   };
 
-  static getjobByCompany = async () => {
+  static getjobByCompany = async ({
+    filter,
+    from,
+    to,
+    page,
+    pageSize = 2
+  }: GetjobByCompanyArgs) => {
     try {
-      const response = await this.axios.get("/api/v1/job/company/all");
-      return response.data?.data;
+
+      const queryParams = new URLSearchParams({
+        to: to.toISOString(),
+        from: from.toISOString(),
+        filter,
+        page: String(page),
+        pageSize: String(pageSize),
+      });
+
+      const response = await this.axios.get(
+        `/api/v1/job/company/all?${queryParams}`
+      );
+      return {
+        jobs: response.data.jobs || [],
+        currentPage: page,
+        totalPages: Math.ceil((response.data.total || 0) / pageSize),
+        hasMore: page < Math.ceil((response.data.total || 0) / pageSize),
+        total: response.data.total || 0,
+      }
     } catch (error) {
       console.log(error);
       throw error;

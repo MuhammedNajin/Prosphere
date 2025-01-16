@@ -39,11 +39,6 @@ const ApplicationItem: React.FC<{ application: Application }> = ({ application }
           {application.status}
         </div>
       </div>
-      <img 
-        src="https://cdn.builder.io/api/v1/image/assets/TEMP/d639485dd76f86e7bb4e608ceca70991491ec0bd6308ce9ab8fce317991b1d2f?placeholderIfAbsent=true&apiKey=942cdf39840f4ab69951fbe195dac732" 
-        alt="More options" 
-        className="object-contain shrink-0 self-stretch my-auto w-6 aspect-square"
-      />
     </div>
   );
 
