@@ -1,26 +1,27 @@
 import {
     IgetMyApplicationUseCase
   } from "@/application/interface/applicationUsecase_interface.ts";
+import { StatusCode } from "@muhammednajinnprosphere/common";
   import { application, NextFunction, Request, Response } from "express";
   
   export class  GetMyApplicationController {
-    private getMyApplicationUseCase:  IgetMyApplicationUseCase;
-    constructor(getMyApplicationUseCase:  IgetMyApplicationUseCase) {
-      this.getMyApplicationUseCase = getMyApplicationUseCase;
-    }
+    
+    constructor(private getMyApplicationUseCase: IgetMyApplicationUseCase) {}
   
     public handler = async (req: Request, res: Response, next: NextFunction) => {
       try {
         console.log("req", req.params);
-        const { userId } = req.params;
+        const filter = req.query.filter as string;
+        const page = parseInt(req.query.page as string);
+        const pageSize = parseInt(req.query.pageSize as string);
+        const search = req.query.search as string;
+        
+        
+        const { id: userId } = JSON.parse(req.headers['x-user-data'] as string);
 
-        const applications = await this.getMyApplicationUseCase.execute(userId);
+        const applications = await this.getMyApplicationUseCase.execute({filter , page, search, userId, pageSize});
   
-        res.status(200).json({
-          status: true,
-          applications,
-          message: "My Job Application"
-        });
+        res.status(StatusCode.OK).json( applications );
 
       } catch (error) {
         console.log("controller", error);

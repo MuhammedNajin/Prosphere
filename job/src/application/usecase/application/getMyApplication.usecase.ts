@@ -5,7 +5,7 @@ import { IApplicationRepository } from '@domain/interface/IApplicationRepository
 export class GetMyApplicationUseCase implements IgetMyApplicationUseCase {
     constructor (private applicationRepository: IApplicationRepository) {}
 
-    async execute(userId: string): Promise<IApplicationEntity['id'][] | null> {
-        return await this.applicationRepository.getApplied(userId)
+    async execute(params: { userId: string, filter: string, search: string, page: number, pageSize: number}): Promise<IApplicationEntity[] | null> {
+        return await this.applicationRepository.getApplied(params)
     }
 }
