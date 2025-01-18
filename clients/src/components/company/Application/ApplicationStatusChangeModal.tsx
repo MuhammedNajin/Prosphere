@@ -33,6 +33,7 @@ import { useToast } from "@/hooks/use-toast";
 
 // Define the status type
 export type ApplicationStatus =
+   "All"
   | "Applied"
   | "Inreview"
   | "Shortlisted"

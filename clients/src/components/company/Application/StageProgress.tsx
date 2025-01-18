@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface StageProgressProps {
   stage: {
@@ -6,13 +6,16 @@ interface StageProgressProps {
     progress: number;
   };
 }
-{/* <FILE path="ApplicantProfile/StageProgress.tsx"> */}
+
 const StageProgress: React.FC<StageProgressProps> = ({ stage }) => {
   const progressSteps = 4;
   const filledSteps = Math.round(stage.progress * progressSteps);
-
+ useEffect(() => {
+    console.log("stateProgess", filledSteps);
+    
+ }, [])
   return (
-    <section className="flex flex-col p-4 mt-5 w-full bg-gray-100 rounded-lg">
+    <section className="flex capitalize flex-col p-4 mt-5 w-full bg-gray-100 rounded-lg">
       <div className="flex gap-10 justify-between items-start w-full text-sm leading-relaxed whitespace-nowrap">
         <h3 className="text-accent-purple">Stage</h3>
         <div className="flex gap-2 items-center text-right text-orange-700">
@@ -25,7 +28,7 @@ const StageProgress: React.FC<StageProgressProps> = ({ stage }) => {
           <div
             key={index}
             className={`flex flex-1 shrink basis-0 h-[11px] ${
-              index < filledSteps ? 'bg-orange-700 ' : 'bg-gray-200'
+              index < stage.progress ? 'bg-orange-700 ' : 'bg-gray-300'
             }`}
           />
         ))}

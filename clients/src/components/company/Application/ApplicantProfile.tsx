@@ -2,12 +2,13 @@ import React, { useEffect, useState } from "react";
 import AppliedJobs from "./AppliedJob";
 import StageProgress from "./StageProgress";
 import ActionButtons from "./ActionButton";
-import { Link, Outlet, useParams } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate, useParams } from "react-router-dom";
 import { ApplicantProfileProps } from "@/types/company";
 import { useQuery } from "react-query";
 import { ApplicationApi } from "@/api/application.api";
 import { ArrowRight, ChevronRight, Ellipsis } from "lucide-react";
 import NavigationLink from './NavigationLink'
+import { ApplicationStatus } from "@/types/application";
 const ApplicantProfile: React.FC<ApplicantProfileProps> = ({ applicant }) => {
     const { id } = useParams();
     const [ user, setApplicant ] = useState({});
@@ -15,6 +16,8 @@ const ApplicantProfile: React.FC<ApplicantProfileProps> = ({ applicant }) => {
       queryKey: ["applicant"],
       queryFn: () => ApplicationApi.getApplication(id as string)
     });
+     const { state } = useLocation();
+     const navigte = useNavigate();
 
     useEffect(() => {
       console.log("/api/v1/job/application", applicants.data, "user", user)
@@ -24,6 +27,23 @@ const ApplicantProfile: React.FC<ApplicantProfileProps> = ({ applicant }) => {
       }
     }, [applicants])
 
+    const calculateProgress = (stage: ApplicationStatus) => {
+      console.log("stage", stage);
+      
+       switch(stage) {
+        case ApplicationStatus.Applied:
+          return 1;
+        case ApplicationStatus.Shortlisted:
+          return 2;
+        case ApplicationStatus.Interview:
+          return 3;
+        case ApplicationStatus.Selected:
+          return 4;    
+        default:
+          return 4;  
+       }
+    }
+
   return (
     <div className="p-8">
       <header className="flex flex-wrap gap-10 justify-between items-center px-6 py-4 w-full bg-white">
@@ -32,7 +52,13 @@ const ApplicantProfile: React.FC<ApplicantProfileProps> = ({ applicant }) => {
             <h1 className="text-2xl font-semibold leading-tight">Applicant Details</h1>
           </div>
         </div>
-        <button className="inline-flex gap-2 justify-center items-center rounded-lg self-stretch px-4 py-2 my-auto text-base font-bold leading-relaxed text-center text-orange-700 border border-orange-700 border-solid hover:text-white hover:bg-orange-700">
+        <button 
+        onClick={() => {
+           if(state?.url) {
+            navigte(state.url);
+           }
+        }}
+        className="inline-flex gap-2 justify-center items-center rounded-lg self-stretch px-4 py-2 my-auto text-base font-bold leading-relaxed text-center text-orange-700 border border-orange-700 border-solid hover:text-white hover:bg-orange-700">
           <ArrowRight className="rotate-180" />
           <span className="self-stretch my-auto">Back</span>
         </button>
@@ -51,7 +77,10 @@ const ApplicantProfile: React.FC<ApplicantProfileProps> = ({ applicant }) => {
             </div>
           </header>
           <AppliedJobs job={user?.jobId}  />
-          <StageProgress stage={applicant.stage} />
+          <StageProgress stage={{
+            name: user?.status,
+            progress: calculateProgress(user?.status)
+          }} />
           <ActionButtons applicant={user?.applicantId } />
           <hr className="mt-5 w-full bg-zinc-200 min-h-[1px]" />
           <section className="flex flex-col items-start mt-5 w-full text-base leading-relaxed bg-white">
