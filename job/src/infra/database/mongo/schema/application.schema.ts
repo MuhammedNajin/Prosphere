@@ -4,9 +4,6 @@ export interface ApplicationAttrs {
   companyId: string;
   jobId: string;
   applicantId: string;
-  name?: string;
-  phone?: string;
-  email?: string;
   coverLetter?: string;
   status: 'Applied' | 'Inreview' | 'Shortlisted' | 'Interview' | 'Rejected' | 'Selected';
   resume?: string;
@@ -32,9 +29,6 @@ export interface ApplicationDoc extends Document {
   companyId: string;
   jobId: string;
   applicantId: string;
-  name?: string;
-  phone?: string;
-  email?: string;
   coverLetter?: string;
   status: 'Applied' | 'Inreview' | 'Shortlisted' | 'Interview' | 'Rejected' | 'Selected';
   resume?: string;
@@ -81,17 +75,6 @@ const ApplicationSchema = new mongoose.Schema({
     required: [true, "Applicant ID is required"],
   },
 
-  name: {
-    type: String,
-  },
-
-  phone: {
-    type: String,
-  },
-
-  email: {
-    type: String,
-  },
 
   coverLetter: {
     type: String,
@@ -162,6 +145,7 @@ const ApplicationSchema = new mongoose.Schema({
 ApplicationSchema.statics.build = (attrs: ApplicationAttrs) => {
   return new Application(attrs);
 };
+  
 
 const Application = mongoose.model<ApplicationDoc, ApplicationModel>(
   "Application",

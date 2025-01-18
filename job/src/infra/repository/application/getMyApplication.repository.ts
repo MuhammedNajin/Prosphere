@@ -1,6 +1,6 @@
 import { Application } from '@infra/database/mongo';
 import { IApplicationEntity } from '@domain/interface/IEntity';
-
+import mongoose from 'mongoose'
 interface PaginatedApplicationResponse {
     applications: Array<{
         _id: string;
@@ -25,9 +25,7 @@ interface PaginatedApplicationResponse {
 }
 
 export class GetMyApplicationRepository {
-  
- 
-     
+
     static async getApplied(
        {
         filter,
@@ -48,7 +46,7 @@ export class GetMyApplicationRepository {
         const skip = (currentPage - 1) * pageSize;
 
 
-        console.log("getApplied application repository", filter, page, search, pageSize);
+        console.log("getApplied application repository", filter, page, search, pageSize, userId);
 
         
         const filterConditions: any = {
@@ -62,35 +60,135 @@ export class GetMyApplicationRepository {
 
        
         if (search) {
-           
-            const searchRegex = new RegExp(search, 'i');
-            filterConditions.$or = [
-                { 'companyId.name': searchRegex },
-                { 'jobId.jobTitle': searchRegex }
-            ];
+    
+            filterConditions.$or =  [
+                { 'companyId.name': { $regex: search, $options: 'i' } },
+                { 'jobId.jobTitle': { $regex: search, $options: 'i' } }
+              ]
         }
 
-        const [applications, totalCount] = await Promise.all([
-            Application.find(filterConditions)
-                .select('_id appliedAt status')
-                .populate({
-                    path: 'companyId',
-                    select: 'name'
-                })
-                .populate({
-                    path: 'jobId',
-                    select: 'jobTitle'
-                })
-                .sort({ appliedAt: -1 }) 
-                .skip(skip)
-                .limit(pageSize),
+        console.log("fiterConditon", filterConditions)
+
+        const aggregationPipeline = [
+            {
+                $match: {
+                    applicantId: new mongoose.Types.ObjectId(userId),
+                    ...(filter && filter !== 'All' ? { status: filter } : {})
+                }
+            },
+        
+            {
+                $lookup: {
+                    from: 'companies',  
+                    localField: 'companyId',
+                    foreignField: '_id',
+                    as: 'companyInfo'
+                }
+            },
+        
+            {
+                $unwind: '$companyInfo'
+            },
+        
+            {
+                $lookup: {
+                    from: 'jobs',
+                    localField: 'jobId',
+                    foreignField: '_id',
+                    as: 'jobInfo'
+                }
+            },
+
+            {
+                $unwind: '$jobInfo'
+            },
+
+            ...(search ? [{
+                $match: {
+                    $or: [
+                        { 'companyInfo.name': { $regex: search, $options: 'i' } },
+                        { 'jobInfo.jobTitle': { $regex: search, $options: 'i' } }
+                    ]
+                }
+            }] : []),
+
+            {
+                $sort: { appliedAt: -1 }
+            },
+
+            {
+                $skip: skip
+            },
+
+            {
+                $limit: pageSize
+            },
+        
+            {
+                $project: {
+                    _id: 1,
+                    appliedAt: 1,
+                    status: 1,
+                    'companyId': {
+                        _id: '$companyInfo._id',
+                        name: '$companyInfo.name',
+                        logo: '$companyInfo.logo'
+                    },
+                    'jobId': {
+                        _id: '$jobInfo._id',
+                        jobTitle: '$jobInfo.jobTitle'
+                    }
+                }
+            }
+        ];
+
+        const [applications, totalCount, countArray] = await Promise.all([
+            Application.aggregate(aggregationPipeline),
             
-            Application.countDocuments()
+            Application.countDocuments(),
+            Application.aggregate([
+                {
+                    $match: { 
+                        applicantId: new mongoose.Types.ObjectId(userId),
+                    }
+                },
+                { 
+                    $group: {
+                        _id: "$status",
+                        count: { $sum: 1 }
+                    }
+                },
+                {
+                    $project: {
+                        status: "$_id",
+                        count: 1,
+                        _id: 0
+                    }
+                }
+            ])
         ]);
 
+       const filtersCount = {
+         All: totalCount,
+         Applied: 0,
+         Inreview:0,
+         Shortlisted: 0,
+         Interview: 0,
+         Rejected: 0,
+         Selected: 0,
+       }
+       
+       for(let i = 0; i < countArray.length; i++) {
+          const key = countArray[i].status;
+          const value = countArray[i].count;
+           filtersCount[key] = value;
+       }
+
+        console.log("filtersCount", filtersCount);
         return {
             applications,
-            total: totalCount
+            total: totalCount,
+            filtersCount
         };
     }
 }
