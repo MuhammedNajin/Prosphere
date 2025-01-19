@@ -18,7 +18,7 @@ export class HandleWebhookUseCase implements IHandleWebhookUseCase {
 
   public async execute(
      event: Stripe.Event
-  ): Promise<void> {
+  ): Promise<Subscription |null> {
 
     try {
       const session = event.data.object as Stripe.Checkout.Session;
@@ -34,23 +34,25 @@ export class HandleWebhookUseCase implements IHandleWebhookUseCase {
         company,
         amountPaid: plan?.price as number,
         startDate: new Date(),
-        endDate: new Date(new Date().getDate() + 28),
+        endDate: new Date(new Date().getTime() + (plan.durationInDays * 24 * 60 * 60 * 1000)),
      }
 
      const subscriptionDTO = new Subscription(subscriptionProps)
-     const subscription = await this.subscriptionRepo.create(subscriptionDTO)
+     let subscription;
 
       switch(event.type) {
+
         case "checkout.session.completed":
-           await this.paymentRepo.create(subscription, PaymentStatus.SUCCESS)
-       
-          break;
+          subscription = await this.subscriptionRepo.create(subscriptionDTO)
+          await this.paymentRepo.create(subscription, PaymentStatus.SUCCESS)
+          return subscription;
         case "checkout.session.async_payment_failed" :
-            await this.paymentRepo.create(subscription, PaymentStatus.FAILED)
+          subscription = await this.subscriptionRepo.create(subscriptionDTO)
+          await this.paymentRepo.create(subscription, PaymentStatus.FAILED)
 
           break;   
       }
-
+       return null;
     } catch (error) {  
       console.log(error, "createpayment");
       throw error;

@@ -10,6 +10,7 @@ import { IPaymentRepository } from "@/domain/IRespository/IPayment.repository";
 import { ICompanyRepository } from "@/domain/IRespository/ICompany.repository";
 import { HandleWebhookUseCase } from "@application/usecase/handleWebhook.usecase";
 import { ISubscriptionRepository } from "@/domain/IRespository/ISubscription.repository";
+import { MessageBrokerProducers } from "@/infrastructure/messageBroker/kafka";
 
 export class WebhookPaymentController {
   private stripe: Stripe;
@@ -18,9 +19,10 @@ export class WebhookPaymentController {
     private subscriptionRepo: ISubscriptionRepository,
     private planRepo: IPlanRepository,
     private paymentRepo: IPaymentRepository,
-    private companyRepo: ICompanyRepository
+    private companyRepo: ICompanyRepository,
+    private messageBroker: MessageBrokerProducers
   ) {
-    console.log(" webhook controller", this.planRepo);
+    console.log(" webhook controller message broker", this.messageBroker.subscriptionProducer);
     
     this.stripe = new Stripe(process.env.SECRET_KEY!, {
       apiVersion: "2024-11-20.acacia",
@@ -50,12 +52,29 @@ export class WebhookPaymentController {
 
       console.log("Stripe event received:", event);
 
-      await new HandleWebhookUseCase(
+      const session = event.data.object as Stripe.Checkout.Session;
+
+      const { metadata, created, id: paymentId,   } = session
+      const { id, planId, companyId,} = metadata as any
+
+     const subscription =  await new HandleWebhookUseCase(
         this.subscriptionRepo,
         this.planRepo,
         this.companyRepo,
         this.paymentRepo
       ).execute(event);
+
+      console.log("subscription", subscription)
+
+      if(subscription) {
+         await this.messageBroker.subscriptionProducer.produce({
+          companyId: companyId,
+          duration: subscription.planSnapshot.durationInDays,
+          endDate: subscription.endDate,
+          startDate: subscription.startDate,
+          isSubscribed: true
+         })
+      }
 
       res.status(StatusCode.CREATED).json({ success: true });
     } catch (error) {
