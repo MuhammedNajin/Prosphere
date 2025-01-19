@@ -1,179 +1,144 @@
-// PricingPlans.tsx
-import React, { useState } from 'react';
-import { Check } from 'lucide-react';
-import { loadStripe } from '@stripe/stripe-js'
+import React, { useEffect, useState } from 'react';
+import { Check, Crown, AlertCircle } from 'lucide-react';
+import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery } from 'react-query';
-import { PaymentApi } from '@/api/payment.api';
+import { PaymentApi } from '@/api/Payment.api';
 import { AxiosError } from 'axios';
 import { useGetUser } from '@/hooks/useGetUser';
 import { useParams } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
+import { format } from 'date-fns';
+
 interface Plan {
   name: string;
   color: 'blue' | 'green' | 'purple';
-  price: {
-    monthly: number;
-    yearly: number;
-  };
+  price: number;
   features: string[];
+  id: string;
 }
 
-type BillingCycle = 'monthly' | 'yearly';
-
-const plans: Plan[] = [
-  {
-    name: 'Basic Plan',
-    color: 'blue',
-    price: {
-      monthly: 4.99,
-      yearly: 49.99
-    },
-    features: [
-      'Post up to 3 jobs/month',
-      'Basic company profile',
-      'View up to 20 resumes'
-    ]
-  },
-  {
-    name: 'Standard Plan',
-    color: 'green',
-    price: {
-      monthly: 9.99,
-      yearly: 99.99
-    },
-    features: [
-      'Post up to 10 jobs/month',
-      'Enhanced company profile',
-      'View up to 100 resumes'
-    ]
-  },
-  {
-    name: 'Premium Plan',
-    color: 'purple',
-    price: {
-      monthly: 199.99,
-      yearly: 1999.99
-    },
-    features: [
-      'Unlimited job postings',
-      'Featured company profile',
-      'Unlimited resume access'
-    ]
-  }
-];
-
- const publishkey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
- const stripePromise = loadStripe(publishkey);
-
 const Premium: React.FC = () => {
-  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
+  const [billingCycle] = useState('monthly');
+  const [currentPlanId, setCurrentPlanId] = useState(-1)
   const user = useGetUser();
-  const { id } = useParams()
-  const { data } = useQuery({
+  const { id } = useParams();
+
+  const { data: plans } = useQuery({
     queryKey: ["premium"],
     queryFn: () => PaymentApi.getPlan()
-  })
-  const getColorClasses = (color: Plan['color']): string => {
-    const colorMap = {
-      blue: 'bg-blue-600',
-      green: 'bg-green-600',
-      purple: 'bg-purple-600'
-    };
-    return colorMap[color];
-  };
+  });
+
+  const { data: currentPlan } = useQuery({
+    queryKey: ["currentPlan"],
+    queryFn: () => PaymentApi.getCurrentPlan(id!)
+  });
+
+  useEffect(() => {
+    console.log("currentPlan", currentPlan);
+    setCurrentPlanId(currentPlan?.planSnapshot?.id)
+  }, [currentPlan]);
+
+  const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
   const paymentMutation = useMutation({
     mutationFn: PaymentApi.create,
     onSuccess: async (data) => {
-        console.log("payment created", data)
-        const { id } = data?.data;
-        const stripe = await stripePromise;
-        if(id && stripe) {
-          stripe.redirectToCheckout({ sessionId: id });
-        }
-
+      const { id: sessionId } = data?.data;
+      const stripe = await stripePromise;
+      if (sessionId && stripe) {
+        stripe.redirectToCheckout({ sessionId });
+      }
     },
     onError: (err: AxiosError) => {
-        console.log("error", err);
+      console.error("Payment error:", err);
     }
-  })
+  });
 
   const handlePlanSelection = (plan: Plan) => {
-    console.log(`Selected plan: ${plan}`);
-
     const data = {
-        name: plan.name,
-        id: user._id,
-        companyId: id,
-        price: plan.price,
-        planId: plan.id
-    }
-    paymentMutation.mutate({ data })
+      name: plan.name,
+      id: user._id,
+      companyId: id,
+      price: plan.price,
+      planId: plan.id
+    };
+    paymentMutation.mutate({ data });
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 py-8">
-      {/* Header Section */}
-      <div className="text-left mb-8">
-        <h1 className="text-3xl font-bold mb-2">Choose your plan</h1>
-        <div className="flex items-center gap-2 mb-4">
-          <div className="text-green-600">
-            <Check size={16} className="inline" />
-          </div>
-          <span className="text-gray-600">14 days free trial</span>
-        </div>
-        <p className="text-gray-500">
-          Get the right plan for your business. Plans can be upgraded in the future.
+    <div className="w-full max-w-6xl mx-auto px-4 py-8 space-y-8">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold mb-4">Choose Your Perfect Plan</h1>
+        <p className="text-gray-600 max-w-2xl mx-auto">
+          Scale your recruitment efforts with our flexible plans.
         </p>
       </div>
 
-      {/* <div className="flex justify-end mb-8">
-        <div className="inline-flex rounded-lg border border-gray-200 p-1">
-          {(['monthly', 'yearly'] as const).map((cycle) => (
-            <button
-              key={cycle}
-              onClick={() => setBillingCycle(cycle)}
-              className={`
-                px-4 py-2 rounded-md transition-colors duration-200
-                ${billingCycle === cycle 
-                  ? 'bg-orange-700 text-white' 
-                  : 'text-gray-600 hover:bg-gray-100'
-                }
-              `}
-            >
-              {cycle.charAt(0).toUpperCase() + cycle.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div> */}
+      {currentPlan ? (
+        <Card className="bg-orange-50 border-orange-200 mb-8">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <Crown className="text-orange-700 h-8 w-8" />
+                <div>
+                  <h2 className="text-xl font-semibold text-gray-900">Current Plan: <span className='text-orange-700'>{currentPlan?.planSnapshot?.name}</span></h2>
+                  <p className="text-gray-600">Valid until {format(currentPlan.endDate, 'PPP')}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-600">Monthly Payment</p>
+                <p className="text-2xl font-bold text-orange-700">₹{currentPlan?.planSnapshot?.price}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="bg-gray-50 border-gray-200 mb-8">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-4">
+              <AlertCircle className="text-gray-500 h-8 w-8" />
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">No Active Plan</h2>
+                <p className="text-gray-600">Choose a plan below to get started with our premium features.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid md:grid-cols-3 gap-8">
-        { data && data.map((plan) => (
+        {plans?.map((plan) => (
           <div 
             key={plan.name}
-            className="rounded-2xl bg-white p-8 shadow-lg border border-gray-100 transition-transform duration-200 hover:scale-105"
+            className={`
+              rounded-2xl bg-white p-8 shadow-lg border transition-all duration-300
+              ${currentPlanId === plan.id 
+                ? 'border-orange-500 ring-2 ring-orange-200' 
+                : 'border-gray-100 hover:shadow-xl'
+              }
+            `}
           >
-          
-            <div className="mb-6 flex items-center">
-              <div 
-                className={`h-3 w-3 rounded-full mr-2 bg-orange-700`}
-              />
-              <h2 className="text-xl font-semibold">{plan.name}</h2>
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="h-3 w-3 rounded-full bg-orange-700" />
+                <h2 className="text-xl font-semibold">{plan.name}</h2>
+              </div>
+              {currentPlanId === plan.id && (
+                <span className="px-3 py-1 text-xs font-medium text-orange-700 bg-orange-100 rounded-full">
+                  Current Plan
+                </span>
+              )}
             </div>
-       
+
             <div className="mb-6">
-              <span className="text-4xl font-bold">
-                {/* ${billingCycle === 'monthly' ? plan.price.monthly : plan.price.yearly} */}
-                ₹{plan.price}
-              </span>
+              <span className="text-4xl font-bold">₹{plan.price}</span>
               <span className="text-gray-500">/{billingCycle}</span>
             </div>
 
             <div className="space-y-4 mb-8">
               {plan.features.map((feature) => (
-                <div key={feature} className="flex items-center gap-2">
-                  <div className="text-orange-400">
-                    <Check size={16} className="flex-shrink-0" />
-                  </div>
+                <div key={feature} className="flex items-center space-x-3">
+                  <Check className="h-5 w-5 flex-shrink-0 text-orange-500" />
                   <span className="text-gray-700">{feature}</span>
                 </div>
               ))}
@@ -181,16 +146,17 @@ const Premium: React.FC = () => {
 
             <button
               onClick={() => handlePlanSelection(plan)}
+              disabled={currentPlanId === plan.id}
               className={`
                 w-full rounded-lg py-3 px-4 text-center font-semibold
-                transition-colors duration-200
-                ${plan.color === 'green'
-                  ? 'bg-orange-700 text-white hover:bg-orange-800'
-                  : 'border border-orange-700 text-orange-700 hover:bg-orange-50'
+                transition-all duration-200
+                ${currentPlanId === plan.id || currentPlan
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-orange-600 text-white hover:bg-orange-700 active:transform active:scale-95'
                 }
               `}
             >
-              Get Plan
+              {currentPlanId === plan.id ? 'Current Plan' : 'Get Plan'}
             </button>
           </div>
         ))}
