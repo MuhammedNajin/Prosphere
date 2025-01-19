@@ -1,10 +1,10 @@
-import { Repository } from "typeorm";
+import { MoreThanOrEqual, Repository } from "typeorm";
 import { AppDataSource } from "../database/sql/connection";
 import { ISubscriptionRepository } from "@/domain/IRespository/ISubscription.repository";
 import { Subscription } from "../database/sql/entities/subscription.entity";
 import { ISubscription } from "@/shared/types/subscription.interface";
 import { Company } from "../database/sql/entities/company.entitiy";
-import { UsageMetrics } from "@/shared/types/enums";
+import { SubscriptionStatus, UsageMetrics } from "@/shared/types/enums";
 import { ICompany } from "@/shared/types/company.interface";
 
 
@@ -52,6 +52,22 @@ class SubscriptionRepository implements ISubscriptionRepository {
       }
     }
 
+   async getCurrentSubscription(companyId: string) {
+        try {
+          return await this.repository.findOne({
+             where: {
+               company: { companyId },
+               status: SubscriptionStatus.ACTIVE,
+               endDate: MoreThanOrEqual(new Date()),
+             },
+             relations: ['company']
+          })
+        } catch (error) {
+          console.log(error);
+          throw error
+        }
+    }
+
 
     async updateFeaturesLimit(id: string, usage_stats: UsageMetrics) {
        try {
@@ -77,6 +93,27 @@ class SubscriptionRepository implements ISubscriptionRepository {
           console.log(error);
           throw error;
        }
+    }
+
+    async updateExpiredSubscriptions() {
+      const now = new Date();
+      try {
+        await this.repository.update(
+          { 
+            where: {
+              status: SubscriptionStatus.ACTIVE,
+              endDate: { $lt: now },
+              isTrial: false
+            }
+          },
+          { 
+            status: SubscriptionStatus.EXPIRED
+          }
+        );
+      } catch(err) {
+         console.log(err);
+         throw err;
+      }
     }
 }
 

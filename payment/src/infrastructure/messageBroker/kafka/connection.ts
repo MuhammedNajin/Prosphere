@@ -1,6 +1,7 @@
 import { KafkaClient } from '@muhammednajinnprosphere/common';
 import { UserCreatedConsumer } from '@/infrastructure/messageBroker/kafka/consumer/userCreated.consumer';
 import { CompanyCreatedConsumer } from './consumer/companyCreated.consumer';
+import { SubscriptionProducer } from './producer/subscription.producer';
 
 class MessageBroker {
   private kafka: KafkaClient;
@@ -28,6 +29,12 @@ class MessageBroker {
 
   getKafkaClient() {
     return this.kafka;
+  }
+
+  getMessageProducers () {
+     return {
+      subscriptionProducer: new SubscriptionProducer(this.kafka.producer),
+ }
   }
 }
 

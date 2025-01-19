@@ -23,7 +23,8 @@ class PaymentRepository implements IPaymentRepository {
          const payment = this.repository.create({
            subscription,
            paymentMethod: 'Stripe',
-           status
+           status,
+           amount: subscription.planSnapshot.price,
          });
        await this.repository.save(payment);
     }

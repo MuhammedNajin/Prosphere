@@ -10,8 +10,6 @@ export class CompanyCreatedConsumer extends KafkaConsumer<CompanyCreatedEvent> {
 
     constructor(consumer: Consumer) {
         super(consumer);
-     
-     
     }
 
     async onConsume(data: CompanyCreatedEvent['data'], msg: KafkaMessage): Promise<void> {
@@ -30,11 +28,10 @@ export class CompanyCreatedConsumer extends KafkaConsumer<CompanyCreatedEvent> {
           companyDto.companyId = _id
           companyDto.name = name;
           companyDto.owner = user as User;
-          
-   
+        
           const company = await companyRepository.create(companyDto)
         
-           console.log("onMessage", company);
+          console.log("onMessage", company);
        } catch (error) {
          console.log(error);
        }

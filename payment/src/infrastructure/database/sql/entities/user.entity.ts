@@ -18,9 +18,6 @@ export class User {
   @Column('varchar')
   username: string;
 
-  @OneToMany(() => Company, (company) => company.companyId)
-  companies: Company[];
-
   @CreateDateColumn()
   createdAt: Date;
 

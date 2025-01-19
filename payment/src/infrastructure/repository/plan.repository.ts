@@ -5,75 +5,65 @@ import { IPlan } from "@/shared/types/plan.interface";
 import { IPlanRepository } from "@/domain/IRespository/IPlan.repository";
 import { BadRequestError } from "@muhammednajinnprosphere/common";
 
-
 class PlanRepository implements IPlanRepository {
-    private repository: Repository<Plan>
+  private repository: Repository<Plan>;
 
-    constructor() {
-         this.repository = AppDataSource.getRepository(Plan)
+  constructor() {
+    this.repository = AppDataSource.getRepository(Plan);
+  }
+
+  private handleDBError() {
+     
+  }
+
+  async createPlan(planDTO: IPlan): Promise<Plan> {
+    try {
+      const exist = await this.repository.findOne({
+        where: { durationInDays: planDTO.durationInDays },
+      });
+
+      console.log("exist", exist);
+
+      if (exist) {
+        throw new BadRequestError(`Plan already exists with ${planDTO.durationInDays} duration`);
+      }
+
+      const planEntity = new Plan();
+      planEntity.name = planDTO.name;
+      planEntity.features = planDTO.features;
+      planEntity.price = planDTO.price;
+      planEntity.durationInDays = planDTO.durationInDays;
+
+      const plan = this.repository.create(planEntity);
+      return await this.repository.save(plan);
+    } catch (error) {
+      throw error;
     }
+  }
 
-    private handleDBError() {
-         
+  async get(): Promise<IPlan[] | null> {
+    try {
+      return await this.repository.find();
+    } catch (error) {
+      throw new Error();
     }
+  }
 
-    async createPlan(planDTO: IPlan): Promise<Plan> {
-       try {
+  async getPlan(id: number): Promise<IPlan | null> {
+    return await this.repository.findOne({
+      where: { id },
+    });
+  }
 
-         const exist = await this.repository.findOne({
-             where: { type: planDTO.type }
-         })
+  async editPlan(id: number, query: object): Promise<IPlan | null> {
+    return await this.repository.update({ id }, query);
+  }
 
-         console.log("exist", exist)
-
-         if(exist) {
-             throw new BadRequestError("Plan already exist's");
-         }
-
-          const planEntity = new Plan();
-          planEntity.name = planDTO.name;
-          planEntity.features = planDTO.features,
-          planEntity.price = planDTO.price
-          planEntity.featuresLimit = planDTO.featuresLimit
-          planEntity.type = planDTO.type;
-          planEntity.durationInDays = planDTO.durationInDays
-   
-          const plan = this.repository.create(planEntity);
-          return await this.repository.save(plan);
-       } catch (error) {
-          throw error
-       }
-    }
-
-    async get(): Promise<IPlan[] | null> {
-       try {
-          return await this.repository.find() 
-       } catch (error) {
-          throw new Error();
-       }
-    }
-
-    async getPlan(id: number): Promise<IPlan | null> {
-       return await this.repository.findOne({
-          where: { id }
-       })
-    }
-
-
-   async editPlan(id: number, query: object): Promise<IPlan | null> {
-      return await this.repository.update(
-         { id },
-         query,
-      )
-    }
-
-    async deletePlan(id: number): Promise<void> {
-      await this.repository.delete({
-          id
-       })
-    }
-
+  async deletePlan(id: number): Promise<void> {
+    await this.repository.delete({
+      id,
+    });
+  }
 }
 
-
-export default new PlanRepository()
+export default new PlanRepository();

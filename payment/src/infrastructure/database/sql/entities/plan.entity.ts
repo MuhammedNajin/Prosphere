@@ -1,6 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Subscription } from './subscription.entity';
-import { PlanType } from '@/shared/types/enums';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('plans')
 export class Plan {
@@ -13,27 +11,19 @@ export class Plan {
   @Column('decimal', { precision: 10, scale: 2 })
   price: number;
 
-  @Column({
-    type: 'enum',
-    enum: PlanType,
-    default: PlanType.BASIC,
-  })
-  type: PlanType;
-
   @Column('int')
   durationInDays: number;
-
-  @Column('simple-json')
-  featuresLimit: {
-    jobPostLimit: number;
-    resumeAccess: number;
-    videoCallLimit: number;
-    candidateNotes: boolean;
-  };
 
   @Column('varchar', { array: true })
   features: string[];
 
   @Column('boolean', { default: true })
   isActive: boolean;
+
+  @CreateDateColumn()
+  createdAt: Date;
+  
+  @UpdateDateColumn()
+  updatedAt: Date;
+  
 }
