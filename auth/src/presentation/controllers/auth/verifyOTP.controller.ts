@@ -38,7 +38,7 @@ const verifyOTPController = (dependencies: Dependencies) => {
          _id: verified._id,
          username: verified.username,
          email: verified.email,
-         jobRole: verified.phone,
+         jobRole: verified.jobRole,
          phone: verified.phone,
          location: verified.location,
          gender: verified.gender,
@@ -51,14 +51,15 @@ const verifyOTPController = (dependencies: Dependencies) => {
       //   phone: verified.phone,
       //   jobRole: verified.phone,
       // })
-
       const payload = {
         id: verified._id,
         username: verified.username,
         email: verified.email,
         role: ROLE.USER
       };
+
       const { accessToken, refreshToken } = Token.generateJwtToken(payload);
+      
       res.cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

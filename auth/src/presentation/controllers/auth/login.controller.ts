@@ -2,9 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { Dependencies } from '@domain/entities/interfaces';
 import Token from '@infra/libs/token';
 import { BadRequestError } from '@muhammednajinnprosphere/common';
-
-
-
+import { winstonLogger } from '@/presentation/middleware/winstonLogger';
+import { TOKEN_TYPE } from '@/shared/types/enums';
 
  const loginController = (dependencies: Dependencies) => {
     const {
@@ -18,7 +17,7 @@ import { BadRequestError } from '@muhammednajinnprosphere/common';
             const { email, password } = req.body;
             console.log("login controller ", req.body)
 
-            console.log("cookies", req.cookies);
+            winstonLogger.debug("Login controller", req.body);
 
             const userCredential = await loginUseCase(dependencies).execute({
                 email,
@@ -42,17 +41,17 @@ import { BadRequestError } from '@muhammednajinnprosphere/common';
               const { accessToken, refreshToken } = Token.generateJwtToken(payload);
               console.log(accessToken, refreshToken);
               
-              res.cookie("accessToken", accessToken, {
+              res.cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
               });
 
-              res.cookie("refreshToken", refreshToken, {
+              res.cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
               });
 
-            res.status(200).json({ userCredential, profile });
+            res.status(200).json({ userCredential, ...profile });
             
         } catch (error) {
             console.log(error);

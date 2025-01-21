@@ -3,6 +3,7 @@ import { Dependencies, TokenData } from "@domain/entities/interfaces";
 import Token from "@infra/libs/token";
 import { ForbiddenError } from '@muhammednajinnprosphere/common'
 import jwt  from 'jsonwebtoken'
+import { ROLE, TOKEN_TYPE } from "@/shared/types/enums";
 
 const refreshTokenController = (dependencies: Dependencies) => {
   const {
@@ -15,28 +16,40 @@ const refreshTokenController = (dependencies: Dependencies) => {
     next: NextFunction
   ) => {
     try {
-      const { isAdmin } = req.query
-     const token = req.cookies.accessToken
+     const { isAdmin } = req.query
+     const tokenKey = isAdmin ? TOKEN_TYPE.ADMIN_REFRESH_TOKEN : TOKEN_TYPE.USER_REFRESH_TOKEN;
+     const token = req.cookies[tokenKey];
+
      console.log('refresh-token endpoint', token);
-      const secret = isAdmin ? process.env.ADMIN_REFRESH_SECRECT : process.env.REFRESH_SECRECT
+      const secret = isAdmin ? process.env.ADMIN_REFRESH_SECRECT : process.env.REFRESH_SECRECT;
+      console.log("secret", secret, req.cookies);
+      
       await Token.verifyToken(token, secret!);
       const payload = Token.decode(token) as TokenData;
       console.log("payload", payload);
-     const { accessToken, refreshToken} = Token.generateJwtToken(payload);
+      const newPayload = {
+         id: payload.id,
+         email: payload.email,
+         username: payload.email,
+         role: isAdmin === ROLE.ADMIN ? ROLE.ADMIN : ROLE.USER
+      }
 
-     res.cookie(`${isAdmin ? "adminAccess" : "accessToken"}`, accessToken, {
+     const { accessToken, refreshToken} = Token.generateJwtToken(newPayload);
+
+     res.cookie(`${isAdmin ? TOKEN_TYPE.ADMIN_ACCESS_TOKEN : TOKEN_TYPE.USER_ACCESS_TOKEN}`, accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
       });
       
-      res.cookie(`${isAdmin ? "adminRefresh" : "refreshToken"}`, refreshToken, {
+      res.cookie(`${isAdmin ? TOKEN_TYPE.ADMIN_REFRESH_TOKEN : TOKEN_TYPE.USER_REFRESH_TOKEN}`, refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
       });
 
       res.sendStatus(201);
     } catch (error) {
-      console.log(error);
+
+      console.log("error from refresh token", error);
       
       if(error instanceof jwt.JsonWebTokenError) {
         next(new ForbiddenError())
