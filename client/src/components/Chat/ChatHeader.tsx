@@ -35,7 +35,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, typing, online })
         <div className="ml-3 flex-1 min-w-0">
           <div className="flex items-center space-x-2">
             <h2 className="font-semibold text-sm md:text-base text-gray-900 truncate">
-              {conversation.context === ROLE.COMPANY && conversation.company.owner !== user._id 
+              {conversation.context === ROLE.COMPANY && conversation.company.owner !== user?._id 
                 ? `${conversation.company?.name} (${conversation.name})` 
                 : conversation.name}
             </h2>
