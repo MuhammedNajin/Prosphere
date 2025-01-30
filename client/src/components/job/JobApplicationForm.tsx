@@ -60,9 +60,9 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   const form = useForm<ApplicationFormData>({
     resolver: zodResolver(jobApplicationFormSchema),
     defaultValues: {
-      fullName: user.username || "",
-      email: user.email || "",
-      phone: user.phone || "",
+      fullName: user?.username || "",
+      email: user?.email || "",
+      phone: user?.phone || "",
       linkedinUrl: "",
       portfolioUrl: "",
       coverLetter: "",
@@ -76,7 +76,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
       const filename = resumeForm.getValues("resume");
       console.log("filename", filename);
       if (filename && filename instanceof FileList && filename.length > 0) {
-        const resumeKey = `${user._id}${filename[0].name}`;
+        const resumeKey = `${user?._id}${filename[0].name}`;
         form.setValue("resume", resumeKey);
         dispatch(setResume(resumeKey));
 
@@ -134,6 +134,8 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   };
 
   const onSubmit = async (data: ApplicationFormData) => {
+    if (!user?._id) return;
+    
     const applicationData = {
       ...data,
       applicantId: user._id,

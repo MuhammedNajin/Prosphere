@@ -53,7 +53,11 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
 
   const { data } = useQuery({
     queryKey: [queryKey],
-    queryFn: () => ChatApi.getConversation(user._id, context, company?._id),
+    queryFn: () => {
+      if (!user) throw new Error('User not found');
+      return ChatApi.getConversation(user._id, context, company?._id);
+    },
+    enabled: !!user,
   });
 
   const addNewConversation = (newConv: Conversation) => {
@@ -145,7 +149,9 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
   useEffect(() => {
     if (!chatSocket) return;
 
-    chatSocket.emit("user_online", user._id);
+    if (user) {
+      chatSocket.emit("user_online", user._id);
+    }
 
     chatSocket.on("online_users", (users: string[]) => {
       setOnlineUsers(new Set(users));
@@ -192,7 +198,9 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
 
     return () => {
       chatSocket.off("direct_message");
-      chatSocket.emit("user_offline", user._id);
+      if (user) {
+        chatSocket.emit("user_offline", user._id);
+      }
       chatSocket.off("online_users");
     };
   }, [chatSocket]);
@@ -324,7 +332,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
                 }`}
                   >
                     {conv?.context === ROLE.COMPANY &&
-                    conv.company.owner !== user._id
+                    conv.company.owner !== user?._id
                       ? conv.company?.name
                       : conv.participants[0]?.username}
                   </span>
@@ -338,7 +346,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
                     className={`text-xs md:text-sm truncate max-w-[180px] 
                 ${
                   conv.lastMessage?.status !== MESSAGE_STATUS.READ &&
-                  user._id !== conv.lastMessage?.sender
+                  user?._id !== conv.lastMessage?.sender
                     ? "font-semibold text-black"
                     : "font-normal text-gray-600"
                 }`}
@@ -347,7 +355,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
                   </p>
 
                   {conv?.lastMessage?.status !== MESSAGE_STATUS.READ &&
-                    user._id !== conv?.lastMessage?.sender &&
+                    user?._id !== conv?.lastMessage?.sender &&
                     conv?.unreadCount > 0 && (
                       <div
                         className="flex items-center justify-center bg-orange-600 text-white rounded-full 

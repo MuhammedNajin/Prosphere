@@ -48,6 +48,7 @@ const Premium: React.FC = () => {
   });
 
   const handlePlanSelection = (plan: PlanData) => {
+    if(!user) return;
     const data = {
       name: plan.name,
       id: user._id,

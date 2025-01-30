@@ -209,7 +209,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
     delete: async (msg: Message) => {
       console.log("Delete message:", msg);
-      await ChatApi.delete(msg.id, user?._id);
+      if (!user?._id) return;
+      await ChatApi.delete(msg.id, user._id);
       deleteMessage(msg.id);
     },
 
@@ -283,7 +284,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   }, [chatSocket?.connected]);
 
   const handleSend = async () => {
-    if (!content) return;
+    if (!content || !user?._id) return;
     console.log("context", context);
     const id = generateObjectId();
     console.log("msg id", id);

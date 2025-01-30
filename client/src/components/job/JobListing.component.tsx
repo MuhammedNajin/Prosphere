@@ -90,6 +90,7 @@ const JobListing = () => {
   });
 
   const handleLikes = (id: string, index: number) => {
+    if(!user?._id) return;
     const data = {
       jobId: id,
       userId: user._id,
@@ -315,7 +316,7 @@ const JobListing = () => {
                                 className="inline-flex items-center gap-x-2"
                               >
                                 <span>{job?.likes?.length}</span>
-                                {job?.likes?.includes(user._id) ? (
+                                {job?.likes?.includes(user?._id ?? '') ? (
                                   <BiSolidLike
                                     size={18}
                                     className="text-blue-950"

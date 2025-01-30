@@ -38,7 +38,11 @@ const NotificationsFeed: React.FC = () => {
   
   const { data, isLoading, isError, error, refetch } = useQuery<NotificationAttrs[], Error>({
     queryKey: ['notifications', activeFilter],
-    queryFn: () => NotificationApi.getNotification(user?._id, activeFilter),
+    queryFn: () => {
+      if (!user?._id) throw new Error('User not found');
+      return NotificationApi.getNotification(user._id, activeFilter);
+    },
+    enabled: !!user?._id,
     refetchInterval: 30000,
   });
 
