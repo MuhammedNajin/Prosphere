@@ -37,7 +37,7 @@ const CompanyVerificationRequest: React.FC = () => {
           </thead>
           <tbody>
             {data?.data && data.data.length > 0 ? (
-              data.data?.map((el, index: number) => (
+              data.data?.map((el: any, index: number) => (
                 <tr key={index}>
                   <td className="px-5 py-5 text-sm">{el.name}</td>
                   <td className="px-5 py-5 text-sm">{el.email}</td>
