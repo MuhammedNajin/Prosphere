@@ -31,7 +31,7 @@ interface PlatformUser {
 
 const platformUsers: PlatformUser[] = [
   {
-    id: "p1",
+    _id: "p1",
     firstName: "Emma",
     lastName: "Singh",
     email: "emma.singh@platform.com",
@@ -40,7 +40,7 @@ const platformUsers: PlatformUser[] = [
     username: "Emma Singh"
   },
   {
-    id: "p2",
+    _id: "p2",
     firstName: "Alex",
     lastName: "Johnson",
     email: "alex.johnson@platform.com",
@@ -109,9 +109,9 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
 
   const addMemberMutation = useMutation({
      mutationFn: CompanyApi.addMember,
-     onSuccess(data, variables, context) {
+     onSuccess: (data) => {
        console.log("success", data);
-       onSuccess(data)
+       onSuccess(data.data)
        setIsOpen(false);
 
      },
@@ -188,7 +188,7 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
                 {searchResults.map((user) => (
                   <Card
-                    key={user.id}
+                    key={user?._id}
                     className={`cursor-pointer transition-colors ${
                       selectedUser?._id === user._id
                         ? "bg-blue-50 border-blue-200"

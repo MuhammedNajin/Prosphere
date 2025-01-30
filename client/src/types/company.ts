@@ -113,3 +113,70 @@ export enum UsageStatsType {
   VIDEO_CALLS_Limit = 'videoCallLimit',
   MESSAGES_Limit = 'messageLimit'
 }
+
+export type VerificationStatus = 'uploaded' | 'pending' | 'rejected';
+
+export interface Company {
+  name: string;
+  website: string;
+  industry: string;
+  description: string;
+  type: string;
+  size: string;
+  headquarters: ILocation;
+  location: ILocationDetail[];
+  techStack: string[];
+  verified: boolean;
+  reUploadDocLimit: number;
+  status: VerificationStatus;
+  foundedDate: string;
+  owner: string[]
+  team: ITeamMember[];
+  statusHistory: IStatusHistory[];
+  createdAt: Date;
+  updatedAt: Date;
+  companyVerificationDoc: IVerificationDoc;
+  ownerVerificationDoc: IVerificationDoc;
+}
+
+export interface User {
+  _id: string;
+  username: string;
+  email: string;
+  phone: string;
+  jobRole: string;
+  avatar: string | null;
+  about: string | null;
+  coverImage: string | null;
+  profilePhoto: string | null;
+}
+
+
+interface ILocation {
+  placename: string;
+  type: "Point";
+  coordinates: number[];
+}
+
+interface ILocationDetail extends ILocation {
+  placename: string;
+  
+}
+
+interface ITeamMember {
+  userId: string;
+
+}
+
+interface IStatusHistory {
+  status: string;
+  updatedAt: Date;
+
+}
+
+interface IVerificationDoc {
+  documentType: string;
+  documentUrl: string;
+  uploadedAt: Date;
+}
+

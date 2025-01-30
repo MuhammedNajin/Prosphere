@@ -9,14 +9,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-import { Clock, Shield, XCircle, FileCheck2, ArrowRight, AlertCircle } from 'lucide-react';
+import { Clock, Shield, XCircle, FileCheck2, ArrowRight, AlertCircle, LucideIcon } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelectedCompany } from "@/hooks/useSelectedCompany";
 import { format } from "date-fns";
+import { Company, VerificationStatus } from "@/types/company";
 
-type VerificationStatus = 'uploaded' | 'pending' | 'rejected';
+
 
 interface VerificationAlertProps {
   uploadedAt?: string;
@@ -26,17 +27,27 @@ interface VerificationAlertProps {
 }
 
 export function VerificationAlert({
-  uploadedAt,
-  companyDocType,
-  ownerDocType,
+  // uploadedAt,
+  // companyDocType,
+  // ownerDocType,
   rejectionReason,
 }: VerificationAlertProps) {
   const [isOpen, setIsOpen] = useState(true);
   const navigate = useNavigate();
   const { id } = useParams();
-  const company = useSelectedCompany();
+  const company = useSelectedCompany() as Company
 
-  const selectStatus = {
+  const selectStatus: Record<VerificationStatus, {
+    title: string;
+    badge: string;
+    badgeClass: string;
+    icon: LucideIcon;
+    iconClass: string;
+    bgClass: string;
+    description: string;
+    buttonText: string;
+    buttonClass: string;
+  }> = {
     uploaded: {
       title: "Document Verification In Progress",
       badge: "Under Review",

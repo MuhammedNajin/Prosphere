@@ -1,31 +1,21 @@
-import { CompanyApi, JobApi } from "@/api";
+import { CompanyApi } from "@/api";
 import {
   Briefcase,
-  ChevronLeft,
-  ChevronRight,
-  Instagram,
-  Linkedin,
   Mail,
-  MessageSquare,
-  MoreHorizontal,
   Phone,
-  Plus,
-  Repeat2,
-  Send,
-  ThumbsUp,
   UserX,
 } from "lucide-react";
 import React from "react";
-import { FaRegComment } from "react-icons/fa";
 import { useQuery } from "react-query";
 import { useNavigate, useOutletContext, useParams } from "react-router-dom";
 import JobUpdates from "../Dashboard/JobCard";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Company, User } from "@/types/company";
 
 const Home: React.FC = () => {
-  const { companyProfile } = useOutletContext();
+  const { companyProfile } = useOutletContext<{ companyProfile: Company}>();
 
   const navigate = useNavigate()
   const { id } = useParams()
@@ -83,7 +73,7 @@ const Home: React.FC = () => {
         </div>
         {data && data?.team.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data?.team?.map(({ userId }) => (
+          {data?.team?.map(({ userId }: { userId: User }) => (
              <Card className="w-full max-w-sm transform transition-all duration-300 hover:scale-105 hover:shadow-xl bg-white dark:bg-zinc-900">
              <CardHeader className="pt-6 pb-4">
                <div className="relative flex flex-col items-center">
@@ -94,7 +84,7 @@ const Home: React.FC = () => {
                  
                  <div className="p-1 rounded-full bg-gradient-to-r from-orange-400 to-orange-600">
                    <Avatar className="h-24 w-24 border-4 border-white dark:border-zinc-900">
-                     <AvatarImage src={userId.profilePhoto} alt={userId.username} />
+                     <AvatarImage src={userId.profilePhoto ?? ''} alt={userId.username} />
                      <AvatarFallback className="text-2xl font-bold bg-orange-100 text-orange-700">
                        {getInitial(userId.username)}
                      </AvatarFallback>

@@ -1,7 +1,8 @@
+import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
 
 
 export const useResume = () => {
-   const { resume } = useSelector((state) => state.auth);
+   const { resume } = useSelector((state: RootState) => state.auth);
    return resume;
 }

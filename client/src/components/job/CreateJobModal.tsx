@@ -46,7 +46,7 @@ import { useSelectedCompany } from "@/hooks/useSelectedCompany";
 interface CreateJobModalProps {
   isOpen: boolean;
   onClose: React.Dispatch<React.SetStateAction<boolean>>;
-  job?: Job | null;
+  job: Job | null;
 }
 
 const CreateJobModal: React.FC<CreateJobModalProps> = ({

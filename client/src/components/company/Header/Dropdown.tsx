@@ -8,12 +8,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { ChevronDown, LogOut, Plus, Settings, User } from 'lucide-react';
+import { ChevronDown, LogOut, Plus, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { setSelectedCompany } from '@/redux/reducers/companySlice';
 import { useDispatch } from 'react-redux';
 import { useSubscriptionValidity } from '@/hooks/useSubscriptionValidity';
-import { subscriptionContext } from '@/context/subscriptionContext';
+import { subscriptionContext } from '@/context/SubscriptionContext';
 import { useGetUser } from '@/hooks/useGetUser';
 
 interface CompanyDropdownProps {
@@ -23,7 +23,9 @@ const CompanyDropdown:React.FC<CompanyDropdownProps> = ({ onClose }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { job } = useSubscriptionValidity();
-  const { setSubscription } = useContext(subscriptionContext);
+  const context = useContext(subscriptionContext);
+  if (!context) throw new Error('Subscription context must be used within a SubscriptionContext.Provider');
+  const { setSubscription } = context;
   const user = useGetUser()
   useEffect(() => {
      console.log("job", job);

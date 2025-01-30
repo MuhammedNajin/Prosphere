@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import  { useEffect } from "react";
 import {
   Users,
   Search,
@@ -10,10 +10,8 @@ import {
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AddMemberModal from "./AddMemberModal";
 import { useQuery } from "react-query";
 import { CompanyApi } from "@/api";
+import { User } from "@/types/company";
 
 const PublicMemberDirectory = () => {
 
@@ -35,7 +34,7 @@ const PublicMemberDirectory = () => {
      
   }, [data])
 
-  const onSuccessCallback = (user) => {
+  const onSuccessCallback = () => {
      
   }
 
@@ -76,7 +75,7 @@ const PublicMemberDirectory = () => {
 
       {data && data?.team.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data?.team?.map(({ userId }) => (
+          {data?.team?.map(({ userId }: { userId: User}) => (
              <Card className="w-full max-w-sm transform transition-all duration-300 hover:scale-105 hover:shadow-xl bg-white dark:bg-zinc-900">
              <CardHeader className="pt-6 pb-4">
                <div className="relative flex flex-col items-center">
@@ -87,7 +86,7 @@ const PublicMemberDirectory = () => {
                  
                  <div className="p-1 rounded-full bg-gradient-to-r from-orange-400 to-orange-600">
                    <Avatar className="h-24 w-24 border-4 border-white dark:border-zinc-900">
-                     <AvatarImage src={userId.profilePhoto} alt={userId.username} />
+                     <AvatarImage src={userId.profilePhoto ?? ''} alt={userId.username} />
                      <AvatarFallback className="text-2xl font-bold bg-orange-100 text-orange-700">
                        {getInitial(userId.username)}
                      </AvatarFallback>

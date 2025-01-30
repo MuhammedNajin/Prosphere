@@ -7,13 +7,13 @@ export const useSubscriptionValidity = () => {
     job: false,
     message: false,
   });
-  const subscription: SubscriptionData = useSubscription();
+  const subscription: SubscriptionData | null = useSubscription();
 
   return useMemo(() => {
     console.log("subscription", subscription);
 
     if (!subscription) {
-      return false;
+      return { job: ref.current.job, message: ref.current.message }
     }
 
     if (subscription.isTrail) {

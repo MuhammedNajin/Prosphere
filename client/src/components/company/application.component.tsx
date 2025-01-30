@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, Filter, MoreHorizontal, ListFilter, Inbox } from "lucide-react";
+import { Search,  MoreHorizontal,  Inbox } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -23,10 +23,6 @@ import StatusFilter from "../common/JobApplicationFilter/ApplicationFilter";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import ApplicationCards from "./Application/ApplicationCardView";
 
-interface DateRange {
-  from: Date;
-  to: Date;
-}
 
 interface ApplicationResponse {
   applications: Applicant[];
@@ -55,7 +51,7 @@ const Application: React.FC = () => {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<string>("");
   const [search, setSearch] = useState<string>("");
-  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPageOption>(2);
+  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPageOption>(10);
   const [currentPage, setCurrentPage] = useState(1);
 
   const { id } = useParams();
@@ -75,7 +71,7 @@ const Application: React.FC = () => {
     }
   );
 
-  const hasApplication = data?.applications.length > 0;
+  const hasApplication = (data?.applications ?? []).length > 0;
   const hasFilters = filter !== "" || search !== "";
   const { pathname } = useLocation();
   
@@ -174,7 +170,7 @@ const Application: React.FC = () => {
                   setCurrentPage(1);
                 }}
               />
-              <Tabs value={view} onValueChange={(value) => onViewChange(value)}>
+              <Tabs value={view} onValueChange={(value) => onViewChange(value as ViewType)}>
                 <TabsList className="grid grid-cols-2 bg-white border">
                   <TabsTrigger
                     value={ViewType.Card_View}
@@ -298,7 +294,7 @@ const Application: React.FC = () => {
                 }}
                 hasNextPage={currentPage < (data?.totalPages || 1)}
                 fetchNextPage={() => {}}
-                total={data?.total}
+                // total={data?.total}
               />
             </>
           )}

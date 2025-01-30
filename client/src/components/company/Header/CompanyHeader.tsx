@@ -1,6 +1,6 @@
 import React from "react";
 import { useSelectedCompany } from "@/hooks/useSelectedCompany";
-import { Bell, Plus, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import CompanyDropdown from "./Dropdown";
 
 interface CompanyHeaderProps {

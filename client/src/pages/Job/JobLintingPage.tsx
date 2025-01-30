@@ -1,4 +1,3 @@
-import Header from "@/components/common/navBar/Header";
 import JobListing from "@/components/job/JobListing.component";
 import React from "react";
 

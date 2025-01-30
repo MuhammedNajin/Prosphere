@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useQuery } from "react-query";
 import { CompanyApi } from "@/api";
-import { Outlet, useNavigate, useOutlet, useParams } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 import NavigationLink from "../Application/NavigationLink";
 
 const Jobinspect: React.FC = () => {
@@ -15,8 +15,6 @@ const Jobinspect: React.FC = () => {
   useEffect(() => {
   
   }, [data]);
-
-  
 
   return (
     <main className="flex flex-col items-center bg-white p-8">

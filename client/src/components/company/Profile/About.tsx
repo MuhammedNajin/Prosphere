@@ -1,8 +1,5 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import {
-  Zap,
-  Check,
-  Phone,
   Building2,
   Users,
   MapPin,
@@ -23,56 +20,26 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CompanyApi } from "@/api/Company.api";
-import { useNavigate, useOutletContext, useParams } from "react-router-dom";
-import { useMutation, useQuery } from "react-query";
+import { useNavigate, useOutletContext } from "react-router-dom";
+import { useMutation } from "react-query";
 import { Spinner } from "@/components/common/spinner/Loader";
 import { format } from "date-fns";
 import { useSelectedCompany } from "@/hooks/useSelectedCompany";
-
-interface CompanyOverviewProps {
-  companyName?: string;
-  stats?: {
-    companiesHired: number;
-    candidatesRecruited: number;
-  };
-  contact?: {
-    name: string;
-    phone: string;
-  };
-  website: string;
-  industry: string;
-  companySize: {
-    employees: string;
-    associates: number;
-  };
-  headquarters: {
-    city: string;
-    state: string;
-  };
-  founded: number;
-}
+import { Company } from "@/types/company";
 
 const CompanyOverview = () => {
   const [editOverview, setEditOverview] = useState(false);
-  const [editField, setEditFeild] = useState("");
-  const { id } = useParams();
-  const { companyProfile } = useOutletContext();
+  
+  const company = useSelectedCompany();
+  const { companyProfile } = useOutletContext<{ companyProfile: Company }>();
   const navigate = useNavigate();
-  const isSelected = useSelectedCompany();
-  const updateComanyMutation = useMutation({
+  
+  const updateCompanyMutation = useMutation({
     mutationFn: CompanyApi.updateCompanyProfile,
     onSuccess: () => {
       setEditOverview(false);
     },
   });
-
-  useEffect(() => {
-    console.log(
-      "updateComanyMutation.isLoading",
-      updateComanyMutation.isLoading
-    );
-    console.log("context", companyProfile);
-  }, []);
 
   const overviewSchema = z.object({
     description: z
@@ -85,39 +52,39 @@ const CompanyOverview = () => {
       }),
   });
 
-  type CompanyProfile = z.infer<typeof overviewSchema>
+  type CompanyProfile = z.infer<typeof overviewSchema>;
 
   const form = useForm<CompanyProfile>({
     resolver: zodResolver(overviewSchema),
     defaultValues: {
-      description: companyProfile ? companyProfile.description : "",
+      description: companyProfile?.description || "",
     },
   });
 
   async function handleSubmit(data: CompanyProfile) {
-    companyProfile.description = data.description
-    updateComanyMutation.mutate({ id, data: companyProfile });
+    if (companyProfile && company) {
+      const updatedProfile = { ...companyProfile, description: data.description };
+      updateCompanyMutation.mutate({ id: company._id, data: updatedProfile });
+    }
   }
 
   return (
     <div className="p-6 bg-white rounded-lg shadow-sm text-[#7C8493]">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold text-blue-950">Overview</h2>
-        {isSelected && companyProfile && companyProfile.description ? (
+        {company && companyProfile?.description && (
           <Button
-            onClick={() => {
-              setEditOverview(!editOverview);
-            }}
+            onClick={() => setEditOverview(!editOverview)}
             variant="ghost"
             className="rounded-full py-6"
           >
             <Pencil size={18} className="hover:bg-stone-100" />
           </Button>
-        ) : null}
+        )}
       </div>
 
       <div>
-        {editOverview && isSelected ? (
+        {editOverview && company ? (
           <Form {...form}>
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
@@ -153,7 +120,7 @@ const CompanyOverview = () => {
                   type="submit"
                   className="bg-blue-800 inline-flex items-center justify-center gap-x-2"
                 >
-                  {updateComanyMutation.isLoading ? (
+                  {updateCompanyMutation.isLoading ? (
                     <>
                       <Spinner size={20} />
                       <span>Saving...</span>
@@ -167,11 +134,11 @@ const CompanyOverview = () => {
           </Form>
         ) : (
           <>
-            {companyProfile && companyProfile.description ? (
+            {companyProfile?.description ? (
               <div className="whitespace-pre-line my-2">
                 {companyProfile.description}
               </div>
-            ) : isSelected ? (
+            ) : company ? (
               <div className="p-5 flex justify-between bg-[#f8f9fa] border my-4 rounded-lg items-center">
                 <div>
                   <h1 className="text-lg font-clash font-bold">Description</h1>
@@ -181,9 +148,7 @@ const CompanyOverview = () => {
                 </div>
                 <div>
                   <button 
-                    onClick={() => {
-                      setEditOverview(!editOverview);
-                    }}
+                    onClick={() => setEditOverview(!editOverview)}
                     className="hover:bg-blue-50 p-2 rounded-full">
                     <Plus size={25} />
                   </button>
@@ -196,14 +161,14 @@ const CompanyOverview = () => {
 
       <div className="space-y-4 text-gray-600">
         <div>
-          {companyProfile && companyProfile.website ? (
+          {companyProfile?.website ? (
             <div>
               <div className="font-semibold text-base mt-4 text-blue-950">Website</div>
               <a href={companyProfile.website} className="text-blue-600 hover:underline">
                 {companyProfile.website}
               </a>
             </div>
-          ) : isSelected ? (
+          ) : company ? (
             <div className="p-5 flex justify-between bg-[#f8f9fa] border my-4 rounded-lg items-center">
               <div>
                 <h1 className="text-lg font-clash font-bold">Website</h1>
@@ -214,7 +179,9 @@ const CompanyOverview = () => {
               <div>
                 <button 
                   onClick={() => {
-                    navigate(`/company/profile/settings/${id}`)
+                    if (company) {
+                      navigate(`/company/profile/settings/${company._id}`);
+                    }
                   }}
                   className="hover:bg-blue-50 p-2 rounded-full">
                   <Plus size={25} />
@@ -236,7 +203,7 @@ const CompanyOverview = () => {
           <div className="font-semibold text-base mt-4 text-blue-950">Company size</div>
           <div className="flex items-center gap-2">
             <Users size={18} />
-            <span className="text-[#7C8493]">{companyProfile && companyProfile.size} employees</span>
+            <span className="text-[#7C8493]">{companyProfile?.size} employees</span>
           </div>
         </div>
 
@@ -245,19 +212,18 @@ const CompanyOverview = () => {
           <div className="flex items-center gap-2">
             <MapPin size={18} />
             <span className="text-[#7C8493]">
-              {companyProfile && companyProfile.headquarters?.placename}
+              {companyProfile?.headquarters?.placename}
             </span>
           </div>
           <div className="font-semibold text-base text-blue-950 mt-2">Other Offices</div>
           <div>
             <ul>
-              {companyProfile &&
-                companyProfile.location.map((el) => (
-                  <li key={el.placename} className="inline-flex items-center gap-2 text-[#7C8493]">
-                    <MapPin size={18} />
-                    {el.placename}
-                  </li>
-                ))}
+              {companyProfile?.location?.map((el: any) => (
+                <li key={el.placename} className="inline-flex items-center gap-2 text-[#7C8493]">
+                  <MapPin size={18} />
+                  {el.placename}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -267,7 +233,7 @@ const CompanyOverview = () => {
           <div className="flex items-center gap-2">
             <Calendar size={18} />
             <span className="text-[#7C8493]">
-              {companyProfile?.foundedDate && format(companyProfile.foundedDate, 'PPP')}
+              {companyProfile?.foundedDate && format(new Date(companyProfile.foundedDate), 'PPP')}
             </span>
           </div>
         </div>

@@ -111,8 +111,8 @@ function SkillForm({ skills, onClose }: SkillFormProps) {
       if (!user) {
         throw new Error('User not authenticated');
       }
-      const skills = { skills: data.skills }
-      return await ProfileApi.updateProfile({data: skills, email: user.email, array: true});
+      // const skills = { skills: data.skills }
+      return await ProfileApi.updateProfile({data, email: user.email, array: true});
     },
     onSuccess: () => {
       toast({
@@ -143,7 +143,7 @@ function SkillForm({ skills, onClose }: SkillFormProps) {
     },
   });
 
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: any) => {
     updateSkillsMutation.mutate(data)
   };
 
@@ -197,7 +197,7 @@ function SkillForm({ skills, onClose }: SkillFormProps) {
                       value={field.proficiency}
                       onChange={(e) => {
                          console.log(e.target.value)
-                         form.setValue(`skills.${index}.proficiency`, e.target.value)
+                         form.setValue(`skills.${index}.proficiency`, e.target.value as "Beginner" | "Intermediate" | "Advanced" | "Expert")
                       }}
                       className="ml-2 bg-transparent border-none text-sm"
                       disabled={updateSkillsMutation.isLoading}

@@ -1,12 +1,9 @@
 import React, { useEffect } from "react";
-import { Tag } from "./Tag";
 import { techStack } from "@/constants/techStack";
-import { Location, TechStackTag } from "@/types/Settings";
 import { z } from "zod";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -31,22 +28,22 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CalendarIcon, Check, ChevronsUpDown, CircleCheck, Plus, X } from "lucide-react";
+import { CalendarIcon, CircleCheck, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import LocationSearch from "@/components/common/LocationField/LocationField";
 import { MapboxResult } from "@/types/company";
 import { useMutation, useQuery } from "react-query";
 import { CompanyApi } from "@/api/Company.api";
-import { useParams } from "react-router-dom";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Spinner } from "@/components/common/spinner/Loader";
 import LoaderSubmitButton from "@/components/common/spinner/LoaderSubmitButton";
 import { useToast } from "@/hooks/use-toast";
+import { useSelectedCompany } from "@/hooks/useSelectedCompany";
 
 export const CompanySettings: React.FC = () => {
-  const { id } = useParams();
+  const selectedCompany = useSelectedCompany();
   const { toast } = useToast()
   const companyFormSchema = z.object({
     name: z.string().min(1, "Company name is required"),
@@ -71,7 +68,7 @@ export const CompanySettings: React.FC = () => {
 
   const company = useQuery({
     queryKey: ["company"],
-    queryFn: () => CompanyApi.getCompany(id),
+    queryFn: () => CompanyApi.getCompany(selectedCompany._id),
   });
 
   const form = useForm<CompanyFormValues>({
@@ -102,7 +99,7 @@ export const CompanySettings: React.FC = () => {
     }
   }, [company.data, form]);
 
-  const { fields, append, remove } = useFieldArray({
+  const { append, remove } = useFieldArray({
     control: form.control,
     name: "location",
   });
@@ -114,7 +111,7 @@ export const CompanySettings: React.FC = () => {
     onSuccess: () => {
       console.log("success");
       toast({
-        title: (
+        description: (
           <div className="flex items-center gap-2">
              <CircleCheck className="text-green-800" size={20}/>
              <h1>Saved.</h1>
@@ -128,7 +125,7 @@ export const CompanySettings: React.FC = () => {
   });
 
   const onSubmit = (data: CompanyFormValues) => {
-    companyProfileMutation.mutate({ data, id });
+    companyProfileMutation.mutate({ data, id: selectedCompany._id });
   };
 
   const { isDirty } = form.formState

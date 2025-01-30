@@ -1,13 +1,13 @@
 import { AxiosInstance } from "axios";
 import axiosInstance from "./config";
 import {  UpdateProfileData } from "@/types/profile";
-import { FormValues, ResumeValues,  } from "@/types/formData";
+import {  ResumeValues,  } from "@/types/formData";
 
 class ProfileApi {
    
     private static axios: AxiosInstance = axiosInstance
 
-   static uploadProfilePhoto  = async ({ data, key, existingKey}: { data: FormValues; key: string; existingKey: string }) => {
+   static uploadProfilePhoto  = async ({ data, key, existingKey}: { data: any; key: string; existingKey: string }) => {
       return await this.axios.post(`/api/v1/profile/photo?key=${key}&${existingKey ? `${existingKey}=${existingKey}` : '' }`, data, {
         headers: {
             'Content-Type': 'multipart/form-data',

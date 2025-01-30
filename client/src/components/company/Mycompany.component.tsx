@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useDispatch, useSelector } from "react-redux";
-import { CircleCheck, Settings2, Building2, Users, Calendar, Briefcase, Plus } from "lucide-react";
+import { CircleCheck, Settings2, Users, Calendar, Briefcase, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   getCompaniesThunk,
@@ -22,20 +22,21 @@ import ErrorMessage from "../common/Message/ErrorMessage";
 import { AxiosError } from "axios";
 import EmptyCompanyState from "./EmptyCompanyState";
 import { useGetUser } from "@/hooks/useGetUser";
+import { AppDispatch } from "@/redux/store";
 
 const MyCompany: React.FC = () => {
   const user = useGetUser()
   const { state } = useLocation();
   const { toast } = useToast();
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const { companies } = useSelector((state: any) => state.company);
   const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(getCompaniesThunk(user?._id));
+    dispatch(getCompaniesThunk());
     if (state === false) {
       toast({
-        title: (
+        description: (
           <div className="flex items-center gap-2">
             <CircleCheck className="text-green-800" size={20} />
             <h1>Company Created Successfully</h1>

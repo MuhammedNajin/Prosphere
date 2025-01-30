@@ -70,5 +70,5 @@ export interface UpdateProfileData {
   profileImageKey?: string;
   experience?: Experience;
   education?: Education;
-  skills?: Skill;
+skills?: Skill[];
 }

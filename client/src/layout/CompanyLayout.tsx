@@ -8,7 +8,7 @@ import {
 } from "../constants/SidebarItems";
 import CreateJobModal from "@/components/job/CreateJobModal";
 import Header from "@/components/company/Header/CompanyHeader";
-import SubscriptionWrapper from "@/context/subscriptionContext";
+import SubscriptionWrapper from "@/context/SubscriptionContext";
 import { SocketContext } from "@/context/socketContext";
 import { useSelectedCompany } from "@/hooks/useSelectedCompany";
 

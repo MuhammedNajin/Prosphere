@@ -19,13 +19,13 @@ import {
   BriefcaseIcon,
   ChevronRight,
   MoreHorizontal,
-  PlusCircle,
   Share,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
+import { Applicant } from "@/types/application";
 
 const ApplicationTable: React.FC = () => {
   const getStageColor = (stage: string) => {
@@ -46,7 +46,7 @@ const ApplicationTable: React.FC = () => {
   };
 
   const navigate = useNavigate();
-  const { data } = useOutletContext();
+  const { data } = useOutletContext<{ data: Applicant[]}>();
 
   useEffect(() => {
     console.log("application", data);
@@ -70,7 +70,7 @@ const ApplicationTable: React.FC = () => {
             </TableHeader>
             <TableBody>
               {data &&
-                data?.map((application, index) => (
+                data?.map((application: any, index: number) => (
                   <TableRow
                     key={application._id}
                     className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}

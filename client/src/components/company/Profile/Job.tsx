@@ -4,8 +4,9 @@ import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import { Briefcase, Clock, MapPin, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skill } from "@/types/profile";
 
-const formatSalary = (amount) => {
+const formatSalary = (amount: number) => {
   if (amount >= 10000000) return `${(amount / 10000000).toFixed(1)}Cr`;
   if (amount >= 100000) return `${(amount / 100000).toFixed(1)}L`;
   return `${(amount / 1000).toFixed(0)}K`;
@@ -14,9 +15,15 @@ const formatSalary = (amount) => {
 const JobPosts: React.FC = () => {
   const { id } = useParams();
 
-  const { data: jobs = [] } = useQuery(
+  const { data: response = { jobs: [] } } = useQuery(
     ["jobs", id],
-    () => JobApi.getjobByCompany(),
+    () => JobApi.getjobByCompany({
+      filter: '',
+      from: new Date(),
+      to: new Date(),
+      page: 1,
+      pageSize: 3
+    }),
     {
       staleTime: 5 * 60 * 1000,
       cacheTime: 30 * 60 * 1000,
@@ -24,16 +31,16 @@ const JobPosts: React.FC = () => {
       retry: 2,
     }
   );
-
+  
   const displayJobs = React.useMemo(() => {
-    return jobs.slice(0, 3).map((job) => ({
+    return response.jobs.slice(0, 3).map((job: any) => ({
       ...job,
       formattedSalary: {
         from: formatSalary(job?.salary?.from),
         to: formatSalary(job?.salary?.to),
       },
     }));
-  }, [jobs]);
+  }, [response.jobs]);
 
   return (
     <Card className="w-full max-w-[1106px] bg-gradient-to-br from-white to-zinc-50/50">
@@ -45,9 +52,9 @@ const JobPosts: React.FC = () => {
 
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-4">
-          {displayJobs.map((job, index) => (
+          {displayJobs.map((job: any, index: number) => (
             <div
-              key={job.id || index}
+              key={index + new Date().getTime()}
               className="group relative bg-white rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-300 border border-zinc-100 hover:border-orange-100 hover:scale-[1.02]"
             >
               <div className="flex justify-between items-start mb-6">
@@ -80,7 +87,7 @@ const JobPosts: React.FC = () => {
               </div>
 
               <div className="mt-6 flex flex-wrap gap-2">
-                {job.skills.slice(0, 3).map((skill, idx) => (
+                {job.skills.slice(0, 3).map((skill: Skill, idx: number) => (
                   <span
                     key={`${job?.id}-${idx}`}
                     className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-xs font-medium hover:bg-blue-100 transition-colors"

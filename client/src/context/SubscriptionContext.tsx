@@ -4,7 +4,7 @@ import React, { createContext, useState } from "react";
 interface SubscriptionContext {
   setSubscription:React.Dispatch<React.SetStateAction<{
     state: boolean;
-    currentFeature: string;
+    currentFeature?: string;
 }>>
 }
 
@@ -19,7 +19,7 @@ interface SubscriptionWrapperProps {
 const SubscriptionWrapper: React.FC<SubscriptionWrapperProps> = ({
   children,
 }) => {
-  const [subscription, setSubscription] = useState<{state: boolean, currentFeature: string}>({ state: false, currentFeature: 'this feature'});
+  const [subscription, setSubscription] = useState<{state: boolean, currentFeature?: string}>({ state: false, currentFeature: 'this feature'});
 
   return (
     <subscriptionContext.Provider value={{ setSubscription }}>

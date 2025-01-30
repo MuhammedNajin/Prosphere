@@ -35,21 +35,15 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { DatePickerWithRange } from "@/components/common/DatePicker/RangePicker";
+import {
+  DatePickerWithRange,
+  DateRangeWithDefinedDates,
+} from "@/components/common/DatePicker/RangePicker";
 import CreateJobModal from "../../job/CreateJobModal";
 import { JobApi } from "@/api";
 import Pagination from "@/components/common/Pagination/Pagination";
 import { ItemsPerPageOption } from "@/types/job";
-
-// Types
-interface Job {
-  _id: string;
-  jobTitle: string;
-  expiry: Date;
-  createdAt: Date;
-  employment: string;
-  experience: number;
-}
+import { Job } from "@/types/job";
 
 interface JobResponse {
   jobs: Job[];
@@ -59,24 +53,20 @@ interface JobResponse {
   total: number;
 }
 
-interface DateRange {
-  from: Date;
-  to: Date;
-}
-
 const CompanyManagement: React.FC = () => {
   const navigate = useNavigate();
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<DateRange>({
+  const [dateRange, setDateRange] = useState<DateRangeWithDefinedDates>({
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date()),
   });
+
   const [employmentFilter, setEmploymentFilter] = useState("");
-  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPageOption>(2);
+  const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPageOption>(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { data, isLoading, refetch } = useQuery<JobResponse>(
+  const { data, refetch } = useQuery<JobResponse>(
     ["company:jobs", dateRange, employmentFilter, itemsPerPage, currentPage],
     async () => {
       const response = await JobApi.getjobByCompany({
@@ -92,7 +82,8 @@ const CompanyManagement: React.FC = () => {
 
   const jobs = data?.jobs ?? [];
   const hasJobs = jobs.length > 0;
-  const hasActiveFilters = employmentFilter !== "" || 
+  const hasActiveFilters =
+    employmentFilter !== "" ||
     dateRange.from.getTime() !== startOfMonth(new Date()).getTime() ||
     dateRange.to.getTime() !== endOfMonth(new Date()).getTime();
 
@@ -101,7 +92,7 @@ const CompanyManagement: React.FC = () => {
     await refetch();
   };
 
-  const handleDateRangeChange = (newRange: DateRange) => {
+  const handleDateRangeChange = (newRange: DateRangeWithDefinedDates) => {
     setDateRange(newRange);
   };
 
@@ -117,7 +108,7 @@ const CompanyManagement: React.FC = () => {
     });
   };
 
-  const renderJobStatus = (expiryDate: Date) => {
+  const renderJobStatus = (expiryDate: string) => {
     const isLive = new Date(expiryDate).getTime() > Date.now();
     return (
       <span
@@ -166,10 +157,9 @@ const CompanyManagement: React.FC = () => {
           No matching jobs found
         </h3>
         <p className="text-gray-600 text-center mb-6 max-w-md">
-          {employmentFilter ? 
-            `No ${employmentFilter} positions found for the selected date range.` :
-            "No jobs found for the selected filters."
-          }
+          {employmentFilter
+            ? `No ${employmentFilter} positions found for the selected date range.`
+            : "No jobs found for the selected filters."}
         </p>
         <div className="flex flex-col gap-4 w-full max-w-md mb-8">
           <div className="flex items-start gap-3 text-left p-4 bg-orange-50 border border-orange-200 rounded-lg">
@@ -177,19 +167,23 @@ const CompanyManagement: React.FC = () => {
             <div>
               <h4 className="font-medium text-gray-900">Active Filters</h4>
               <div className="text-sm text-gray-600 space-y-1 mt-1">
-                {employmentFilter && (
-                  <p>Employment Type: {employmentFilter}</p>
-                )}
-                <p>Date Range: {format(dateRange.from, "PPP")} - {format(dateRange.to, "PPP")}</p>
+                {employmentFilter && <p>Employment Type: {employmentFilter}</p>}
+                <p>
+                  Date Range: {format(dateRange.from, "PPP")} -{" "}
+                  {format(dateRange.to, "PPP")}
+                </p>
               </div>
             </div>
           </div>
           <div className="flex items-start gap-3 text-left p-4 bg-gray-50 border border-gray-200 rounded-lg">
             <RefreshCw className="w-5 h-5 text-gray-500 mt-0.5" />
             <div>
-              <h4 className="font-medium text-gray-900">Try adjusting your search</h4>
+              <h4 className="font-medium text-gray-900">
+                Try adjusting your search
+              </h4>
               <p className="text-sm text-gray-600">
-                Clear filters or select a different date range to see more results
+                Clear filters or select a different date range to see more
+                results
               </p>
             </div>
           </div>
@@ -229,7 +223,7 @@ const CompanyManagement: React.FC = () => {
           </p>
         </header>
         <DatePickerWithRange
-          onSelect={handleDateRangeChange}
+          onDateSelect={handleDateRangeChange}
           dateRange={dateRange}
         />
       </section>
@@ -338,7 +332,7 @@ const CompanyManagement: React.FC = () => {
               }}
               hasNextPage={currentPage < (data?.totalPages || 1)}
               fetchNextPage={() => {}}
-              total={data?.total}
+              // total={data?.total}
             />
           </>
         ) : (
