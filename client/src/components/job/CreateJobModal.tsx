@@ -21,27 +21,28 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useFieldArray, useForm } from "react-hook-form";
-import * as z from "zod";
+import { FieldErrors, FieldPath, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import SecondModal from "./CreateJobModalTwo";
 import CreateJobModalThree from "./CreateJobModalThree";
 import { JobApi } from "../../api";
-import { useParams } from "react-router-dom";
 import { popularSkills } from "@/constants/popularSkill";
 import { CircleCheck, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useMutation } from "react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Job } from "@/types/job";
+import { CreateJobProps, Job, UpdateJobProps } from "@/types/job";
 import SuccessMessage from "../common/Message/SuccessMessage";
 import { queryClient } from "@/main";
 import ErrorMessage from "../common/Message/ErrorMessage";
-import { useSubscription } from "@/hooks/useSubscription";
 import { setTrailLimit } from '@/redux/reducers/companySlice'
 import { UsageStatsType } from "@/types/company";
 import { useDispatch } from "react-redux";
+import { JobFormData } from "@/types/formData";
+import { jobFormSchema } from "@/types/schema";
+import { AxiosError } from "axios";
+import { useSelectedCompany } from "@/hooks/useSelectedCompany";
 interface CreateJobModalProps {
   isOpen: boolean;
   onClose: React.Dispatch<React.SetStateAction<boolean>>;
@@ -55,9 +56,9 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
 }) => {
   const [completion, setCompletion] = useState<1 | 2 | 3>(1);
   const [inputSkill, setInputSkill] = useState("");
-  const [suggestions, setSuggestions] = useState([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const suggestionsRef = useRef(null);
+  const suggestionsRef = useRef<HTMLDivElement | null>(null);
   const { toast } = useToast();
   const [formStep] = useState([
     "Job information",
@@ -73,70 +74,11 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     "Contract",
   ]);
 
-  const formSchema = z
-    .object({
-      jobTitle: z.string().min(4, {
-        message: "Job Title must be at least 4 characters",
-      }),
-      employment: z.enum(
-        ["Full-Time", "Part-Time", "Remote", "Internship", "Contract"],
-        {
-          required_error: "Please select an employment type",
-        }
-      ),
-      minSalary: z.number().min(1000, {
-        message: "Minimum salary must be at least 1000",
-      }),
-      maxSalary: z.number().min(1000, {
-        message: "Maximum salary must be at least 1000",
-      }),
-      skills: z
-        .array(
-          z.object({
-            name: z.string().min(1, "Skill name is required"),
-            proficiency: z.enum([
-              "Beginner",
-              "Intermediate",
-              "Advanced",
-              "Expert",
-            ]),
-          })
-        )
-        .min(1, "At least one skill is required"),
-      jobDescription: z
-        .string()
-        .min(10, "Job description must be at least 10 characters"),
-      qualifications: z
-        .array(z.string())
-        .min(1, "Give at least one qualification"),
-      niceToHave: z.array(z.string()).optional(),
-      responsibility: z
-        .array(z.string())
-        .min(4, "Mention proper job responsibility"),
-      experience: z
-        .number({
-          required_error: "experience required",
-          invalid_type_error: "experience must be number ",
-        })
-        .min(0, "Experience must be a non-negative number")
-        .refine((val) => parseInt(val)),
-      vacancies: z.number().int().positive("Vacancies must be at least 1"),
-      expiry: z.string().refine((val) => new Date(val) > new Date(), {
-        message: "Expiry date must be a future date",
-      }),
-      jobLocation: z.string().min(1, "Job location is required"),
-      officeLocation: z.string(),
-    })
-    .refine((data) => data.minSalary <= data.maxSalary, {
-      message: "Minimum salary cannot be greater than maximum salary",
-      path: ["maxSalary"],
-    });
-
   const [minSalary, setMinSalary] = React.useState([5000]);
   const [maxSalary, setMaxSalary] = useState([50000]);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<JobFormData>({
+    resolver: zodResolver(jobFormSchema),
     defaultValues: {
       jobTitle: "",
       employment: "Full-Time",
@@ -156,9 +98,9 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     mode: "onChange",
   });
 
-  const getFirstErrorField = (errors: Object) => {
+  const getFirstErrorField = (errors: Object): FieldPath<JobFormData> | null  => {
     if (!errors) return null;
-    return Object.keys(errors)[0];
+    return Object.keys(errors)[0] as FieldPath<JobFormData>;
   };
 
   useEffect(() => {
@@ -186,14 +128,14 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     console.log("job", job);
     
 
-    const errors = form.formState.errors;
+    const errors: FieldErrors<JobFormData> = form.formState.errors;
     if (!errors) return;
 
-    const firstErrorField = getFirstErrorField(errors);
+    const firstErrorField = getFirstErrorField(errors)
     console.log("firstErrorField gettting error here", firstErrorField);
     
     if (firstErrorField) {
-      form.setFocus(firstErrorField);
+      form.setFocus(firstErrorField as keyof JobFormData);
    
       const element = document.getElementsByName(firstErrorField)[0];
       console.log("hi element", element);
@@ -214,14 +156,13 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
           "maxSalary",
           "minSalary",
           "skills",
-        ];
+        ] as const satisfies readonly (keyof JobFormData)[];
 
         const isValid = await form.trigger(fieldsToValidate);
 
         if (isValid) {
           setCompletion(2);
         } else {
-          // Focus the first field with an error
           const errors = form.formState.errors;
           const firstErrorField = getFirstErrorField(errors);
           if (firstErrorField) {
@@ -235,7 +176,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
           "qualifications",
           "responsibility",
           "niceToHave",
-        ];
+        ] as const satisfies readonly (keyof JobFormData)[]; 
         const isStep2Valid = await form.trigger(step2Fields);
 
         if (isStep2Valid) {
@@ -251,42 +192,69 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     }
   };
 
-  const { id } = useParams();
+  const company = useSelectedCompany();
   const dispatch = useDispatch()
 
+
+
   const jobCreationMutation = useMutation({
-    mutationFn: job ? JobApi.updateJob : JobApi.postJob,
+    mutationFn: async (params: CreateJobProps | UpdateJobProps) => {
+      if ('id' in params) {
+        return JobApi.updateJob(params);
+      }
+      return JobApi.postJob(params);
+    },
     onSuccess: () => {
-       if(!job) {
-          dispatch(setTrailLimit(UsageStatsType.JOB_POSTS_Limit));
-       }
-      toast({
-        title: <SuccessMessage  message='Job posted successfully...'/>,
-        
-      });
-      queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      if(!job) {
+         dispatch(setTrailLimit(UsageStatsType.JOB_POSTS_Limit));
+      }
+     toast({
+       description: <SuccessMessage  message='Job posted successfully...'/>,
        
-     onClose(false)
-    },
-    onError: (error) => {
-      toast({
-        title: <ErrorMessage message='Failed to post job. try again' />,
-        className:"bg-red-500 text-white"
-      });
-      console.error("Error updating education:", error);
-    },
+     });
+     queryClient.invalidateQueries({ queryKey: ['jobs'] });
+      
+    onClose(false)
+   },
+   onError: (error: AxiosError) => {
+     toast({
+       description: <ErrorMessage message='Failed to post job. try again' />,
+       className:"bg-red-500 text-white"
+     });
+     console.error("Error updating education:", error);
+   },
+
   });
-
-  const subscription = useSubscription();
-  const subscriptionId  = subscription?.isTrail ? subscription?.company?.company_id : subscription?.subscription?.id
-
-  const onSubmit = async (formData: z.infer<typeof formSchema>) => {
-    console.log(formData);
-    if(job) {
-       jobCreationMutation.mutate({ formData, companyId: id, id: job._id,  });
+  
+  const onSubmit = async (formData: JobFormData) => {
+    if (!company?._id) {
+      toast({
+        description: <ErrorMessage message="Company information is missing" />,
+        variant: "destructive"
+      });
+      return;
+    }
+  
+    if (job) {
+      if (!job._id) {
+        toast({
+          description: <ErrorMessage message="Job ID is missing" />,
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      jobCreationMutation.mutate({
+        formData,
+        companyId: company._id,
+        id: job._id as string
+      });
     } else {
-       jobCreationMutation.mutate({ formData, id,  subscriptionId, trail: subscription.isTrail });
-     }
+      jobCreationMutation.mutate({
+        formData,
+        companyId: company._id
+      });
+    }
   };
 
   const { fields, append, remove } = useFieldArray({
@@ -295,10 +263,10 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
   });
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event: MouseEvent) => {
       if (
         suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target)
+        !suggestionsRef.current.contains(event.target as Node)
       ) {
         setShowSuggestions(false);
       }
@@ -311,7 +279,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     return () => {
       if (jobCreationMutation.isSuccess) {
         toast({
-          title: (
+          description: (
             <div className="flex items-center gap-2">
               <CircleCheck className="text-green-800" size={20} />
               <h1>Company Created Successufully</h1>
@@ -323,7 +291,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     };
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     console.log("value", value);
 
@@ -341,7 +309,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     console.log("kerii", inputSkill);
   };
 
-  const handleSuggestionClick = (skill) => {
+  const handleSuggestionClick = (skill: string) => {
     console.log(skill, "skills");
     setInputSkill(skill);
     console.log("handle suggestions", inputSkill);
@@ -618,7 +586,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
                                   onChange={(e) =>
                                     form.setValue(
                                       `skills.${index}.proficiency`,
-                                      e.target.value
+                                      e.target.value as "Beginner" | "Intermediate" | "Advanced" | "Expert"
                                     )
                                   }
                                   className="ml-2 bg-transparent border-none text-xs sm:text-sm"
