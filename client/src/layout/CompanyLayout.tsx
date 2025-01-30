@@ -31,7 +31,7 @@ const CompanyLayout: React.FC = () => {
     <>
       <SubscriptionWrapper>
         <div className="md:flex px-1">
-          {isOpen && <CreateJobModal isOpen={isOpen} onClose={setClose} />}
+          {isOpen && <CreateJobModal isOpen={isOpen} onClose={setClose} job={null}/>}
 
           <div
             className={`fixed z-50 h-screen bg-gray-100 md:relative md:h-auto md:translate-x-0 transition-transform duration-300 ease-in-out ${
