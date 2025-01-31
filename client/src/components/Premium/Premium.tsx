@@ -5,16 +5,16 @@ import { useMutation, useQuery } from 'react-query';
 import { PaymentApi } from '@/api/Payment.api';
 import { AxiosError } from 'axios';
 import { useGetUser } from '@/hooks/useGetUser';
-import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { PlanData } from '@/types/subscription';
+import { useSelectedCompany } from '@/hooks/useSelectedCompany';
 
 const Premium: React.FC = () => {
   const [billingCycle] = useState('monthly');
   const [currentPlanId, setCurrentPlanId] = useState(-1)
   const user = useGetUser();
-  const { id } = useParams();
+  const company = useSelectedCompany()
 
   const { data: plans } = useQuery({
     queryKey: ["premium"],
@@ -23,7 +23,7 @@ const Premium: React.FC = () => {
 
   const { data: currentPlan } = useQuery({
     queryKey: ["currentPlan"],
-    queryFn: () => PaymentApi.getCurrentPlan(id!)
+    queryFn: () => PaymentApi.getCurrentPlan(company._id!)
   });
 
   useEffect(() => {
@@ -47,17 +47,62 @@ const Premium: React.FC = () => {
     }
   });
 
+  const upgradeSubscriptionMutation = useMutation({
+    mutationFn: PaymentApi.upgradeSubscription,
+    onSuccess: async (data) => {
+      console.log(" upgradeSubscriptionMutation", data.data);
+      const { id: sessionId } = data?.data;
+      const stripe = await stripePromise;
+     console.log("debug", sessionId, stripe);
+     
+      if (sessionId && stripe) {
+        console.log("redirecting to checkout");
+        stripe.redirectToCheckout({ sessionId });
+      }
+    },
+    onError: (err: AxiosError) => {
+      console.error("Payment error:", err);
+    }
+  });
+
   const handlePlanSelection = (plan: PlanData) => {
     if(!user) return;
     const data = {
       name: plan.name,
       id: user._id,
-      companyId: id,
+      companyId: company._id,
       price: plan.price,
       planId: plan.id
     };
     paymentMutation.mutate({ data });
   };
+
+  const handleUpgradeSubscription = (plan: PlanData) => {
+    console.log("upgradeSubscriptionMutation", plan);
+    if(!user) return;
+    const data = {
+      name: plan.name,
+      id: user._id,
+      companyId: company._id as string,
+      price: plan.price,
+      planId: plan.id
+    };
+    upgradeSubscriptionMutation.mutate({ data });
+  }
+
+
+  const handlePlanAction = (plan: PlanData) => {
+    console.log("plan", plan);
+    if(currentPlanId === plan.id) return;
+
+    if(plan.price > currentPlan?.planSnapshot?.price) {
+      console.log("upgrade");
+      handleUpgradeSubscription(plan);
+    } else {
+      console.log("select");
+      handlePlanSelection(plan);
+    }
+  }
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-8 space-y-8">
@@ -139,18 +184,18 @@ const Premium: React.FC = () => {
             </div>
 
             <button
-              onClick={() => handlePlanSelection(plan)}
-              disabled={currentPlanId === plan.id}
+              onClick={() => handlePlanAction(plan)}
+              disabled={currentPlanId === plan.id || currentPlan?.planSnapshot?.price > plan.price}
               className={`
                 w-full rounded-lg py-3 px-4 text-center font-semibold
                 transition-all duration-200
-                ${currentPlanId === plan.id || currentPlan
+                ${currentPlanId === plan.id || currentPlan?.planSnapshot?.price >= plan.price
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-orange-600 text-white hover:bg-orange-700 active:transform active:scale-95'
                 }
               `}
             >
-              {currentPlanId === plan.id ? 'Current Plan' : 'Get Plan'}
+              {currentPlanId === plan.id ? 'Current Plan' : currentPlan && currentPlan?.planSnapshot?.price < plan.price ? 'Upgrade Plan' : 'Choose Plan'}
             </button>
           </div>
         ))}
