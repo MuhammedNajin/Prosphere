@@ -1,10 +1,6 @@
-
-
 import { AxiosError, AxiosInstance } from "axios";
 import axiosInstance from "./config"
 import { adminLogin } from "@/types/user";
-
-
 
 class AdminApi {
     private static axios: AxiosInstance = axiosInstance
@@ -133,8 +129,15 @@ class AdminApi {
         }
     }
 
-  
-    
+
+    static getJobStats = async () => {
+        try {
+            const response = await this.axios.get('/api/v1/job/admin/job-stats');
+            return response.data?.data;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export { AdminApi };

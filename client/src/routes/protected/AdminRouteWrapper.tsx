@@ -19,7 +19,7 @@ const AdminRouteWrapper: React.FC<AdminRouteWrapperProps> = (props) => {
         return children
 
      } else {
-       return <Navigate replace to="/admin/singin" />
+       return <Navigate replace to="/admin/signin" />
      }
     
     

@@ -11,7 +11,11 @@ import { SocketContext } from "@/context/socketContext";
 import { AppDispatch } from "@/redux/store";
 import { UserData } from "@/types/user";
 
-const UserTable: React.FC = () => {
+interface UserTableProps {
+  searchTerm: string;
+}
+
+const UserTable: React.FC<UserTableProps> = ({ searchTerm }) => {
   const [open, setOpen] = useState<boolean>(false);
   const [state, setState] = useState<{
     id?: string;
@@ -20,94 +24,127 @@ const UserTable: React.FC = () => {
     name?: string;
     isBlock?: boolean;
   }>({});
-  const { data } = useQuery("fetchUsers", AdminApi.fetchUsers, {});
+
+  const { data, isLoading } = useQuery("fetchUsers", AdminApi.fetchUsers, {
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+  
   const queryClient = useQueryClient();
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { authSocket } = useContext(SocketContext);
 
   useEffect(() => {
     if (data instanceof AxiosError) {
       dispatch(adminLogoutThuck())
         .unwrap()
-        .then(() => {
-          navigate("/admin/login");
-        });
+        .then(() => navigate("/admin/signin"));
     }
   }, [data]);
-  
-  const { authSocket } = useContext(SocketContext);
-  const handleBlock = async () => {
-    console.log("block user", state);
 
-    await AdminApi.blockUser(state.id as string);
-    authSocket?.emit("block:user", { roomId: state.id });
-    queryClient.setQueryData("fetchUsers", (users: any) => {
-      return users.map((user: UserData, index: number) => {
-        if (index === state.index) {
-          return { ...user, isBlocked: !user.isBlocked };
-        }
-        return user;
+  const handleBlock = async () => {
+    try {
+      await AdminApi.blockUser(state.id as string);
+      authSocket?.emit("block:user", { roomId: state.id });
+      queryClient.setQueryData("fetchUsers", (users: any) => {
+        return users.map((user: UserData, index: number) => {
+          if (index === state.index) {
+            return { ...user, isBlocked: !user.isBlocked };
+          }
+          return user;
+        });
       });
-    });
-    setOpen(!state);
+      setOpen(false);
+    } catch (error) {
+      console.error("Error blocking user:", error);
+    }
   };
+  
+  const filteredUsers = Array.isArray(data) ? data.filter((user: UserData) => 
+    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.phone.includes(searchTerm)
+  ) : [];
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      {/* Desktop View */}
       <div className="hidden md:block">
-        <table className="min-w-full leading-normal">
-          <thead>
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
             <tr>
-              <th className="px-5 py-3 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Name
-              </th>
-              <th className="px-5 py-3 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Email
-              </th>
-              <th className="px-5 py-3 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Phone
-              </th>
-              <th className="px-5 py-3 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Date
-              </th>
-              <th className="px-5 py-3 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                Action
-              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined Date</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            {data && data.length > 0 ? (
-              data.map((el: UserData, index: number) => (
-                <tr key={index}>
-                  <td className="px-5 py-5 text-sm">{el.username}</td>
-                  <td className="px-5 py-5 text-sm">{el.email}</td>
-                  <td className="px-5 py-5 text-sm">{el.phone}</td>
-                  <td className="px-5 py-5 text-sm">
-                    {format(el.createdAt, "PPP")}
+          <tbody className="bg-white divide-y divide-gray-200">
+            {isLoading ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-4 text-center">
+                  <div className="flex justify-center">
+                    <div className="h-6 w-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredUsers?.length ? (
+              filteredUsers.map((user: UserData, index: number) => (
+                <tr key={user._id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center">
+                        <span className="text-sm font-medium text-indigo-600">
+                          {user.username[0].toUpperCase()}
+                        </span>
+                      </div>
+                      <div className="ml-3">
+                        <div className="text-sm font-medium text-gray-900">{user.username}</div>
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-5 py-5 text-sm">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.phone}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {format(new Date(user.createdAt), "MMM d, yyyy")}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                      user.isBlocked 
+                        ? 'bg-red-100 text-red-800' 
+                        : 'bg-green-100 text-green-800'
+                    }`}>
+                      {user.isBlocked ? 'Blocked' : 'Active'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
                       onClick={() => {
-                        console.log("usr", el);
                         setState({
-                          id: el._id,
-                          email: el.email,
+                          id: user._id,
+                          email: user.email,
                           index,
-                          name: el.username,
-                          isBlock: el.isBlocked,
+                          name: user.username,
+                          isBlock: user.isBlocked,
                         });
-                        setOpen(!open);
+                        setOpen(true);
                       }}
-                      className="px-4 py-2 rounded-md border border-red-600 bg-white text-red-500 text-sm hover:shadow-[4px_4px_0px_0px_rgba(191,17,17)] transition duration-200"
+                      className={`px-4 py-2 rounded-md border ${
+                        user.isBlocked 
+                          ? 'border-green-600 text-green-600 hover:bg-green-50' 
+                          : 'border-red-600 text-red-600 hover:bg-red-50'
+                      } transition-colors`}
                     >
-                      {el.isBlocked ? "Unblock" : "Block"}
+                      {user.isBlocked ? 'Unblock' : 'Block'}
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td className="px-5 py-5 text-sm" colSpan={5}>
+                <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
                   No users found
                 </td>
               </tr>
@@ -116,54 +153,79 @@ const UserTable: React.FC = () => {
         </table>
       </div>
 
+      {/* Mobile View */}
       <div className="md:hidden">
-        {data && data.length > 0 ? (
-          data.map((el: UserData, index: number) => (
-            <div key={index + Date.now()} className="border-b p-4">
-              <p>
-                <strong>Name:</strong> {el.username}
-              </p>
-              <p>
-                <strong>Email:</strong> {el.email}
-              </p>
-              <p>
-                <strong>Phone:</strong> {el.phone}
-              </p>
-              <p>
-                <strong>Date:</strong> {el.createdAt}
-              </p>
+        {filteredUsers?.map((user: UserData, index: number) => (
+          <div key={user._id} className="border-b border-gray-200 p-4">
+            <div className="flex items-center mb-3">
+              <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                <span className="text-lg font-medium text-indigo-600">
+                  {user.username[0].toUpperCase()}
+                </span>
+              </div>
+              <div className="ml-3">
+                <div className="text-sm font-medium text-gray-900">{user.username}</div>
+                <div className="text-sm text-gray-500">{user.email}</div>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500">Phone:</span>
+                <span className="text-sm text-gray-900">{user.phone}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-gray-500">Joined:</span>
+                <span className="text-sm text-gray-900">
+                  {format(new Date(user.createdAt), "MMM d, yyyy")}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-500">Status:</span>
+                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                  user.isBlocked 
+                    ? 'bg-red-100 text-red-800' 
+                    : 'bg-green-100 text-green-800'
+                }`}>
+                  {user.isBlocked ? 'Blocked' : 'Active'}
+                </span>
+              </div>
+            </div>
+            <div className="mt-4">
               <button
                 onClick={() => {
                   setState({
-                    ...state,
-                    email: el.email,
+                    id: user._id,
+                    email: user.email,
                     index,
-                    name: el.username,
-                    isBlock: el.isBlocked,
+                    name: user.username,
+                    isBlock: user.isBlocked,
                   });
-                  setOpen(!open);
+                  setOpen(true);
                 }}
-                className="mt-2 px-4 py-2 rounded-md border border-red-600 bg-white text-red-500 text-sm hover:shadow-[4px_4px_0px_0px_rgba(191,17,17)] transition duration-200"
+                className={`w-full px-4 py-2 rounded-md border ${
+                  user.isBlocked 
+                    ? 'border-green-600 text-green-600 hover:bg-green-50' 
+                    : 'border-red-600 text-red-600 hover:bg-red-50'
+                } transition-colors`}
               >
-                {el.isBlocked ? "Unblock" : "Block"}
+                {user.isBlocked ? 'Unblock' : 'Block'}
               </button>
             </div>
-          ))
-        ) : (
-          <p className="p-4">No users found</p>
-        )}
+          </div>
+        ))}
       </div>
 
+      {/* Confirmation Modal */}
       {open && (
         <ConfirmModal
           handleClose={setOpen}
           handleSubmit={handleBlock}
           message={
             !state.isBlock
-              ? `Are you sure to block ${state.name}`
-              : `Are you sure to unblock ${state.name}`
+              ? `Are you sure you want to block ${state.name}?`
+              : `Are you sure you want to unblock ${state.name}?`
           }
-          title="Block the user"
+          title={state.isBlock ? "Unblock User" : "Block User"}
           open={open}
         />
       )}

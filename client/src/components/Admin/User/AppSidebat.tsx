@@ -1,40 +1,15 @@
-import {
-  Calendar,
-  ChevronUp,
-  Home,
-  Inbox,
-  LogOut,
-  Search,
-  User2,
-} from "lucide-react";
-
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSubButton,
-} from "@/components/ui/sidebar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
-import { Link, useNavigate } from "react-router-dom";
+import { Calendar, Home, Inbox, LogOut } from "lucide-react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { adminLogoutThuck } from "@/redux/action/actions";
 import { AppDispatch } from "@/redux/store";
+import Logo from "@/components/common/Logo/Logo";
+import { TbPremiumRights } from "react-icons/tb";
 
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/admin/dashboard",
     icon: Home,
   },
   {
@@ -50,13 +25,14 @@ const items = [
   {
     title: "Subscription",
     url: "/admin/subscription",
-    icon: Search,
+    icon: TbPremiumRights,
   },
 ];
 
-export function AppSidebar() {
+const AppSidebar = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const logoutHandler = () => {
     dispatch(adminLogoutThuck())
@@ -67,54 +43,51 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar>
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuSubButton>
-                  <User2 /> Username
-                  <ChevronUp className="ml-auto" />
-                </SidebarMenuSubButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="top"
-                className="w-[--radix-popper-anchor-width] bg-gray-300 rounded-lg "
-              >
-                <DropdownMenuItem className=" text-red-600">
-                  <button
-                    className="flex items-center p-2 gap-2.5"
-                    onClick={logoutHandler}
-                  >
-                    <LogOut size={20} />
-                    <span>Sign out</span>
-                  </button>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </Sidebar>
+    <div className="flex h-full min-h-screen w-20 flex-col bg-white shadow-lg">
+      {/* Logo */}
+      <div className="p-4">
+        <Logo />
+      </div>
+
+      {/* Navigation */}
+      <nav className="flex flex-col flex-1 gap-y-2 px-2 py-4">
+        {items.map((item) => {
+          const isActive = location.pathname === item.url;
+          const Icon = item.icon;
+
+          return (
+            <Link
+              key={item.url}
+              to={item.url}
+              className={`flex flex-col items-center justify-center rounded-lg p-3 text-sm font-medium transition-colors ${
+                isActive
+                  ? "bg-orange-50 text-orange-600 shadow-md"
+                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+              }`}
+            >
+              <Icon
+                className={`h-6 w-6 ${
+                  isActive ? "text-orange-600" : "text-gray-400"
+                }`}
+              />
+          
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Logout Button */}
+      <div className="border-t border-gray-200 p-4">
+        <button
+          onClick={logoutHandler}
+          className="flex w-full flex-col items-center justify-center rounded-lg p-3 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        >
+          <LogOut className="h-6 w-6 text-gray-400" />
+          <span className="text-xs">Logout</span>
+        </button>
+      </div>
+    </div>
   );
-}
+};
+
+export default AppSidebar;

@@ -4,11 +4,11 @@ import { z } from "zod";
 import { adminLoginThunk } from "@/redux/action/actions";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, ArrowRight } from "lucide-react";
 import { AppDispatch } from "@/redux/store";
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -21,19 +21,26 @@ interface LoginErrors {
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errors, setErrors] = useState<LoginErrors>({ email: "", password: "" });
+  const [errors, setErrors] = useState<LoginErrors>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     try {
+      setIsLoading(true);
       loginSchema.parse({ email, password });
 
-      dispatch(adminLoginThunk({ email, password }))
+      await dispatch(adminLoginThunk({ email, password }))
         .unwrap()
-        .then(() => navigate("/admin"))
-        .catch((err: string) => toast.error(err, { duration: 1500 }));
+        .then(() => {
+          toast.success("Login successful", { duration: 2000 });
+          navigate("/admin/dashboard");
+        })
+        .catch((err: string) => {
+          toast.error(err || "Login failed", { duration: 2000 });
+        });
     } catch (error) {
       if (error instanceof z.ZodError) {
         const formattedErrors = error.issues.reduce<LoginErrors>((acc, issue) => {
@@ -44,35 +51,48 @@ const LoginPage = () => {
         }, {});
         setErrors(formattedErrors);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">Welcome to Prosphere</h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            A platform of high technology potential to help youth
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full">
+        {/* Logo/Brand Section */}
+        <div className="text-center mb-8">
+          <div className="h-12 w-12 bg-orange-600 rounded-xl mx-auto mb-4 flex items-center justify-center">
+            <span className="text-white text-xl font-bold">P</span>
+          </div>
+          <h2 className="text-3xl font-bold text-gray-900 tracking-tight">
+            Welcome back
+          </h2>
+          <p className="mt-2 text-gray-600">
+            Sign in to your Prosphere admin account
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
-          <div className="space-y-4">
+
+        {/* Login Card */}
+        <div className="bg-white shadow-xl rounded-2xl p-8 space-y-6">
+          <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+            {/* Email Field */}
             <div>
-              <label htmlFor="email-address" className="sr-only">Email address</label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                Email address
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Mail className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
-                  id="email-address"
+                  id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
-                  className={`appearance-none rounded relative block w-full px-3 py-2 border ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
-                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-                  placeholder="Email address"
+                  className={`pl-10 pr-3 py-2.5 w-full rounded-lg border ${
+                    errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors`}
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
@@ -81,11 +101,18 @@ const LoginPage = () => {
                 />
               </div>
               {errors.email && (
-                <p className="mt-2 text-sm text-red-600">{errors.email}</p>
+                <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                  <span className="h-1 w-1 rounded-full bg-red-600 inline-block"></span>
+                  {errors.email}
+                </p>
               )}
             </div>
+
+            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <Lock className="h-5 w-5 text-gray-400" />
@@ -95,65 +122,79 @@ const LoginPage = () => {
                   name="password"
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
-                  className={`appearance-none rounded relative block w-full px-3 py-2  border ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
-                  } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
-                  placeholder="Password"
+                  className={`pl-10 pr-10 py-2.5 w-full rounded-lg border ${
+                    errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                  } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors`}
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => {
                     setPassword(e.target.value);
                     setErrors({ ...errors, password: "" });
                   }}
                 />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-gray-400 hover:text-gray-500 "
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                  )}
+                </button>
               </div>
               {errors.password && (
-                <p className="mt-2 text-sm text-red-600">{errors.password}</p>
+                <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1">
+                  <span className="h-1 w-1 rounded-full bg-red-600 inline-block"></span>
+                  {errors.password}
+                </p>
               )}
             </div>
-          </div>
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
-              </label>
+            {/* Remember & Forgot Password */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <input
+                  id="remember-me"
+                  name="remember-me"
+                  type="checkbox"
+                  className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
+                />
+                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600">
+                  Remember me
+                </label>
+              </div>
+              <button type="button" className="text-sm font-medium text-orange-600 hover:text-orange-500">
+                Forgot password?
+              </button>
             </div>
 
-            <div className="text-sm">
-              <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Forgot your password?
-              </a>
-            </div>
-          </div>
-
-          <div>
+            {/* Submit Button */}
             <button
               type="submit"
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign in
+              {isLoading ? (
+                <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <>
+                  Sign in
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
             </button>
-          </div>
-        </form>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <p className="mt-6 text-center text-sm text-gray-600">
+          Need help? Contact{' '}
+          <a href="mailto:support@prosphere.com" className="font-medium text-orange-600 hover:text-orange-500">
+            support@prosphere.com
+          </a>
+        </p>
       </div>
     </div>
   );
