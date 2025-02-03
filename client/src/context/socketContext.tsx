@@ -23,11 +23,13 @@ const SOCKET_CONFIG = {
     reconnectionAttempts: 5,
   },
   urls: {
-    auth: 'http://localhost:7000',
-    chat: 'http://localhost:6002',
-    notification: 'http://localhost:4000'
+    auth: import.meta.env.VITE_API_AUTH,
+    chat: import.meta.env.VITE_API_CHAT,
+    notification: import.meta.env.VITE_API_NOTIFICATION,
   }
 };
+
+
 
 const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [chatSocket, setChatSocket] = useState<Socket | null>(null);
@@ -48,7 +50,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     if (user) {
      
       instances.auth = io(SOCKET_CONFIG.urls.auth, {
-        ...SOCKET_CONFIG.base
+        ...SOCKET_CONFIG.base,
       });
 
       instances.auth.on('connect', () => {
@@ -75,7 +77,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       instances.chat = io(SOCKET_CONFIG.urls.chat, {
         ...SOCKET_CONFIG.base,
-        path: '/socket.io/chat',
+        // path: '/socket.io/chat',
       });
 
       instances.chat.on('connect', () => {
@@ -89,7 +91,8 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       setChatSocket(instances.chat);
       instances.notification = io(SOCKET_CONFIG.urls.notification, {
-        ...SOCKET_CONFIG.base
+        ...SOCKET_CONFIG.base,
+        // path: '/socket.io/notification' 
       });
 
       instances.notification.on('connect', () => {
