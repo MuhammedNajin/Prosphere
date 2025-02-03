@@ -306,7 +306,7 @@ const CompanyManagement: React.FC = () => {
                           </button>
                           <button
                             onClick={() =>
-                              navigate(`/company/jobs/inspect/${job._id}`)
+                              navigate(`/company/jobs/inspect/${job._id}/applicants`)
                             }
                             className="px-2 font-semibold w-full rounded hover:bg-orange-700 hover:text-white py-2"
                           >

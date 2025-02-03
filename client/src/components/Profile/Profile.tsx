@@ -258,9 +258,9 @@ const Profile: React.FC = () => {
               <div className="flex gap-y-1 w-full mt-14 sm:mt-0 px-4 py-2 border">
                 <div className="mt-2 p-2 flex-1">
                   <div>
-                    <h1 className="text-2xl font-semibold">{data.username}</h1>
+                    <h1 className="text-2xl font-semibold">{data?.username}</h1>
                     <h2 className="text-lg font-medium text-zinc-500">
-                      {data.jobRole}
+                      {data?.jobRole}
                     </h2>
                   </div>
                   <div className="flex flex-col mt-1 justify-start gap-y-1 text-zinc-400 tracking-wider">
@@ -273,7 +273,7 @@ const Profile: React.FC = () => {
                       <div className="flex gap-x-1 items-center">
                         <CiCalculator1 className="text-xs" />
                         <p className="mr-3 text-xs">
-                          {format(data.createdAt, "PPP")}
+                          {format(data?.createdAt ?? new Date(), "PPP")}
                         </p>
                       </div>
                       <div className="flex gap-1 items-center">

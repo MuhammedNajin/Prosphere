@@ -58,10 +58,13 @@ const SignIn = () => {
     try {
       const token = credentialResponse.credential;
       const { status, user } = await ApiService.googleAuth(token);
-
+       console.log('heloo');
+       
       if (status === "new") {
+        console.log("debug google login with new user ")
         navigate("/google/auth/flow", { state: user });
       } else if (status === "exist") {
+        console.log("debug google login with existing user ")
         dispatch(googleAuth(user));
         navigate("/");
       }

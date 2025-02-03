@@ -27,18 +27,19 @@ const UserRouteWrapper: React.FC<UserRouteWrapperProps> = (props) => {
 
   useEffect(() => {
     console.log(
-      "user", user
+      "user", user, showSessionModal
     )
+    
     return () => {
       setShowSessionModal(false);
-      console.log("unMounting....")
+      console.log("unMounting....", showSessionModal)
     }
   }, []);
 
   const SessionTimeoutModal = () => (
-    <Dialog open={showSessionModal} onOpenChange={() => {
+    <Dialog open={showSessionModal} onOpenChange={(open) => {
       handleLoginRedirect()
-      setShowSessionModal(false)
+      setShowSessionModal(!open)
     }}>
       <DialogContent className="sm:max-w-md bg-white rounded-lg p-6">
         <DialogHeader className="space-y-6">
@@ -73,6 +74,8 @@ const UserRouteWrapper: React.FC<UserRouteWrapperProps> = (props) => {
   );
 
   if (!user) {
+    console.log("not authorized");
+    
     return (
       <>
         <SessionTimeoutModal />
@@ -80,7 +83,7 @@ const UserRouteWrapper: React.FC<UserRouteWrapperProps> = (props) => {
       </>
     );
   }
-
+  console.log("authorized")
   return <>{ children }</>;
 };
 

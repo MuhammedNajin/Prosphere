@@ -76,15 +76,25 @@ class CompanyApi {
     return await this.axios.post(`/api/v1/user/company/token/${id}`);
  }
 
- static getApplicationByJob = async (jobId: string) => {
-   try {
-      const response = await this.axios.get(`/api/v1/job/company/jobs/${jobId}`)
-      return response.data?.data
-   } catch (error) {
-     console.log(error);
-     throw error;
-   }
- }
+ static getApplicationByJob = async (jobId: string, page: number = 1, limit: number = 10) => {
+  try {
+     const response = await this.axios.get(`/api/v1/job/company/jobs/${jobId}`, {
+       params: {
+         page,
+         limit
+       }
+     });
+     return {
+       data: response.data?.data,
+       total: response.data?.total,
+       currentPage: response.data?.currentPage,
+       totalPages: response.data?.totalPages,
+     };
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
 
  static getJobStats = async (companyId: string, dateRange: { startDate: Date, endDate: Date }, timeFrame = 'year') => {
   try {

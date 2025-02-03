@@ -8,16 +8,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+
 import {
   BriefcaseIcon,
-  ChevronRight,
   MoreHorizontal,
   Share,
 } from "lucide-react";
@@ -56,7 +49,7 @@ const ApplicationTable: React.FC = () => {
     <>
       {data && data?.length > 0 ? (
         <>
-          <Table className="">
+          <Table className="border rounded-lg">
             <TableHeader>
               <TableRow className="hover:bg-white border">
                 <TableHead className="w-[50px]">
@@ -125,44 +118,6 @@ const ApplicationTable: React.FC = () => {
             </TableBody>
           </Table>
 
-          <nav className="flex flex-wrap gap-10 justify-between items-center px-4 text-base leading-relaxed bg-white border-t pt-2 w-full">
-            <div className="flex gap-4 items-center self-stretch my-auto font-medium min-w-[240px] text-slate-500">
-              <span>View</span>
-              <Select>
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue placeholder="10" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="20">20</SelectItem>
-                  <SelectItem value="30">30</SelectItem>
-                </SelectContent>
-              </Select>
-              <span>Applicants per page</span>
-            </div>
-
-            <div className="flex gap-2 justify-center items-center">
-              <Button variant="ghost" size="icon" disabled={true}>
-                <ChevronRight className="rotate-180" />
-              </Button>
-              {[1, 2, 3].map((page) => (
-                <Button
-                  key={page}
-                  variant={page === 1 ? "default" : "ghost"}
-                  className={`w-[46px] h-[46px] ${
-                    page === 1
-                      ? "bg-orange-700 hover:bg-white hover:border-orange-700 border hover:text-orange-700 font-semibold"
-                      : ""
-                  }`}
-                >
-                  {page}
-                </Button>
-              ))}
-              <Button variant="ghost" size="icon">
-                <ChevronRight />
-              </Button>
-            </div>
-          </nav>
         </>
       ) : (
         <Card className="w-full my-8">
