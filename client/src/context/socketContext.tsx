@@ -51,6 +51,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
      
       instances.auth = io(SOCKET_CONFIG.urls.auth, {
         ...SOCKET_CONFIG.base,
+        path: '/auth-socket/socket.io',
       });
 
       instances.auth.on('connect', () => {
@@ -77,7 +78,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       instances.chat = io(SOCKET_CONFIG.urls.chat, {
         ...SOCKET_CONFIG.base,
-        // path: '/socket.io/chat',
+        path: '/chat-socket/socket.io',
       });
 
       instances.chat.on('connect', () => {
@@ -92,7 +93,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       setChatSocket(instances.chat);
       instances.notification = io(SOCKET_CONFIG.urls.notification, {
         ...SOCKET_CONFIG.base,
-        // path: '/socket.io/notification' 
+        path: '/notification-socket/socket.io',
       });
 
       instances.notification.on('connect', () => {
