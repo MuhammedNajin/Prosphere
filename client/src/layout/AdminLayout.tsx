@@ -1,4 +1,3 @@
-import React from 'react';
 import { Outlet } from "react-router-dom";
 import AppSidebar from "@/components/Admin/User/AppSidebat";
 import Topbar from "@/components/Admin/User/Topbar";

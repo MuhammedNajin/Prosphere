@@ -51,22 +51,7 @@ const EMPLOYMENT_TYPES = [
 ] as const;
 
 const AdminDashboard = () => {
-  const recentJobs = [
-    {
-      id: 1,
-      title: "Senior React Developer",
-      company: "Tech Corp",
-      applications: 23,
-    },
-    {
-      id: 2,
-      title: "Product Manager",
-      company: "Innovation Inc",
-      applications: 45,
-    },
-    { id: 3, title: "UX Designer", company: "Design Studio", applications: 18 },
-  ];
-
+  
   const { data: jobStats } = useQuery<JobStats>({
     queryKey: "jobStats",
     queryFn: () => AdminApi.getJobStats(),
