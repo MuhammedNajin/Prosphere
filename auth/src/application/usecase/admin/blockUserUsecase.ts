@@ -1,8 +1,6 @@
 
 import { Dependencies} from "@domain/entities/interfaces";
 
-
-
 export const blockUserUseCase = (dependencies: Dependencies) => {
     const {
         repository: { userRepository }

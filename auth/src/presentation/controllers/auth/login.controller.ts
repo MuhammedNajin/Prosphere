@@ -44,11 +44,13 @@ import { TOKEN_TYPE } from '@/shared/types/enums';
               res.cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
               });
 
               res.cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
               });
 
             res.status(200).json({ userCredential, ...profile });

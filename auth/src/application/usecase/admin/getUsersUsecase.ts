@@ -1,8 +1,6 @@
 
 import { Dependencies} from "@domain/entities/interfaces";
 
-
-
 export const getUsersUseCase = (dependencies: Dependencies) => {
     const {
         repository: { userRepository }
