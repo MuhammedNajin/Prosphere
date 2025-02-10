@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import axios, { HttpStatusCode, AxiosError } from 'axios';
-import { Message } from '@/types/company';
+import { create } from "zustand";
+import axios, { HttpStatusCode, AxiosError } from "axios";
+import { Message } from "@/types/company";
 var baseURL = import.meta.env.VITE_URL as string;
 
 interface AlertStore {
@@ -8,9 +8,11 @@ interface AlertStore {
   isOpen: boolean;
   title: string;
   message: string;
-  type: 'error' | 'warning' | 'info';
+  type: "error" | "warning" | "info";
   retryAction?: () => Promise<any>;
-  showAlert: (params: Omit<AlertStore, 'showAlert' | 'closeAlert' | 'isOpen' | 'logout'>) => void;
+  showAlert: (
+    params: Omit<AlertStore, "showAlert" | "closeAlert" | "isOpen" | "logout">
+  ) => void;
   closeAlert: () => void;
   logout: () => void;
 }
@@ -18,16 +20,16 @@ interface AlertStore {
 export const useAlertStore = create<AlertStore>((set) => ({
   isLogout: false,
   isOpen: false,
-  title: '',
-  message: '',
-  type: 'info',
+  title: "",
+  message: "",
+  type: "info",
   showAlert: (params) => set({ ...params, isOpen: true }),
   closeAlert: () => set({ isOpen: false }),
   logout: () => set({ isLogout: true }),
 }));
 
 const MAX_RETRY_ATTEMPTS = 3;
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 console.log("baseURL", baseURL);
 
@@ -38,8 +40,8 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.response.use(
-  response => response,
-  async (error: AxiosError<{ message: string}>) => {
+  (response) => response,
+  async (error: AxiosError<{ message: string }>) => {
     const originalRequest = error.config;
     if (!originalRequest) {
       return Promise.reject(error);
@@ -53,73 +55,104 @@ axiosInstance.interceptors.response.use(
     request._retryCount = request._retryCount ?? 0;
 
     if (error.response?.status === HttpStatusCode.TooManyRequests) {
-      const retryAfter = parseInt(error.response.headers['retry-after'] || '60');
-      
+      const retryAfter = parseInt(
+        error.response.headers["retry-after"] || "60"
+      );
+
       useAlertStore.getState().showAlert({
-        title: 'Rate Limit Exceeded',
+        title: "Rate Limit Exceeded",
         message: `Too many requests. Please wait ${retryAfter} seconds before trying again.`,
-        type: 'warning',
+        type: "warning",
         retryAction: async () => {
           await delay(retryAfter * 1000);
           return axiosInstance(request);
-        }
+        },
       });
-      
+
       return Promise.reject(error);
     }
 
-    if (!error.response || error.code === 'ECONNABORTED' || error.message === 'Network Error') {
+    if (
+      !error.response ||
+      error.code === "ECONNABORTED" ||
+      error.message === "Network Error"
+    ) {
       if (request._retryCount < MAX_RETRY_ATTEMPTS) {
         request._retryCount++;
-        
+
         useAlertStore.getState().showAlert({
-          title: 'Network Error',
-          message: 'Connection failed. Would you like to retry?',
-          type: 'error',
+          title: "Network Error",
+          message: "Connection failed. Would you like to retry?",
+          type: "error",
           retryAction: async () => {
             await delay(1000 * request._retryCount!);
             return axiosInstance(request);
-          }
+          },
         });
-        
+
         return Promise.reject(error);
       }
-      
+
       useAlertStore.getState().showAlert({
-        title: 'Connection Failed',
-        message: 'Maximum retry attempts reached. Please check your internet connection.',
-        type: 'error'
+        title: "Connection Failed",
+        message:
+          "Maximum retry attempts reached. Please check your internet connection.",
+        type: "error",
       });
-      
+
       return Promise.reject(error);
     }
 
-    if (error.response?.status === HttpStatusCode.Unauthorized && !request._authRetry) {
+    if (
+      error.response?.status === HttpStatusCode.Unauthorized &&
+      !request._authRetry
+    ) {
       request._authRetry = true;
-      
+
       try {
         if (error.response?.data?.message === Message.denied) {
           useAlertStore.getState().showAlert({
-            title: 'Access Denied',
-            message: 'You do not have permission to access this resource.',
-            type: 'error'
+            title: "Access Denied",
+            message: "You do not have permission to access this resource.",
+            type: "error",
           });
           return Promise.reject(error);
         }
-        
-       const re = await axiosInstance.post('/api/v1/auth/refreshToken');
-       console.log("re", re)
+
+        if (error.response.config.baseURL?.includes("/api/v1/admin")) {
+          console.log("not admin");
+          const re = await axiosInstance.post("/api/v1/auth/refreshToken");
+          console.log("debug: admin refresh", re);
+        } else {
+          const re = await axiosInstance.post(
+            "/api/v1/auth/admin/refresh-token"
+          );
+          console.log("debug: user refresh", re);
+        }
+
         return axiosInstance(request);
-      } catch (err) {
-        console.log("errr refresh toke endpoint",err)
+      } catch (err: unknown) {
+        console.log("errr refresh toke endpoint", err);
         try {
-          const response = await axiosInstance.post('/api/v1/auth/logout');
-          if (response.status === HttpStatusCode.Ok) {
-            console.log("logout", response)
-             useAlertStore.getState().logout();
+          if (err instanceof AxiosError) {
+            console.log(
+              "debug: url",
+              err.response?.config.url,
+              err.response?.config.url?.includes("/api/v1/auth/refreshToken")
+            );
+            let url = err.response?.config.url?.includes(
+              "/api/v1/auth/refreshToken"
+            )
+              ? "/api/v1/auth/logout"
+              : "/api/v1/admin/logout";
+            const response = await axiosInstance.post(url);
+            if (response.status === HttpStatusCode.Ok) {
+              console.log("logout", response);
+              useAlertStore.getState().logout();
+            }
           }
         } catch (logoutError) {
-          console.error('Logout failed:', logoutError);
+          console.error("Logout failed:", logoutError);
         }
         return Promise.reject(err);
       }
@@ -135,7 +168,6 @@ axiosInstance.interceptors.response.use(
   }
 );
 
-
 export type ApiError = {
   response: {
     data: {
@@ -147,12 +179,9 @@ export type ApiError = {
 };
 
 export interface ApiErrorResponse {
-
-    errors: Array<{
-      message: string;
-    }>;
-  
+  errors: Array<{
+    message: string;
+  }>;
 }
-
 
 export default axiosInstance;

@@ -21,6 +21,7 @@ import CompanyChatPage from "@/pages/Chat/CompanyChatPage"
 import MemberManagementPage from "@/components/company/Profile/People"
 import JobPosts from "@/components/company/Profile/Job"
 import UserRouteWrapper from "../protected/UserRouteWrapper"
+import InterviewList from "@/components/company/Application/InterviewSheduling"
 
 export const companyRoute = [
     {
@@ -118,6 +119,10 @@ export const companyRoute = [
             {
               path: "hiringstage",
               element: <HiringStage />
+            },
+            {
+              path: "interview-schedule",
+              element: <InterviewList />
             }
           ]
         }
