@@ -30,7 +30,7 @@ import { CircleCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { StatusFormData } from "@/types/formData";
 import { statusFormSchema } from "@/types/schema";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useParams } from "react-router-dom";
 
 interface StatusChangeModalProps {
   status: ApplicationStatus;
@@ -50,7 +50,7 @@ export const StatusChangeDialog: React.FC<StatusChangeModalProps> = ({
 }) => {
   const closeRef = React.useRef<HTMLButtonElement>(null);
   const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
-  const company = useSelectedCompany()
+  const { id } = useParams() as { id: string }
   const { toast } = useToast();
 
      
@@ -109,11 +109,11 @@ export const StatusChangeDialog: React.FC<StatusChangeModalProps> = ({
 
   const handleSubmition = useCallback(async (data: StatusFormData) => {
     try {
-      applicationMutation.mutate({ data, id: company?._id });
+      applicationMutation.mutate({ data, id });
     } catch (error) {
       console.error("Error submitting form:", error);
     }
-  }, [applicationMutation, company?._id]);
+  }, [applicationMutation, id]);
 
  return (
   <AlertDialog>
