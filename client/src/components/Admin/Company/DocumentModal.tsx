@@ -23,6 +23,7 @@ export interface Document {
 
 const DocumentReviewModal: React.FC<Document> = ({ document }) => {
   const { data } = useQuery({
+    queryKey: ['veryficaiton-doc', document],
     queryFn: () => AdminApi.getVerificationDocs(document.documentUrl),
   });
 

@@ -120,14 +120,14 @@ axiosInstance.interceptors.response.use(
         }
 
         if (error.response.config.baseURL?.includes("/api/v1/admin")) {
-          console.log("not admin");
-          const re = await axiosInstance.post("/api/v1/auth/refreshToken");
-          console.log("debug: admin refresh", re);
-        } else {
           const re = await axiosInstance.post(
             "/api/v1/auth/admin/refresh-token"
           );
           console.log("debug: user refresh", re);
+        } else {
+          console.log("admin");
+          const re = await axiosInstance.post("/api/v1/auth/refreshToken");
+          console.log("debug: admin refresh", re);
         }
 
         return axiosInstance(request);
