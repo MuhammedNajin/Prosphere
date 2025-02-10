@@ -149,7 +149,7 @@ export const jobFormSchema = z
 
   export const resumeSchema = z.object({
     resume: z
-      .instanceof(FileList)
+      .any()
       .refine((files) => files.length > 0, "Resume is required")
       .transform((files) => files[0])
       .refine((files) => files.size <= 5000000, "Resume must be less than 5MB")

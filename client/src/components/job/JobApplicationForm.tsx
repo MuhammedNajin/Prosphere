@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {  Paperclip, CircleCheck } from "lucide-react";
+import { Paperclip, CircleCheck } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -30,7 +30,6 @@ import { AxiosError, HttpStatusCode } from "axios";
 import { ApplicationFormData, ResumeValues } from "@/types/formData";
 import { jobApplicationFormSchema, resumeSchema } from "@/types/schema";
 
-
 const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   companyId,
   jobId,
@@ -47,8 +46,6 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   useEffect(() => {
     console.log("resume", profile);
   }, []);
-
-  
 
   const resumeForm = useForm<ResumeValues>({
     resolver: zodResolver(resumeSchema),
@@ -101,7 +98,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   const applicationMutation = useMutation({
     mutationFn: ApplicationApi.jobApplication,
     onSuccess: () => {
-      queryClient.invalidateQueries('isApplied');
+      queryClient.invalidateQueries("isApplied");
       toast({
         description: (
           <div className="flex items-center gap-2">
@@ -130,12 +127,13 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   });
 
   const onResumeSubmit = async (data: ResumeValues) => {
+    console.log("onResumeSubmit", onResumeSubmit);
     resumeMutation.mutate({ data });
   };
 
   const onSubmit = async (data: ApplicationFormData) => {
     if (!user?._id) return;
-    
+
     const applicationData = {
       ...data,
       applicantId: user._id,
@@ -261,7 +259,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
 
             <div>
               {profile &&
-                profile?.map((key:string, index: number) => (
+                profile?.map((key: string, index: number) => (
                   <ResumeFile
                     key={index}
                     fileName={key}
@@ -306,7 +304,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
                             const files = e.target.files;
                             const file = files?.[0];
                             if (file) {
-                              resumeForm.setValue("resume", files[0]);
+                              resumeForm.setValue("resume", files);
                               setFileName(file.name);
                             }
                           }}
@@ -319,9 +317,17 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
                       <div className="self-end mt-2">
                         <Button
                           type="button"
-                          onClick={() =>
-                            resumeForm.handleSubmit(onResumeSubmit)()
-                          }
+                          onClick={() => {
+                            resumeForm.handleSubmit(
+                              (data) => {
+                                console.log("Success:", data);
+                                onResumeSubmit(data);
+                              },
+                              (errors) => {
+                                console.log("Validation errors:", errors);
+                              }
+                            )();
+                          }}
                           className="bg-gradient-to-b from-orange-500 to-orange-600 text-white focus:ring-2 focus:ring-orange-400 hover:shadow-xl transition duration-200"
                           variant="default"
                         >
