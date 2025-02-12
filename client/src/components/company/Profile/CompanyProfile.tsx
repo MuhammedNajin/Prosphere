@@ -2,22 +2,19 @@ import React, { useEffect, useRef, useState } from "react";
 import { Settings, Edit } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { CompanyApi } from "@/api/Company.api";
-import { Link, Outlet, useParams } from "react-router-dom";
+import { Link, Outlet, useParams, useLocation } from "react-router-dom";
 import { useMutation, useQuery } from "react-query";
 import NavigationLink from "../Application/NavigationLink";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
 import { Avatar } from "@/types/formData";
-
 
 const CompanyProfile: React.FC = () => {
   const avatarRef = useRef<HTMLInputElement>(null);
   const [avatar, setAvatar] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [ , setSave] = useState(false);
+  const [, setSave] = useState(false);
   const { id } = useParams();
-  const isSelected = useSelectedCompany();
-
- 
+  const location = useLocation();
+  const fromJob = location.state?.fromJob || false;
 
   const form = useForm<Avatar>({
     defaultValues: {
@@ -26,7 +23,7 @@ const CompanyProfile: React.FC = () => {
   });
 
   useEffect(() => {
-      console.log("useSelectedCompany", isSelected, );
+    console.log("fromJob state:", fromJob);
   });
 
   function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -48,7 +45,7 @@ const CompanyProfile: React.FC = () => {
 
   const company = useQuery({
     queryKey: ["company"],
-    queryFn: () => isSelected ? CompanyApi.getCompany(id as string) : CompanyApi.getCompanyProfile(id as string),
+    queryFn: () => fromJob ? CompanyApi.getCompanyProfile(id as string) : CompanyApi.getCompany(id as string),
   });
 
   const companyLogoMutation = useMutation({
@@ -103,7 +100,7 @@ const CompanyProfile: React.FC = () => {
                     </div>
                   )}
 
-                  {isSelected && (
+                  {fromJob && (
                     <button
                       onClick={() => {
                         if (avatarRef.current) {
@@ -116,7 +113,7 @@ const CompanyProfile: React.FC = () => {
                     </button>
                   )}
 
-                  {isSelected && (
+                  {fromJob && (
                     <input
                       ref={avatarRef}
                       type="file"
@@ -126,7 +123,7 @@ const CompanyProfile: React.FC = () => {
                     />
                   )}
 
-                  {isSelected && avatar && (
+                  {fromJob && avatar && (
                     <button
                       onClick={handleAvatarSave}
                       className="items-center mt-2 text-base justify-center px-4 py-[2px] rounded-lg bg-gradient-to-b from-blue-500 to-blue-600 text-white hover:shadow-xl transition duration-200"
@@ -150,7 +147,7 @@ const CompanyProfile: React.FC = () => {
                     </a>
                   </div>
         
-                  {isSelected && (
+                  {fromJob && (
                     <div className="flex flex-1 space-x-2 self-start justify-end">
                       <Link
                         to={`/company/profile/settings/${id}`}

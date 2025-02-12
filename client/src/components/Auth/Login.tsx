@@ -16,6 +16,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "../common/spinner/Loader";
@@ -32,6 +39,8 @@ const SignIn = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [showPassword, setShowPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [showForgotPassword, setShowForgotPassword] = React.useState(false);
+  const [isSendingReset, setIsSendingReset] = React.useState(false);
 
   const form = useForm({
     resolver: zodResolver(signInSchema),
@@ -41,13 +50,19 @@ const SignIn = () => {
     },
   });
 
+  const forgotPasswordForm = useForm({
+    defaultValues: {
+      email: "",
+    },
+  });
+
   const onSubmit = async (data: SignInFormData) => {
     setIsLoading(true);
     try {
-     await dispatch(signInThunk(data)).unwrap();
+      await dispatch(signInThunk(data)).unwrap();
       navigate("/");
     } catch (err: any) {
-      console.error("error from  login", err);
+      console.error("error from login", err);
       toast.error(err || "Sign in failed");
     } finally {
       setIsLoading(false);
@@ -58,13 +73,10 @@ const SignIn = () => {
     try {
       const token = credentialResponse.credential;
       const { status, user } = await ApiService.googleAuth(token);
-       console.log('heloo');
-       
+      
       if (status === "new") {
-        console.log("debug google login with new user ")
         navigate("/google/auth/flow", { state: user });
       } else if (status === "exist") {
-        console.log("debug google login with existing user ")
         dispatch(googleAuth(user));
         navigate("/");
       }
@@ -73,15 +85,22 @@ const SignIn = () => {
     }
   };
 
-  // const handleGitHubAuth = async () => {
-  //   try {
-  //     const { user } = await ApiService.githubAuth();
-  //     dispatch(googleAuth(user));
-  //     navigate("/");
-  //   } catch (error) {
-  //     toast.error("GitHub Login Failed");
-  //   }
-  // };
+  const handleForgotPassword = async (data: { email: string }) => {
+    setIsSendingReset(true);
+    try {
+      console.log("reset pass",  data);
+
+      const response = await ApiService.fogetPassword(data.email);
+      console.log("forget pass responce", response)
+      toast.success("Password reset link sent to your email");
+      setShowForgotPassword(false);
+      forgotPasswordForm.reset();
+    } catch (error) {
+      toast.error("Failed to send reset email");
+    } finally {
+      setIsSendingReset(false);
+    }
+  };
 
   return (
     <main className="bg-white min-h-screen">
@@ -134,8 +153,7 @@ const SignIn = () => {
                 />
               </div>
               <button
-                // onClick={handleGitHubAuth}
-                className="flex-1 flex items-center rounded justify-center gap-2 border text-orange-950 "
+                className="flex-1 flex items-center rounded justify-center gap-2 border text-orange-950"
               >
                 <AiFillGithub size={24} />
                 <span>GitHub</span>
@@ -201,6 +219,16 @@ const SignIn = () => {
                         </div>
                       </FormControl>
                       <FormMessage />
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="text-orange-700 hover:text-orange-800 p-0 text-sm"
+                          onClick={() => setShowForgotPassword(true)}
+                        >
+                          Forgot password?
+                        </Button>
+                      </div>
                     </FormItem>
                   )}
                 />
@@ -254,6 +282,60 @@ const SignIn = () => {
           </div>
         </section>
       </div>
+
+      <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Reset your password</DialogTitle>
+            <DialogDescription>
+              Enter your email address and we'll send you a link to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...forgotPasswordForm}>
+            <form onSubmit={forgotPasswordForm.handleSubmit(handleForgotPassword)} className="space-y-4">
+              <FormField
+                control={forgotPasswordForm.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-gray-700">Email address</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your email"
+                        className="h-11"
+                        type="email"
+                        required
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex justify-end gap-4">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => setShowForgotPassword(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-orange-700 hover:bg-orange-800"
+                  disabled={isSendingReset}
+                >
+                  {isSendingReset ? (
+                    <Spinner size={20} color="#ffffff" className="text-gray-100" />
+                  ) : (
+                    "Send reset link"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 };

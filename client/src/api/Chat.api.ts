@@ -5,9 +5,9 @@ import { MessageAttrs, ROLE } from "@/types/chat";
 export class ChatApi {
   private static axios: AxiosInstance = axiosInstance;
 
-  static sendMessage = async (data: MessageAttrs, context: string) => {
+  static sendMessage = async (data: MessageAttrs) => {
     console.log("chat", data);
-    return await this.axios.post(`/api/v1/chat/messages?context=${context}`, data);
+    return await this.axios.post(`/api/v1/chat/messages`, data);
   };
 
   static deleteForEveryOne = async (id: string) => {

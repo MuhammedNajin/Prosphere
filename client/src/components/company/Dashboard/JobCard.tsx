@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { JobApi } from "@/api";
 import { useQuery } from "react-query";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowRight, Briefcase, Clock, MapPin, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { endOfMonth, startOfMonth } from "date-fns";
@@ -25,17 +25,26 @@ const formatSalary = (amount: number) => {
 const JobUpdates: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const fromJob = location.state?.fromJob || false;
 
 
   const { data  } = useQuery(
     ["jobs", id],
-    () => JobApi.getjobByCompany({
-     from: startOfMonth(new Date()),
-     to: endOfMonth(new Date()),
-     filter: '',
-     page: 1,
-    }),
+    () => {
+       return fromJob ? JobApi.getjobByCompanyFromPublic({
+        from: startOfMonth(new Date()),
+        to: endOfMonth(new Date()),
+        filter: '',
+        page: 1,
+       }) 
+       : JobApi.getjobByCompany({
+        from: startOfMonth(new Date()),
+        to: endOfMonth(new Date()),
+        filter: '',
+        page: 1,
+       })
+    },
     {
       staleTime: 5 * 60 * 1000,
       cacheTime: 30 * 60 * 1000,

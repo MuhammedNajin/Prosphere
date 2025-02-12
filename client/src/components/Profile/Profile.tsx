@@ -51,6 +51,8 @@ import { ModalContent } from "@/types/profile";
 import ProfileSkeleton from "../Skeleton/UserProfile.skeleton";
 import { format } from "date-fns";
 import { RootState } from "@/redux/store";
+import ResumeForm from "./ResumeFrom";
+import ResumeSection from "./Resume";
 
 const Profile: React.FC = () => {
   const [modal, setModal] = useState<boolean>(false);
@@ -84,9 +86,9 @@ const Profile: React.FC = () => {
   }, [data]);
 
   const handleEditCoverImage = () => {
-    setModalContent(ModalContent.EditCoverImage)
+    setModalContent(ModalContent.EditCoverImage);
     setShowModal(true);
-  }
+  };
 
   if (isLoading) {
     return <ProfileSkeleton />;
@@ -147,6 +149,12 @@ const Profile: React.FC = () => {
             />
           )}
 
+          {(modalContent === ModalContent.AddResume ||
+            modalContent === ModalContent.EditResume) && (
+            <ResumeForm
+              onClose={setShowModal}
+            />
+          )}
 
           {(modalContent === ModalContent.AddProfileImage ||
             modalContent === ModalContent.EditProfileImage) && (
@@ -183,16 +191,20 @@ const Profile: React.FC = () => {
                 <div className="absolute top-4 right-4 p-2 rounded-full bg-gray-200 flex items-center justify-center hover:bg-orange-200 hover:text-white">
                   {data && data.coverImageKey ? (
                     <button className="p-1 rounded-full hover:bg-gray-200 ">
-                      <Pencil onClick={() => {
-                         handleEditCoverImage()
-                      }} className="w-4 h-4 text-orange-700 hover:text-white" />
+                      <Pencil
+                        onClick={() => {
+                          handleEditCoverImage();
+                        }}
+                        className="w-4 h-4 text-orange-700 hover:text-white"
+                      />
                     </button>
                   ) : (
-                    <button 
-                    onClick={() => {
-                      handleEditCoverImage()
-                    }}
-                    className="p-1 rounded-full">
+                    <button
+                      onClick={() => {
+                        handleEditCoverImage();
+                      }}
+                      className="p-1 rounded-full"
+                    >
                       <Camera className="w-4 h-4 text-orange-700 hover:text-white" />
                     </button>
                   )}
@@ -222,7 +234,7 @@ const Profile: React.FC = () => {
                       />
                     ) : (
                       <h1 className="text-6xl font-semibold text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        {user?.username[0] || 'U'}
+                        {user?.username[0] || "U"}
                       </h1>
                     )}
 
@@ -524,6 +536,14 @@ const Profile: React.FC = () => {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="mt-2">
+            <ResumeSection
+              setContent={setModalContent}
+              setModal={setShowModal}
+              resumeKeys={data?.resumeKey}
+            />
           </div>
         </div>
       </div>

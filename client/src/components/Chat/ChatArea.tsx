@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import {
   CircleCheckIcon,
   CircleDashed,
-  Paperclip,
   Send,
   Smile,
   ChevronDown,
@@ -28,6 +27,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import TypingIndicator from "./TypingIndicator";
 import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { Popover } from "../ui/popover-dialog";
+import { PopoverContent, PopoverTrigger } from "../ui/popover";
+import EmojiPicker from "emoji-picker-react";
 
 interface ChatAreaProps extends ChatRole {
   conversation: SelectedConversation;
@@ -70,6 +72,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
   useEffect(() => {
     console.log("chat data", data);
+    console.log("converstion", conversation)
   }, [data]);
 
   const isToday = (date: string) => {
@@ -310,7 +313,12 @@ const ChatArea: React.FC<ChatAreaProps> = ({
     };
 
     chatSocket?.emit("direct_message", newMessage);
+
+    console.log("receieeeeeeeeeeeeeeeeeeee!!!!!!!!!!!!!!!!!", conversation?.receiverId);
+    
     addNewMessage(newMessage);
+    console.log("receieeeeeeeeeeeeeeeeeeee!!!!!!!!!!!!!!!!! after adding the message", conversation?.receiverId);
+    
     await ChatApi.sendMessage(
       {
         id,
@@ -321,7 +329,6 @@ const ChatArea: React.FC<ChatAreaProps> = ({
         context,
         companyId: company?._id,
       },
-      content
     );
 
     setContent("");
@@ -332,6 +339,16 @@ const ChatArea: React.FC<ChatAreaProps> = ({
     if (content.length > 0) {
       chatSocket?.emit("typing", { convId: conversation.id });
     }
+  };
+
+  const handleEmojiSelect = (emojiData: any) => {
+    const emoji = emojiData.emoji;
+    const cursorPosition =
+      (document.activeElement as HTMLInputElement)?.selectionStart ||
+      content.length;
+    const updatedContent =
+      content.slice(0, cursorPosition) + emoji + content.slice(cursorPosition);
+    setContent(updatedContent);
   };
 
   const MessageComponent = ({ msg }: { msg: Message }) => {
@@ -464,9 +481,9 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
       <div className="p-4 pb-0 border-t border-gray-200 bg-white">
         <div className="flex items-center space-x-2">
-          <button className="p-2 hover:bg-gray-100 rounded-full">
+          {/* <button className="p-2 hover:bg-gray-100 rounded-full">
             <Paperclip className="w-5 h-5 text-gray-600" />
-          </button>
+          </button> */}
           <div className="relative w-full flex flex-1">
             <input
               value={content}
@@ -475,9 +492,20 @@ const ChatArea: React.FC<ChatAreaProps> = ({
               placeholder="Reply message"
               className="flex-1 px-4 py-2 bg-gray-100 rounded-lg focus:outline-none"
             />
-            <button className="p-2 hover:bg-gray-100 rounded-full absolute right-0">
-              <Smile className="w-5 h-5 text-gray-600" />
-            </button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="p-2 hover:bg-gray-100 rounded-full absolute right-0">
+                  <Smile className="w-5 h-5 text-gray-600" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0" align="end">
+                <EmojiPicker
+                  onEmojiClick={handleEmojiSelect}
+                  width="100%"
+                  height={400}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <button
             onClick={handleSend}

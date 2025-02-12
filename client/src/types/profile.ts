@@ -1,29 +1,30 @@
 import { ProficiencyLevel } from "./formData";
 
 export enum ModalContent {
-    AddPosition = "Add Position",
-    EditPosition = "Edit Position",
-    AddEducation = "Add Education",
-    EditEducation = "Edit Education",
-    AddSkill = "Add Skill",
-    EditSkill = "Edit Skill",
-    AddAbout = "Add About",
-    EditAbout = "Edit About",
-    AddCoverImage = "Add Cover Image",
-    EditCoverImage = "Edit Cover Image",
-    AddProfileImage = "Add Profile Image",
-    EditProfileImage = "Edit Profile Image",
-    EditProfile = "Edit Profile",
-    ContactInfo = "Contact Info"
-  }
-  
+  AddPosition = "Add Position",
+  EditPosition = "Edit Position",
+  AddEducation = "Add Education",
+  EditEducation = "Edit Education",
+  AddSkill = "Add Skill",
+  EditSkill = "Edit Skill",
+  AddAbout = "Add About",
+  EditAbout = "Edit About",
+  AddCoverImage = "Add Cover Image",
+  EditCoverImage = "Edit Cover Image",
+  AddProfileImage = "Add Profile Image",
+  EditProfileImage = "Edit Profile Image",
+  EditProfile = "Edit Profile",
+  ContactInfo = "Contact Info",
+  AddResume = "Add Resume",
+  EditResume = "Edit Resume",
+}
 
- export enum IMAGEKEY {
-   AVATAR = "profileImageKey",
-   COVER = "coverImageKey"
- }
+export enum IMAGEKEY {
+  AVATAR = "profileImageKey",
+  COVER = "coverImageKey",
+}
 
- export interface Experience {
+export interface Experience {
   position: string;
   companyName: string;
   employmentType: string;
@@ -40,7 +41,7 @@ export interface Education {
   startDate: string;
   endDate?: string;
   description?: string;
-  currentlyStudying: boolean
+  currentlyStudying: boolean;
   grade: string;
   _id?: string;
 }
@@ -61,7 +62,7 @@ export interface ProfileData {
 }
 
 export interface UpdateProfileData {
-  username: string
+  username: string;
   phone: string;
   logo: string;
   jobRole: string;
@@ -70,5 +71,5 @@ export interface UpdateProfileData {
   profileImageKey?: string;
   experience?: Experience;
   education?: Education;
-skills?: Skill[];
+  skills?: Skill[];
 }

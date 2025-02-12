@@ -35,6 +35,7 @@ export interface GetjobByCompanyArgs {
   filter: string;
   page: number;
   pageSize?: number;
+  companyId?: string;
 }
 
 export interface CreateJobProps {

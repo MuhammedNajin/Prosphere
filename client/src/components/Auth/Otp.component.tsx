@@ -89,6 +89,7 @@ const OTPInput: React.FC<OTPInputProps> = ({
     })
     .catch((err: string) => {
       toast.error(err)
+      setLoading((prev) => !prev);
     })
  
   };

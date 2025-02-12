@@ -1,8 +1,24 @@
-import React, { useState } from "react";
-import { ApiService } from "../../api";
-import { useNavigate, useParams } from "react-router-dom";
+import React from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import toast from "react-hot-toast";
+import { toast } from "react-hot-toast";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Spinner } from "@/components/common/spinner/Loader";
+import { ApiService } from "@/api";
 
 const resetPasswordSchema = z
   .object({
@@ -19,119 +35,164 @@ const resetPasswordSchema = z
     path: ["confirmPassword"],
   });
 
-const ResetPassword: React.FC = () => {
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [errors, setErrors] = useState<{
-    password?: string;
-    confirmPassword?: string;
-  }>({});
-  const navigate = useNavigate();
-  const { token } = useParams(); 
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
-  const handleSubmit = async () => {
-    console.log("submit");
-    
-    const validation = resetPasswordSchema.safeParse({
-      password,
-      confirmPassword,
-    });
-      console.log(validation.success, token);
-      
-    if (!validation.success) {
-      
-      const fieldErrors = validation.error.formErrors.fieldErrors;
-      setErrors({
-        password: fieldErrors.password?.[0],
-        confirmPassword: fieldErrors.confirmPassword?.[0],
-      });
+const ResetPassword = () => {
+  const navigate = useNavigate();
+  const { token } = useParams();
+  const location = useLocation();
+  const email = new URLSearchParams(location.search).get("email");
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  const form = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const onSubmit = async (data: ResetPasswordFormData) => {
+    if (!token) {
+      toast.error("Invalid reset token");
       return;
     }
 
-    
-    setErrors({});
-   
-    if (!token) return;
-
+    setIsLoading(true);
     try {
-    
-      console.log(password, token);
+      const response = await ApiService.resetPassword({
+        password: data.password,
+        token,
+      });
 
-      const response = await ApiService.resetPassword({ password, token });
-      if(response.status) {
-        toast.success("Your password has been successfully reset.", {ariaProps:{ role: "alert", "aria-live": "assertive"}, });
+      if (response.status) {
+        toast.success("Password reset successful!", {
+          duration: 3000,
+          ariaProps: { role: "alert", "aria-live": "assertive" },
+        });
+        
+        form.reset();
+        
         setTimeout(() => {
-          navigate('/login', {state: true});
+          navigate("/signin", { state: { passwordReset: true } });
         }, 2000);
       }
     } catch (error) {
+      toast.error("Failed to reset password. Please try again.");
       console.error("Error resetting password:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleClose = () => {
-    setConfirmPassword("");
-  };
-
   return (
-    <div className="flex justify-center h-screen">
-    
-      <div className="mx-auto mt-32 p-6">
-        <h1 className="text-2xl font-semibold mb-4 font-roboto text-center">
-          Reset account password
-        </h1>
-        <p className="text-sm text-zinc-600 mb-6 text-center font-roboto">
-          Enter a new password for noreply@shopify.com
-        </p>
-        <form className="space-y-4">
-          <div>
-            <input
-              type="password"
-              placeholder="Password"
-              className={`w-full pr-60 ps-4 py-2 border ${
-                errors.password ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            Reset Password
+          </CardTitle>
+          <CardDescription className="text-center">
+            {email ? (
+              <>Enter a new password for <span className="font-medium">{email}</span></>
+            ) : (
+              "Enter your new password"
             )}
-          </div>
-          <div className="relative">
-            <input
-              type="password"
-              placeholder="Confirm password"
-              className={`w-full px-3 py-2 border ${
-                errors.confirmPassword ? "border-red-500" : "border-gray-300"
-              } rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500`}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.confirmPassword}
-              </p>
-            )}
-            {confirmPassword && (
-              <button
-                type="button"
-                onClick={handleClose}
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs bg-gray-200 px-2 py-1 rounded"
-              >
-                Close
-              </button>
-            )}
-          </div>
-          <button
-            onClick={handleSubmit}
-            type="button"
-            className="w-full bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
-          >
-            Reset password
-          </button>
-        </form>
-      </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          className="pr-10"
+                          placeholder="Enter your new password"
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-auto py-1"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? <FaEyeSlash /> : <FaEye />}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmPassword ? "text" : "password"}
+                          className="pr-10"
+                          placeholder="Confirm your new password"
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-auto py-1"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+                        </Button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  className="w-full bg-orange-700 hover:bg-orange-800"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Spinner size={20} color="#ffffff" className="text-gray-100" />
+                  ) : (
+                    "Reset Password"
+                  )}
+                </Button>
+              </div>
+
+              <div className="text-center">
+                <Button
+                  type="button"
+                  variant="link"
+                  className="text-orange-700 hover:text-orange-800"
+                  onClick={() => navigate("/signin")}
+                >
+                  Back to login
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

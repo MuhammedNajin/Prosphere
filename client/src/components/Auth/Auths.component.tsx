@@ -34,11 +34,13 @@ import ErrorMessage from "../common/Message/ErrorMessage";
 import Logo from "../common/Logo/Logo";
 import { MapboxResult } from "@/types/company";
 import { signUpFormSchema } from "@/types/schema";
+import { useNavigate } from "react-router-dom";
 
 const SignUp: React.FC = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [next, setNext] = React.useState<1 | 2 | 3>(1);
   const { toast } = useToast();
+  const navigate = useNavigate()
   const form = useForm<z.infer<typeof signUpFormSchema>>({
     resolver: zodResolver(signUpFormSchema),
     defaultValues: {
@@ -400,6 +402,17 @@ const SignUp: React.FC = () => {
               )}
             </div>
           </div>
+          <div className="text-center text-sm mt-4">
+              <span className="text-gray-600">
+                Already have an account?{" "}
+                <button 
+                  onClick={() => navigate('/signin')} 
+                  className="text-orange-700 hover:underline font-medium"
+                >
+                  Sign in
+                </button>
+              </span>
+            </div>
         </section>
       </div>
     </main>

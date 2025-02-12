@@ -1,9 +1,10 @@
-import  {  useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import {
   LayoutGrid,
   MapPin,
   Search,
   ThumbsUp,
+  X,
 } from "lucide-react";
 import { BiSolidLike } from "react-icons/bi";
 import { TbLayoutListFilled } from "react-icons/tb";
@@ -29,11 +30,12 @@ import LocationSearch from "../common/LocationField/LocationField";
 
 const JobListing = () => {
   const [_, setComment] = useState(false);
-  const [ ,setJob] = useState<Job>();
+  const [, setJob] = useState<Job>();
   const [salaryRange, setSalaryRange] = useState([0, 200000]);
   const [experienceLevel, setExperienceLevel] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [location, setLocation] = useState("");
+  const [isSearching, setIsSearching] = useState(false);
 
   const [filter, setFilters] = useState({
     jobLocation: [] as string[],
@@ -46,9 +48,9 @@ const JobListing = () => {
   const navigate = useNavigate();
   const user = useGetUser();
 
-  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage } =
+  const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery(
-      ["user:jobs", filter, searchTerm],
+      ["user:jobs", filter, searchTerm, location],
       async ({ pageParam = 1 }) => {
         const response = await JobApi.getJobs({
           page: pageParam,
@@ -64,6 +66,18 @@ const JobListing = () => {
         },
       }
     );
+
+  const handleSearch = () => {
+    setIsSearching(true);
+    refetch();
+  };
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setLocation("");
+    setIsSearching(false);
+    refetch();
+  };
 
   const lastJobElementRef = useCallback(
     (node: HTMLDivElement) => {
@@ -120,34 +134,83 @@ const JobListing = () => {
           <div className="max-w-7xl px-8 pt-6">
             <div className="p-6 pt-0">
               <div className="flex flex-1 gap-4">
-                <div className="flex flex-1 gap-x-4 relative border rounded-lg pl-2">
-                  <div className="flex flex-row items-center pointer-events-none">
-                    <Search className="h-5 w-5 text-gray-400" />
+                <div className="flex flex-1 gap-x-4 relative">
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Search className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      type="text"
+                      placeholder="Job title or keyword"
+                      className="w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-700 focus:border-transparent transition-all"
+                    />
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      </button>
+                    )}
                   </div>
-                  <input
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    type="text"
-                    placeholder="Job title or keyword"
-                    className="w-full  pr-4 py-3  border-gray-200 focus:outline-none focus:border-transparent"
-                  />
                 </div>
-                <Separator orientation="vertical" />
-                <div className="flex flex-1 gap-x-4 relative border rounded-lg pl-2">
-                  <div className="flex flex-row items-center pointer-events-none">
-                    <MapPin className="h-5 w-5 text-gray-400" />
+
+                <Separator orientation="vertical" className="h-12 self-center" />
+
+                <div className="flex flex-1 gap-x-4 relative">
+                  <div className="relative flex-1">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <MapPin className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <div className="w-full">
+                      <LocationSearch
+                        onSelectLocation={(location) => {
+                          setLocation(location.place_name);
+                        }}
+                        className="w-full pl-10 pr-10 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-700 focus:border-transparent transition-all"
+                      />
+                    </div>
+                    {location && (
+                      <button
+                        onClick={() => setLocation("")}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                      </button>
+                    )}
                   </div>
-                 <LocationSearch onSelectLocation={(location) => {
-                   console.log(location);
-                   setLocation(location.place_name)
-                   
-                 }} />
                 </div>
-                <button className="px-8 py-3 bg-orange-700 text-white font-bold rounded hover:bg-orange-950 transition-colors">
-                  Search
-                </button>
+
+                <Button
+                  onClick={handleSearch}
+                  className="px-8 py-3 bg-orange-700 text-white font-bold rounded-lg hover:bg-orange-800 transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-700 focus:ring-offset-2 disabled:opacity-50"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 border-t-2 border-white rounded-full animate-spin" />
+                      Searching...
+                    </div>
+                  ) : (
+                    "Search Jobs"
+                  )}
+                </Button>
+
+                {isSearching && (
+                  <Button
+                    onClick={clearSearch}
+                    variant="outline"
+                    className="px-4 py-3 border-orange-700 text-orange-700 rounded-lg hover:bg-orange-50"
+                  >
+                    Clear
+                  </Button>
+                )}
               </div>
             </div>
           </div>
+
           <div className="flex border-t">
             <div className="w-64 p-4 border-r pt-5">
               <Accordion type="single" collapsible>
@@ -157,7 +220,7 @@ const JobListing = () => {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2">
-                      {["on-Site", "remote", "hybrid"].map((jobLocation) => (
+                      {["on-site", "remote", "hybrid"].map((jobLocation) => (
                         <label key={jobLocation} className="flex items-center">
                           <input
                             type="checkbox"
@@ -186,7 +249,7 @@ const JobListing = () => {
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-2">
-                      {["Full-time", "Part-Time", "Internship", "Contract"].map(
+                      {["Full-Time", "Part-Time", "Internship", "Contract"].map(
                         (type) => (
                           <label key={type} className="flex items-center">
                             <input
@@ -369,6 +432,9 @@ const JobListing = () => {
               </div>
             </div>
           </div>
+
+          {/* Rest of the component remains the same */}
+          {/* ... */}
         </div>
       </div>
     </div>

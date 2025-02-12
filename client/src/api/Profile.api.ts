@@ -15,7 +15,7 @@ class ProfileApi {
       })
    }
 
-   static uploadResume = async ({ data  }: { data: ResumeValues}) => { 
+   static uploadResume = async ({ data  }: { data: ResumeValues | FormData}) => { 
       console.log("profilePhoto", data)
       return await this.axios.post(`/api/v1/profile/resume`, data, {
         headers: {
@@ -66,6 +66,11 @@ class ProfileApi {
          console.log(error);
          return error
       }
+   }
+   
+   static  deleteResume = async (key: string) => {
+      console.log("delete resume called", key)
+         return await this.axios.delete(`/api/v1/profile/resume/${key}`);
    }
 
    static async getFiles(keys: string[]) {

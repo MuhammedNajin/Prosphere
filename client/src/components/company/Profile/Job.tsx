@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { JobApi } from "@/api";
 import { useQuery } from "react-query";
-import { useParams } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import { Briefcase, Clock, MapPin, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skill } from "@/types/profile";
-
+import { startOfYear } from 'date-fns'
 const formatSalary = (amount: number) => {
   if (amount >= 10000000) return `${(amount / 10000000).toFixed(1)}Cr`;
   if (amount >= 100000) return `${(amount / 100000).toFixed(1)}L`;
@@ -14,16 +14,26 @@ const formatSalary = (amount: number) => {
 
 const JobPosts: React.FC = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const fromJob = location.state?.fromJob || false;
+
+  useEffect(() => {
+     console.log("fromjob job ", fromJob);
+     
+  },)
 
   const { data: response = { jobs: [] } } = useQuery(
     ["jobs", id],
-    () => JobApi.getjobByCompany({
-      filter: '',
-      from: new Date(),
-      to: new Date(),
-      page: 1,
-      pageSize: 3
-    }),
+    () => {
+      return JobApi.getjobByCompanyFromPublic({
+          filter: "",
+          from: startOfYear(new Date()),
+          to: new Date(),
+          page: 1,
+          pageSize: 10,
+          companyId: id,
+        })
+    },
     {
       staleTime: 5 * 60 * 1000,
       cacheTime: 30 * 60 * 1000,
@@ -31,7 +41,7 @@ const JobPosts: React.FC = () => {
       retry: 2,
     }
   );
-  
+
   const displayJobs = React.useMemo(() => {
     return response.jobs.slice(0, 3).map((job: any) => ({
       ...job,

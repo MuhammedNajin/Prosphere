@@ -37,6 +37,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
   const company = useSelectedCompany();
   const [searchParams] = useSearchParams();
   const queryKey = context === ROLE.COMPANY ? "companyConv" : "userConv";
+
   const updateConversation = (msg: Message) => {
     client.setQueryData<Conversation[]>([queryKey], (oldData) => {
       if (!oldData) return [];
@@ -51,10 +52,23 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
     });
   };
 
+  const updateCountAndLastMsg = (id: string) => {
+    client.setQueryData<Conversation[]>([queryKey], (oldData) => {
+      if (!oldData) return [];
+
+      return oldData?.map((conv) => {
+        if (conv.id === id) {
+          conv.unreadCount = 0;
+        }
+        return conv;
+      });
+    });
+  };
+
   const { data } = useQuery({
     queryKey: [queryKey],
     queryFn: () => {
-      if (!user) throw new Error('User not found');
+      if (!user) throw new Error("User not found");
       return ChatApi.getConversation(user._id, context, company?._id);
     },
     enabled: !!user,
@@ -63,6 +77,15 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
   const addNewConversation = (newConv: Conversation) => {
     client.setQueryData<Conversation[]>([queryKey], (oldData) => {
       if (!oldData) return [newConv];
+
+      const exist = oldData.find((el) => el.id === newConv.id);
+
+      console.log("debug: conversation exist ", exist);
+
+      if (exist) {
+        return [...oldData];
+      }
+
       return [...oldData, newConv];
     });
   };
@@ -72,11 +95,9 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
       const array = data
         .map((conv: Conversation) => conv.participants[0]?.avatar)
         .filter((avatar): avatar is string => typeof avatar === "string");
-      console.log("array debug", array);
       async function getUrls(urls: string[]) {
         try {
           const data = await ProfileApi.getFiles(urls);
-          console.log("data urls", data);
 
           const mappedUrls = data.reduce(
             (acc: Record<string, string>, url: string, index: number) => {
@@ -98,10 +119,6 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
       getUrls(array);
     }
   }, [data]);
-
-  useEffect(() => {
-    console.log("urls debug", urls);
-  }, [urls]);
 
   useEffect(() => {
     console.log("context", context);
@@ -181,7 +198,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
             company: msg.company,
             companyId: msg.companyId,
           },
-          unreadCount: 0,
+          unreadCount: 1,
           updatedAt: new Date().toISOString(),
           company: msg.company,
           context: msg.context,
@@ -290,6 +307,8 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
                   lastSeen: conv?.participants[0]?.lastSeen,
                   participant: conv?.participants[0],
                 });
+
+                updateCountAndLastMsg(conv.id);
 
                 if (window.innerWidth < 1024) {
                   setSidebarOpen(false);

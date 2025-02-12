@@ -169,6 +169,41 @@ class JobApi {
     }
   };
 
+  static getjobByCompanyFromPublic = async ({
+    filter,
+    from,
+    to,
+    page,
+    pageSize = 2,
+    companyId
+  }: GetjobByCompanyArgs) => {
+    try {
+
+      const queryParams = new URLSearchParams({
+        to: to.toISOString(),
+        from: from.toISOString(),
+        filter,
+        page: String(page),
+        pageSize: String(pageSize),
+        companyId: companyId ? companyId : ""
+      });
+
+      const response = await this.axios.get(
+        `/api/v1/job/all?${queryParams}`
+      );
+      return {
+        jobs: response.data.jobs || [],
+        currentPage: page,
+        totalPages: Math.ceil((response.data.total || 0) / pageSize),
+        hasMore: page < Math.ceil((response.data.total || 0) / pageSize),
+        total: response.data.total || 0,
+      }
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  };
+
   static jobSeen = async (id: string) => {
     try {
       const response = await this.axios.patch(`/api/v1/job/view/${id}`);

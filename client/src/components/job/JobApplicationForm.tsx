@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Paperclip, CircleCheck } from "lucide-react";
+import { Paperclip, CircleCheck, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useGetUser } from "@/hooks/useGetUser";
 import { ProfileApi } from "@/api/Profile.api";
 import { ApplicationApi } from "@/api/application.api";
@@ -37,15 +38,13 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
 }) => {
   const [fileName, setFileName] = useState<string | null>(null);
   const [state, setState] = useState<boolean>(false);
+  const [uploadError, setUploadError] = useState<any | null>(null);
+  const [charCount, setCharCount] = useState<number>(0);
   const user = useGetUser();
   const profile = useResume();
   const dispatch = useDispatch();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    console.log("resume", profile);
-  }, []);
 
   const resumeForm = useForm<ResumeValues>({
     resolver: zodResolver(resumeSchema),
@@ -70,8 +69,8 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   const resumeMutation = useMutation({
     mutationFn: ProfileApi.uploadResume,
     onSuccess: () => {
+      setUploadError(null);
       const filename = resumeForm.getValues("resume");
-      console.log("filename", filename);
       if (filename && filename instanceof FileList && filename.length > 0) {
         const resumeKey = `${user?._id}${filename[0].name}`;
         form.setValue("resume", resumeKey);
@@ -87,9 +86,26 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
         });
       }
     },
-    onError: () => {
+    onError: (error: any) => {
+      let errorMessage = "Error uploading resume";
+
+      // Handle specific validation errors from the schema
+      if (error.message) {
+        if (error.message.includes("5MB")) {
+          errorMessage = "Resume file size must be less than 5MB";
+        } else if (error.message.includes("PDF or Word")) {
+          errorMessage = "Resume must be in PDF or Word format";
+        }
+      }
+
+      setUploadError(errorMessage);
       toast({
-        description: "Error uploading resume",
+        description: (
+          <div className="flex items-center gap-2">
+            <AlertCircle className="text-red-800" size={20} />
+            <h1>{errorMessage}</h1>
+          </div>
+        ),
         variant: "destructive",
       });
     },
@@ -109,7 +125,6 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
       });
       onClose(false);
     },
-
     onError: (error: AxiosError) => {
       if (error.status === HttpStatusCode.Conflict) {
         toast({
@@ -127,7 +142,6 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   });
 
   const onResumeSubmit = async (data: ResumeValues) => {
-    console.log("onResumeSubmit", onResumeSubmit);
     resumeMutation.mutate({ data });
   };
 
@@ -140,7 +154,6 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
       jobId,
       companyId,
     };
-    console.log("application", applicationData);
     applicationMutation.mutate({ data: applicationData });
   };
 
@@ -246,11 +259,16 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
                     <Textarea
                       placeholder="Add a cover letter or anything else you want to share"
                       className="resize-none"
+                      maxLength={500}
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setCharCount(e.target.value.length);
+                      }}
                     />
                   </FormControl>
                   <FormDescription className="flex justify-end text-sm text-gray-500 mt-1">
-                    <span>0 / 500</span>
+                    <span>{charCount} / 500</span>
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -306,6 +324,7 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
                             if (file) {
                               resumeForm.setValue("resume", files);
                               setFileName(file.name);
+                              setUploadError(null); // Clear any previous errors
                             }
                           }}
                           onBlur={onBlur}
@@ -313,6 +332,12 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
                           ref={ref}
                         />
                       </label>
+                      {uploadError && (
+                        <Alert variant="destructive" className="mt-2 w-full">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertDescription>{uploadError}</AlertDescription>
+                        </Alert>
+                      )}
                       <FormMessage className="self-start mt-1" />
                       <div className="self-end mt-2">
                         <Button
@@ -320,11 +345,12 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
                           onClick={() => {
                             resumeForm.handleSubmit(
                               (data) => {
-                                console.log("Success:", data);
                                 onResumeSubmit(data);
                               },
                               (errors) => {
-                                console.log("Validation errors:", errors);
+                                if (errors.resume) {
+                                  setUploadError(errors.resume.message);
+                                }
                               }
                             )();
                           }}
@@ -363,3 +389,4 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
 };
 
 export default JobApplicationForm;
+  

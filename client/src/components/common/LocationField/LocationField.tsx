@@ -2,18 +2,22 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import { MapboxResult } from '@/types/company';
 import { useDebounce } from '@/hooks/useDebounce';
+import { cn } from '@/lib/utils'; // Assuming you're using shadcn's utility function
+
 const MAPBOX_API_KEY = import.meta.env.VITE_MAPBOX_API_KEY;
 
 interface LocationSearchProps {
   onSelectLocation?: (location: MapboxResult) => void;
   placeholder?: string;
   debounceMs?: number;
+  className?: string;
 }
 
 const LocationSearch: React.FC<LocationSearchProps> = ({  
   onSelectLocation = () => {},
   placeholder = "Search locations...",
-  debounceMs = 300 
+  debounceMs = 300,
+  className,
 }) => {
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<MapboxResult[]>([]);
@@ -89,7 +93,10 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           placeholder={placeholder}
-          className="w-full flex items-center justify-between p-2 px-4 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={cn(
+            "w-full flex items-center justify-between p-2 px-4 py-2 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500",
+            className
+          )}
         />
         <div className="absolute right-3 top-2.5 text-gray-400">
           {isLoading ? (

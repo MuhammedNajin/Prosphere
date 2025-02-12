@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import {
   Coffee,
   Bus,
@@ -8,19 +9,30 @@ import {
   Video,
   Tent,
   ArrowRight,
+  MapPin,
+  Users,
+  Globe,
+  Share2
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "react-query";
 import { JobApi } from "@/api";
-import { useLocation, useParams } from "react-router-dom";
 import { useGetUser } from "@/hooks/useGetUser";
 import JobDescriptionSkeleton from "../Skeleton/JobDescription.skeleton";
 import JobApplicationModal from "./JobApplicationModal";
 import { ApplicationApi } from "@/api/application.api";
-import { Button } from "../ui/button";
 import CreateJobModal from "./CreateJobModal";
 import { Skill } from "@/types/profile";
 
 const JobDescription: React.FC = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const user = useGetUser();
+  const { state } = useLocation();
+  const [isCompany, setIsCompany] = useState(false);
+  const [modal, setModal] = useState(false);
+
   const benefits = [
     {
       icon: <Stethoscope size={24} className="text-orange-600" />,
@@ -66,24 +78,17 @@ const JobDescription: React.FC = () => {
     },
   ];
 
-  const [modal, setModal] = useState(false);
-  const { id } = useParams();
-  const user = useGetUser();
-  const { state } = useLocation();
-  const [isCompany, setIsCompany] = useState(false)
- 
   useEffect(() => {
-     console.log("state", state)
-    if(state?.isCompany) {
-      setIsCompany(true)
+    if (state?.isCompany) {
+      setIsCompany(true);
     }
-  }, [state])
+  }, [state]);
 
   useEffect(() => {
-    if(!isCompany) {
+    if (!isCompany) {
       JobApi.jobSeen(id as string);
     }
-  },[])
+  }, [isCompany, id]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["job-description", id],
@@ -107,18 +112,20 @@ const JobDescription: React.FC = () => {
     officeLocation: job?.officeLocation,
   };
 
-  useEffect(() => {
-    console.log(data, isApplied.data);
-  }, [data, isApplied.data]);
+  const handleCompanyProfile = () => {
+    navigate(`/profile/${companyId?.name}/${companyId?._id}/home`, {
+      state: { fromJob: true }
+    });
+  };
 
   if (isLoading) {
     return <JobDescriptionSkeleton />;
   }
 
   return (
-    <div>
+    <div className="bg-gray-50 min-h-screen">
       {isCompany ? (
-        <CreateJobModal isOpen={modal} onClose={setModal} job={job} />
+        <CreateJobModal isOpen={modal} onClose={() => setModal(false)} job={job} />
       ) : (
         <JobApplicationModal
           applicationFormProps={{
@@ -131,226 +138,210 @@ const JobDescription: React.FC = () => {
         />
       )}
 
-      <div className="flex capitalize">
-        <div className="flex-1">
-          <div className="mx-auto p-8">
-            <div className="bg-white rounded overflow-hidden">
-              <div className="bg-gray-100 p-11 rounded-lg">
-                <div className="bg-white border p-6 rounded-lg flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div className="w-12 h-12 bg-orange-700 rounded flex items-center justify-center text-white text-2xl font-bold">
-                      {companyId?.name?.[0] || "C"}
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-semibold text-gray-800">
-                        {job?.jobTitle || "Job Title"}
-                      </h2>
-                      <p className="text-sm text-gray-600">
-                        {companyId?.name || "Company"} •{" "}
-                        {job?.officeLocation || "Location"} • {job?.employment}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-4">
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                      </svg>
-                    </button>
-                    {isCompany ? (
-                      <Button 
-                      onClick={() => {
-                         setModal(true)
-                      }} 
-                      className="bg-orange-700 hover:bg-orange-800 text-white font-bold py-2 px-4 rounded">Edit Job</Button>
-                    ) : (
-                      companyId?.owner !== user?._id && (
-                        <button
-                          disabled={isApplied?.data?.status ?? null}
-                          onClick={() => {
-                            setModal(true);
-                          }}
-                          className="bg-orange-700 hover:bg-orange-800 text-white font-bold py-2 px-4 rounded"
-                        >
-                          {isApplied?.data?.status ? "Applied" : "Apply"}
-                        </button>
-                      )
-                    )}
-                  </div>
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <Card className="mb-8">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center space-x-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg flex items-center justify-center text-white text-2xl font-bold">
+                  {companyId?.name?.[0] || "C"}
                 </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-8 bg-white rounded border-t">
-            <div className="flex flex-col md:flex-row gap-8">
-              <div className="flex-grow md:w-2/3">
-                <h2 className="text-2xl font-bold mb-4">Description</h2>
-                <p className="text-gray-600 mb-6">{job?.jobDescription}</p>
-
-                <h3 className="text-xl font-semibold mb-3">Responsibilities</h3>
-                <ul className="space-y-2 mb-6">
-                  {job?.responsibility?.map((item: string, index: number) => (
-                    <li key={index} className="flex items-center">
-                      <svg
-                        className="w-5 h-5 mr-2 text-green-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-
-                <h3 className="text-xl font-semibold mb-3">Who You Are</h3>
-                <ul className="space-y-2 mb-6">
-                  {job?.qualifications?.map((item: string, index: number) => (
-                    <li key={index} className="flex items-center">
-                      <svg
-                        className="w-5 h-5 mr-2 text-green-500"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="md:w-1/3">
-                <h3 className="text-xl font-semibold mb-4">About this role</h3>
-                <div className="bg-gray-100 p-4 rounded-lg mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-600">
-                      {job?.likes?.length || 0} interested
-                    </span>
-                    <span className="text-sm text-gray-600">
-                      of {job?.vacancies || 0} openings
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2.5">
-                    <div
-                      className="bg-green-600 h-2.5 rounded-full"
-                      style={{
-                        width: `${Math.min(
-                          ((job?.likes?.length || 0) / (job?.vacancies || 1)) *
-                            100,
-                          100
-                        )}%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div className="space-y-3 mb-6">
-                  <div className="flex flex-col space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Job Posted On</span>
-                      <span className="text-gray-600">
-                        {new Date(job?.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Job Type</span>
-                      <span className="font-semibold">{job?.employment}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Salary</span>
-                      <span className="font-semibold">
-                      ₹{job?.salary?.from?.toLocaleString()} -  ₹
-                        {job?.salary?.to?.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <h3 className="text-xl font-semibold mb-3">Required Skills</h3>
-                <div className="flex flex-wrap gap-2">
-                  {job?.skills?.map((skill: Skill, index: number) => (
-                    <span
-                      key={index}
-                      className="bg-indigo-100 text-indigo-800 text-xs font-semibold px-2.5 py-0.5 rounded"
-                    >
-                      {skill?.name} ({skill?.proficiency})
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mx-auto p-8 bg-white border-t">
-            <h2 className="text-3xl font-bold text-gray-800 mb-4">
-              Perks & Benefits
-            </h2>
-            <p className="text-gray-600 mb-8">
-              This job comes with several perks and benefits
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {benefits.map((benefit, index) => (
-                <div key={index} className="flex flex-col items-start">
-                  <div className="text-indigo-600 mb-2">{benefit.icon}</div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    {benefit.title}
-                  </h3>
-                  <p className="text-sm text-gray-600">{benefit.description}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {!isCompany && (
-            <div className="p-8 bg-white border">
-              <div className="flex flex-col md:flex-row gap-8">
-                <div className="md:w-1/2">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white text-2xl font-bold mr-3">
-                      {companyId?.name?.[0] || "C"}
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-800">
-                        {companyId?.name}
-                      </h2>
-                      <a
-                        href={`/profile/${companyId?.name}/${companyId?._id}`}
-                        className="text-indigo-600 flex items-center hover:underline"
-                      >
-                        Read more about {companyId?.name}
-                        <ArrowRight size={16} className="ml-1" />
-                      </a>
-                    </div>
-                  </div>
-                  <p className="text-gray-600 mb-4">
-                    {companyId?.name} is located in{" "}
-                    {companyId?.location?.[0]?.placename}.
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {job?.jobTitle || "Job Title"}
+                  </h1>
+                  <p className="text-gray-600">
+                    {companyId?.name || "Company"} • {job?.officeLocation || "Location"} • {job?.employment}
                   </p>
                 </div>
               </div>
+              <div className="flex items-center space-x-4">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="rounded-full"
+                  onClick={() => {
+                    // Implement share functionality
+                    navigator.clipboard.writeText(window.location.href);
+                  }}
+                >
+                  <Share2 className="h-4 w-4" />
+                </Button>
+                {isCompany ? (
+                  <Button 
+                    onClick={() => setModal(true)}
+                    className="bg-orange-600 hover:bg-orange-700"
+                  >
+                    Edit Job
+                  </Button>
+                ) : (
+                  companyId?.owner !== user?._id && (
+                    <Button
+                      disabled={isApplied?.data?.status ?? false}
+                      onClick={() => setModal(true)}
+                      className="bg-orange-600 hover:bg-orange-700"
+                    >
+                      {isApplied?.data?.status ? "Applied" : "Apply Now"}
+                    </Button>
+                  )
+                )}
+              </div>
             </div>
-          )}
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-4">Description</h2>
+                <p className="text-gray-600 whitespace-pre-wrap mb-6">{job?.jobDescription}</p>
+
+                <h3 className="text-lg font-semibold mb-3">Responsibilities</h3>
+                <ul className="space-y-2 mb-6">
+                  {job?.responsibility?.map((item: string, index: number) => (
+                    <li key={index} className="flex items-start">
+                      <svg
+                        className="w-5 h-5 mr-2 text-orange-600 mt-1 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-600">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <h3 className="text-lg font-semibold mb-3">Qualifications</h3>
+                <ul className="space-y-2">
+                  {job?.qualifications?.map((item: string, index: number) => (
+                    <li key={index} className="flex items-start">
+                      <svg
+                        className="w-5 h-5 mr-2 text-orange-600 mt-1 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-gray-600">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="mb-8">
+              <CardContent className="p-6">
+                <h2 className="text-xl font-semibold mb-6">Perks & Benefits</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {benefits.map((benefit, index) => (
+                    <div key={index} className="flex flex-col">
+                      <div className="mb-2">{benefit.icon}</div>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                        {benefit.title}
+                      </h3>
+                      <p className="text-sm text-gray-600">{benefit.description}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="space-y-8">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-4">Job Details</h3>
+                <div className="space-y-4">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Posted On</span>
+                    <span className="font-medium">
+                      {new Date(job?.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Employment Type</span>
+                    <span className="font-medium">{job?.employment}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Salary Range</span>
+                    <span className="font-medium">
+                      ₹{job?.salary?.from?.toLocaleString()} - ₹{job?.salary?.to?.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Vacancies</span>
+                    <span className="font-medium">{job?.vacancies}</span>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h4 className="font-medium mb-2">Required Skills</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {job?.skills?.map((skill: Skill, index: number) => (
+                      <span
+                        key={index}
+                        className="bg-orange-50 text-orange-700 text-xs font-medium px-2.5 py-1 rounded"
+                      >
+                        {skill?.name} ({skill?.proficiency})
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {!isCompany && (
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-orange-700 rounded-lg flex items-center justify-center text-white text-xl font-bold">
+                      {companyId?.name?.[0] || "C"}
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">{companyId?.name}</h2>
+                      <p className="text-sm text-gray-600">{companyId?.industry}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 mb-4">
+                    <div className="flex items-center text-gray-600">
+                      <MapPin size={16} className="mr-2" />
+                      <span>{companyId?.location?.[0]?.placename}</span>
+                    </div>
+                    <div className="flex items-center text-gray-600">
+                      <Users size={16} className="mr-2" />
+                      <span>{companyId?.size} employees</span>
+                    </div>
+                    {companyId?.website && (
+                      <div className="flex items-center">
+                        <Globe size={16} className="mr-2" />
+                        <a
+                          href={companyId.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-orange-600 hover:text-orange-700"
+                        >
+                          Company Website
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  <Button
+                    onClick={handleCompanyProfile}
+                    className="w-full bg-orange-600 hover:bg-orange-700"
+                  >
+                    <span>View Company Profile</span>
+                    <ArrowRight size={16} className="ml-2" />
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>

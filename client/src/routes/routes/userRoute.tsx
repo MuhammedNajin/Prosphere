@@ -12,71 +12,91 @@ import NotificationPage from "@/pages/Notification/Notification";
 import ProfilePage from "@/pages/User/ProfilePage";
 import UserRouteWrapper from "../protected/UserRouteWrapper";
 import MyApplicationPage from "@/pages/Job/MyApplicationPage";
+import JobPosts from "@/components/company/Profile/Job";
+import MemberManagementPage from "@/components/company/Profile/People";
 
 export const userRoute = [
   {
     path: "/",
-    element: <UserRouteWrapper> <UserLayout /> </UserRouteWrapper>,
+    element: (
+      <UserRouteWrapper>
+        {" "}
+        <UserLayout />{" "}
+      </UserRouteWrapper>
+    ),
     children: [
       {
         path: "/",
         element: <Dashboard />,
       },
-  
+
       {
         path: "/profile",
-        element:   <ProfilePage /> ,
+        element: <ProfilePage />,
       },
-  
+
       {
         path: "/profile/:companyName/:id",
-        element:  <CompanyProfilePage /> ,
+        element: <CompanyProfilePage />,
         children: [
           {
             path: "home",
-            element:   <Home /> ,
+            element: <Home />,
           },
           {
             path: "about",
-            element:   <CompanyOverview /> ,
+            element: <CompanyOverview />,
+          },
+          {
+            path: "job",
+            element: <JobPosts />,
+          },
+          {
+            path: "team",
+            element: <MemberManagementPage />,
           },
         ],
       },
-  
+
       {
         path: "/jobs",
-        element:   <JobListingPage /> ,
+        element: <JobListingPage />,
       },
-  
+
       {
         path: "/job-description/:id",
-        element:   <JobDescriptionPage /> ,
+        element: <JobDescriptionPage />,
       },
-  
+
       {
         path: "/myapplication",
-        element:  <MyApplicationPage/> ,
+        element: <MyApplicationPage />,
       },
-  
+
       {
         path: "/mycompany",
-        element:   <MyCompanyPage /> ,
+        element: <MyCompanyPage />,
       },
-  
+
       {
         path: "/mycompany/setup",
-        element:   <CompanyCreationPage /> ,
+        element: <CompanyCreationPage />,
       },
-  
+
       {
         path: "/notification",
-        element: <NotificationPage /> ,
+        element: <NotificationPage />,
       },
     ],
   },
-  
+
   {
     path: "/chat",
-    element: <UserRouteWrapper>  <UserChatPage /> </UserRouteWrapper>
+    element: (
+      <UserRouteWrapper>
+        {" "}
+        <UserChatPage />{" "}
+      </UserRouteWrapper>
+    ),
   },
-]
+];

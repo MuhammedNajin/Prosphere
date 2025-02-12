@@ -136,6 +136,17 @@ class CompanyApi {
    }
  }
 
+ 
+ static getEmployeesPublicProfile = async (id?: string) => {
+   try {
+      const response = await this.axios.get(`/api/v1/user/company/employees?companyId=${id}`);
+      return response.data?.data;
+   } catch (error) {
+     console.log(error);
+     throw error;
+   }
+ }
+
  static addMember = async (id: string) => {
     try {
       console.log("id, addMemberMutation", id)

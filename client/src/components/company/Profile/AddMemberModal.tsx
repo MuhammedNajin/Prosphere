@@ -17,6 +17,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CompanyApi } from "@/api";
 import { useMutation } from "react-query";
 import { Spinner } from "@/components/common/spinner/Loader";
+import { useSelectedCompany } from "@/hooks/useSelectedCompany";
 
 interface PlatformUser {
   _id: string;
@@ -67,7 +68,6 @@ function debounce<T extends (...args: any[]) => any>(
     timeout = setTimeout(() => func(...args), wait);
   };
 }
-
 interface AddMemberProps {
    onSuccess: (user: PlatformUser) => void;
 }
@@ -78,7 +78,7 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
   const [searchResults, setSearchResults] = useState<PlatformUser[]>(platformUsers);
   const [isSearching, setIsSearching] = useState(false);
   const [selectedUser, setSelectedUser] = useState<PlatformUser | null>(null);
-
+ const isSelected = useSelectedCompany()
   const debouncedSearch = useCallback(
     debounce(async (query: string) => {
       setIsSearching(true);
@@ -148,12 +148,14 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
         setIsOpen(open);
       }}
     >
+      {isSelected && (
       <DialogTrigger asChild>
         <Button className="bg-blue-600 hover:bg-blue-700">
           <Plus className="h-4 w-4 mr-2" />
           Add New Member
         </Button>
       </DialogTrigger>
+    )}
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">

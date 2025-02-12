@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import React from "react";
 import { useQuery } from "react-query";
-import { useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
 import JobUpdates from "../Dashboard/JobCard";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,9 +19,12 @@ const Home: React.FC = () => {
 
   const navigate = useNavigate()
   const { id } = useParams()
+  const location = useLocation();
+  const fromJob = location.state?.fromJob || false;
+
   const { data } = useQuery({
     queryKey: ['people'],
-     queryFn: () => CompanyApi.getEmployees()
+     queryFn: () => fromJob ? CompanyApi.getEmployeesPublicProfile(id) : CompanyApi.getEmployees(),
 
   })
 
@@ -71,7 +74,7 @@ const Home: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold ">Team</h2>
         </div>
-        {data && data?.team.length > 0 ? (
+        {data && data?.team?.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {data?.team?.map(({ userId }: { userId: User }) => (
              <Card className="w-full max-w-sm transform transition-all duration-300 hover:scale-105 hover:shadow-xl bg-white dark:bg-zinc-900">
