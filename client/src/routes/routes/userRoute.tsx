@@ -14,6 +14,7 @@ import UserRouteWrapper from "../protected/UserRouteWrapper";
 import MyApplicationPage from "@/pages/Job/MyApplicationPage";
 import JobPosts from "@/components/company/Profile/Job";
 import MemberManagementPage from "@/components/company/Profile/People";
+import LandingPage from "@/pages/User/LandingPage";
 
 export const userRoute = [
   {
@@ -99,4 +100,9 @@ export const userRoute = [
       </UserRouteWrapper>
     ),
   },
+
+  {
+     path: '/in',
+     element: <LandingPage />
+  }
 ];

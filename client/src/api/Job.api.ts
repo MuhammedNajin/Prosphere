@@ -82,7 +82,7 @@ class JobApi {
         }),
       });
 
-      const response = await this.axios.get(`/api/v1/job/?${queryParams}`);
+      const response = await this.axios.get(`/api/v1/job/public?${queryParams}`);
       console.log("response.data", response.data);
       if (response.status === 200) {
         return {

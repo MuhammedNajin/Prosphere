@@ -21,7 +21,7 @@ const UserRouteWrapper: React.FC<UserRouteWrapperProps> = (props) => {
   const [showSessionModal, setShowSessionModal] = useState(true);
 
   const handleLoginRedirect = () => {
-    window.location.href = "/signin";
+    window.location.href = "/in";
     setShowSessionModal(false);
   };
 

@@ -1,79 +1,137 @@
-import { Search, MapPin } from 'lucide-react';
+import { Rocket, Users, Building2, ArrowRight } from 'lucide-react';
+import Logo from '../common/Logo/Logo';
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/redux/store';
 
-const JobSearch = () => {
-  return (
-    <div className="min-h-screen bg-white">
-    
-      <nav className="flex items-center justify-between px-6 py-4">
-        <div className="flex items-center gap-2">
-          
-          <div className="w-8 h-8 bg-indigo-600 rounded-full"></div>
-          <span className="text-xl font-semibold">JobHuntly</span>
-        </div>
-        
-        <div className="flex gap-8">
-          <a href="#" className="text-indigo-600 border-b-2 border-indigo-600">Find Jobs</a>
-          <a href="#" className="text-gray-600">Browse Companies</a>
-        </div>
+const ProsphereHome = () => {
+  const navigate = useNavigate();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const companies = [
+    { name: 'Vodafone', logo: '/vodafone.logo.png' },
+    { name: 'Intel', logo: '/intel.logo.png' },
+    { name: 'Tesla', logo: '/tesla.logo.png' },
+    { name: 'AMD', logo: '/amd.logo.png' },
+    { name: 'Talkit', logo: '/tilkit.logo.png' },
+  ];
 
-        <div className="flex items-center gap-4">
-          <button className="text-indigo-600">Login</button>
-          <button className="px-4 py-2 text-white bg-indigo-600 rounded-lg">Sign Up</button>
-        </div>
-      </nav>
+  const features = [
+    {
+      icon: <Rocket className="w-6 h-6 text-orange-600" />,
+      title: "Fast Recruitment",
+      description: "Streamline your hiring process with our advanced matching algorithms"
+    },
+    {
+      icon: <Users className="w-6 h-6 text-orange-600" />,
+      title: "Top Talent Pool",
+      description: "Access a curated network of skilled professionals across industries"
+    },
+    {
+      icon: <Building2 className="w-6 h-6 text-orange-600" />,
+      title: "Enterprise Solutions",
+      description: "Customized recruitment solutions for businesses of all sizes"
+    }
+  ];
 
-      <main className="max-w-5xl mx-auto mt-20">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Find your <span className="text-blue-400 relative">
-              dream job
-              <div className="absolute bottom-1 left-0 w-full h-1 bg-blue-400"></div>
-            </span>
-          </h1>
-          <p className="text-gray-600">
-            Find your next career at companies like HubSpot, Nike, and Dropbox
-          </p>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-lg p-2 flex gap-2">
-
-          <div className="flex-1 flex items-center px-4 border-r">
-            <Search className="w-5 h-5 text-gray-400 mr-2" />
-            <input
-              type="text"
-              placeholder="Job title or keyword"
-              className="w-full outline-none text-gray-700"
-            />
-          </div>
-
-          <div className="flex-1 flex items-center px-4">
-            <MapPin className="w-5 h-5 text-gray-400 mr-2" />
-            <input
-              type="text"
-              placeholder="Florence, Italy"
-              className="w-full outline-none text-gray-700"
-            />
-            <button className="ml-2">
-              <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
-
-          <button className="px-6 py-2 bg-indigo-600 text-white rounded-lg">
-            Search
+  const renderNavButtons = () => {
+    if (!user) {
+      return (
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <button 
+            onClick={() => navigate('/signin')}
+            className="text-orange-600 hover:text-orange-700">
+            Login
+          </button>
+          <button 
+            onClick={() => navigate('/signup')}
+            className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700">
+            Sign Up
           </button>
         </div>
+      );
+    }
+    
+    return (
+      <div className="flex items-center space-x-2 md:space-x-4">
+        <button 
+          onClick={() => navigate('/contact')}
+          className="text-orange-600 hover:text-orange-700">
+          Contact Us
+        </button>
+        <button 
+          onClick={() => navigate('/about')}
+          className="text-orange-600 hover:text-orange-700">
+          About Us
+        </button>
+        <button 
+          onClick={() => navigate('/')}
+          className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 flex items-center">
+          Get Started
+          <ArrowRight className="ml-2 w-4 h-4" />
+        </button>
+      </div>
+    );
+  };
 
-        <div className="mt-6 text-gray-600">
-          Popular: {' '}
-          <span className="text-gray-500">
-            UI Designer, UX Researcher, Android, Admin
-          </span>
+  return (
+    <div className="min-h-screen bg-white">
+      <nav className="flex items-center justify-between p-4 md:p-6">
+        <div className="flex items-center space-x-2">
+          <Logo size="md" />
+          <span className="text-xl font-semibold">Prosphere</span>
+        </div>
+        {renderNavButtons()}
+      </nav>
+
+      <main className="px-4 md:px-6 lg:px-8 max-w-6xl mx-auto mt-12 md:mt-24">
+        <div className="text-center">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4">
+            Transform Your
+            <br />
+            Hiring Experience with
+            <br />
+            <span className="text-orange-500">Prosphere</span>
+          </h1>
+          <p className="text-gray-600 mb-12 max-w-2xl mx-auto">
+            Revolutionizing recruitment through innovative solutions that connect top talent with leading organizations.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            {features.map((feature, index) => (
+              <div key={index} className="p-6 bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <div className="mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+                <p className="text-gray-600">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+
+          {!user && (
+            <button 
+              onClick={() => navigate('/get-started')}
+              className="bg-orange-600 text-white px-8 py-3 rounded-lg hover:bg-orange-700 flex items-center mx-auto">
+              Get Started Today
+              <ArrowRight className="ml-2 w-5 h-5" />
+            </button>
+          )}
+        </div>
+        
+        <div className="mt-24 mb-12">
+          <p className="text-gray-600 text-center mb-8">Trusted by leading companies worldwide</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 items-center justify-items-center">
+            {companies.map((company, index) => (
+              <img
+                key={index}
+                src={company.logo}
+                alt={company.name}
+                className="h-10 opacity-50 hover:opacity-100 transition-opacity"
+              />
+            ))}
+          </div>
         </div>
       </main>
     </div>
   );
 };
 
-export default JobSearch;
+export default ProsphereHome;

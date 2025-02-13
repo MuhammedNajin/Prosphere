@@ -4,7 +4,6 @@ import { UsageStatsType } from "@/types/company";
 import { SubscriptionData } from "@/types/subscription";
 
 export const getCompaniesThunk = createAsyncThunk("company/getCompanies", CompanyApi.getCompanies);
-
 interface CompanyState {
   companies: any[];
   selectedCompany: any | null;

@@ -56,6 +56,9 @@ const authSlice = createSlice({
         state.status = "loading";
       })
       .addCase(signInThunk.fulfilled, (state, action) => {
+
+        console.log("signup paylaod", action.payload);
+        
         state.user = action.payload.userCredential;
 
         console.log("action.payload", action.payload, action.payload.resumeKey);

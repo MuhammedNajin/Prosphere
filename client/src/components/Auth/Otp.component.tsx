@@ -85,7 +85,7 @@ const OTPInput: React.FC<OTPInputProps> = ({
     dispatch(verifyOtpThunk({ email, otp: values.otp }))
     .unwrap()
     .then(() => {
-      navigate('/')
+      navigate('/in')
     })
     .catch((err: string) => {
       toast.error(err)

@@ -81,7 +81,11 @@ export interface Job {
   officeLocation: string;
   vacancies: number;
   experience: string;
-  companyId: string;
+  companyId: {
+    _id: string;
+    name: string;
+    logo: string | null;
+  };
   expiry: string;
   responsibility: string[];
   skills: Skill[];

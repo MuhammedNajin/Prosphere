@@ -60,7 +60,7 @@ const SignIn = () => {
     setIsLoading(true);
     try {
       await dispatch(signInThunk(data)).unwrap();
-      navigate("/");
+      navigate("/in");
     } catch (err: any) {
       console.error("error from login", err);
       toast.error(err || "Sign in failed");
@@ -78,7 +78,7 @@ const SignIn = () => {
         navigate("/google/auth/flow", { state: user });
       } else if (status === "exist") {
         dispatch(googleAuth(user));
-        navigate("/");
+        navigate("/in");
       }
     } catch (error) {
       toast.error("Google Login Failed");
