@@ -41,14 +41,20 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
   const updateConversation = (msg: Message) => {
     client.setQueryData<Conversation[]>([queryKey], (oldData) => {
       if (!oldData) return [];
+      let arr = [] as Conversation[]
 
-      return oldData?.map((conv) => {
+       oldData?.forEach((conv) => {
         if (conv.id === msg.conversation) {
           conv.lastMessage = msg;
           conv.unreadCount = (conv.unreadCount || 0) + 1;
+          arr.unshift(conv);
+        } else {
+           arr.push(conv)
         }
-        return conv;
+         
       });
+
+      return arr;
     });
   };
 
@@ -86,7 +92,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
         return [...oldData];
       }
 
-      return [...oldData, newConv];
+      return [newConv, ...oldData];
     });
   };
 

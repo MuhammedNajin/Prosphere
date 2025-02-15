@@ -25,6 +25,22 @@ export const signUpFormSchema = z.object({
     jobRole: z.string().min(1, { message: "Job role is required" }),
   });
 
+
+  export const resetPasswordSchema = z
+  .object({
+    oldPassword: z.string().min(8, "Old password must be at least 8 characters."),
+    newPassword: z.string().min(8, "New password must be at least 8 characters."),
+  })
+  .refine(
+    (data) => data.newPassword !== data.oldPassword,
+    {
+      message: "New password cannot be the same as the old password.",
+      path: ["newPassword"],
+    }
+  );
+
+  
+
  export const companyformSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
     website: z.string().url({ message: "Invalid URL" }).optional().or(z.literal('')),

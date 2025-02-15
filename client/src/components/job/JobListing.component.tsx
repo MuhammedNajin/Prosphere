@@ -241,7 +241,7 @@ const JobListing = () => {
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
-              {/* Existing Employment Type Filter */}
+          
               <Accordion type="single" collapsible>
                 <AccordionItem value="employment">
                   <AccordionTrigger className="font-semibold text-base text-orange-950">
@@ -324,15 +324,10 @@ const JobListing = () => {
               </Accordion>
             </div>
 
-            {/* Job Listings */}
             <div className="flex-1 p-4 pt-5 pr-8">
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-clash font-bold">All Jobs</h2>
                 <div className="flex items-center space-x-2">
-                  <span>Sort by:</span>
-                  <select className="p-1 rounded">
-                    <option>Most relevant</option>
-                  </select>
                   <button className="p-1 border rounded">
                     <LayoutGrid size={20} />
                   </button>
@@ -432,9 +427,6 @@ const JobListing = () => {
               </div>
             </div>
           </div>
-
-          {/* Rest of the component remains the same */}
-          {/* ... */}
         </div>
       </div>
     </div>

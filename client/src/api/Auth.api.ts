@@ -1,6 +1,6 @@
 import { AxiosError, AxiosInstance, HttpStatusCode } from "axios";
 import axiosInstance from "./config";
-import { signupFormData } from "@/types/formData";
+import { ResetFormData, signupFormData } from "@/types/formData";
 import { googleSignUpFlow, IOtp } from "@/types/user";
 
 class ApiService {
@@ -154,6 +154,14 @@ class ApiService {
       return response.data;
     } catch (error) {}
   };
+
+  static changePassword = async (data: ResetFormData) => {
+
+      return await this.axios.post("/api/v1/auth/reset-password", data);
+  
+  };
+
+ 
 }
 
 export { ApiService };

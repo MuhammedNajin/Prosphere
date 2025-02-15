@@ -15,6 +15,7 @@ import MyApplicationPage from "@/pages/Job/MyApplicationPage";
 import JobPosts from "@/components/company/Profile/Job";
 import MemberManagementPage from "@/components/company/Profile/People";
 import LandingPage from "@/pages/User/LandingPage";
+import SettingsPage from "@/pages/User/SettingsPage";
 
 export const userRoute = [
   {
@@ -87,6 +88,11 @@ export const userRoute = [
       {
         path: "/notification",
         element: <NotificationPage />,
+      },
+
+      {
+        path: "/settings",
+        element: <SettingsPage />,
       },
     ],
   },

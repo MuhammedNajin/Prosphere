@@ -7,6 +7,7 @@ import {
   jobApplicationFormSchema,
   jobFormSchema,
   profileAboutFormSchema,
+  resetPasswordSchema,
   resumeSchema,
   signInSchema,
   signUpFormSchema,
@@ -36,3 +37,4 @@ export type AboutFormData = z.infer<typeof profileAboutFormSchema>;
 export type EducationFormData = z.infer<typeof educationFormSchema>;
 export type StatusFormData = z.infer<typeof statusFormSchema>;
 export type FormValues = z.infer<typeof coverImageFormSchema>;
+export type ResetFormData = z.infer<typeof resetPasswordSchema>
