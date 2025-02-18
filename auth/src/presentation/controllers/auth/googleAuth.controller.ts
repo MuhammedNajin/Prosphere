@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, json } from "express";
 import { Dependencies } from "@domain/entities/interfaces";
 import Token from "@infra/libs/token";
+import { TOKEN_TYPE } from "@/shared/types/enums";
 
 const googleAuthController = (dependencies: Dependencies) => {
   const {
@@ -31,14 +32,16 @@ const googleAuthController = (dependencies: Dependencies) => {
         };
         const { accessToken, refreshToken } = Token.generateJwtToken(payload);
 
-        res.cookie("accessToken", accessToken, {
+        res.cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         });
 
-        res.cookie("refreshToken", refreshToken, {
+        res.cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, refreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         });
       }
 

@@ -20,6 +20,7 @@ export class SocketManager extends EventEmitter {
         origin: process.env.CORS_ORIGIN || "*",
         methods: ["GET", "POST"],
       },
+      path: '/auth-socket/socket.io',
       pingTimeout: 60000,
       pingInterval: 25000,
     });

@@ -63,8 +63,8 @@ const authSchema = new mongoose.Schema(
       default: "default",
     },
 
-    gender : {
-       type: String,
+    gender: {
+      type: String,
     },
 
     location: {
@@ -85,6 +85,7 @@ const authSchema = new mongoose.Schema(
     companyName: {
       type: String,
     },
+    
     forgetPasswordToken: {
       type: String,
     },

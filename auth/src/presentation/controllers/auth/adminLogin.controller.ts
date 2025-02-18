@@ -29,7 +29,7 @@ import { BadRequestError } from '@muhammednajinnprosphere/common';
             
             const payload = {
                 id: '',
-                username: '',
+                username: 'admin',
                 email: adminCredential.email,
                 role: 'admin' as "admin" 
               };
@@ -40,14 +40,16 @@ import { BadRequestError } from '@muhammednajinnprosphere/common';
             res.cookie("adminAccess", accessToken, {
               httpOnly: true,
               secure: process.env.NODE_ENV === "production",
+              sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             });
 
             res.cookie("adminRefresh", refreshToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === "production"
+                secure: process.env.NODE_ENV === "production",
+                sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
             })
 
-            res.status(200).json(adminCredential);
+            res.status(200).json(payload);
             
         } catch (error) {
             console.log(error)

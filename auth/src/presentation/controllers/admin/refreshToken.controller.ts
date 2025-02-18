@@ -5,7 +5,7 @@ import { ForbiddenError } from "@muhammednajinnprosphere/common";
 import jwt from "jsonwebtoken";
 import { ROLE, TOKEN_TYPE } from "@/shared/types/enums";
 
-const refreshTokenController = (dependencies: Dependencies) => {
+const adminRefreshTokenController = (dependencies: Dependencies) => {
   const {
     useCases: { sentMailUseCase, forgetPasswordUseCase },
   } = dependencies;
@@ -16,55 +16,42 @@ const refreshTokenController = (dependencies: Dependencies) => {
     next: NextFunction
   ) => {
     try {
-      const { isAdmin } = req.query;
-      const tokenKey = isAdmin
-        ? TOKEN_TYPE.ADMIN_REFRESH_TOKEN
-        : TOKEN_TYPE.USER_REFRESH_TOKEN;
+      const tokenKey = TOKEN_TYPE.ADMIN_REFRESH_TOKEN;
+
       const token = req.cookies[tokenKey];
 
       console.log("refresh-token endpoint", token);
-      const secret = isAdmin
-        ? process.env.ADMIN_REFRESH_SECRECT
-        : process.env.REFRESH_SECRECT;
+
+      const secret = process.env.ADMIN_REFRESH_SECRECT;
+
       console.log("secret", secret, req.cookies);
 
       await Token.verifyToken(token, secret!);
+
       const payload = Token.decode(token) as TokenData;
+
       console.log("payload", payload);
+
       const newPayload = {
         id: payload.id,
         email: payload.email,
         username: payload.email,
-        role: isAdmin === ROLE.ADMIN ? ROLE.ADMIN : ROLE.USER,
+        role: ROLE.ADMIN,
       };
 
       const { accessToken, refreshToken } = Token.generateJwtToken(newPayload);
 
-      res.cookie(
-        `${
-          isAdmin ? TOKEN_TYPE.ADMIN_ACCESS_TOKEN : TOKEN_TYPE.USER_ACCESS_TOKEN
-        }`,
-        accessToken,
-        {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        }
-      );
+      res.cookie(TOKEN_TYPE.ADMIN_ACCESS_TOKEN, accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      });
 
-      res.cookie(
-        `${
-          isAdmin
-            ? TOKEN_TYPE.ADMIN_REFRESH_TOKEN
-            : TOKEN_TYPE.USER_REFRESH_TOKEN
-        }`,
-        refreshToken,
-        {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-        }
-      );
+      res.cookie(TOKEN_TYPE.ADMIN_REFRESH_TOKEN, refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      });
 
       res.sendStatus(201);
     } catch (error) {
@@ -73,6 +60,7 @@ const refreshTokenController = (dependencies: Dependencies) => {
       if (error instanceof jwt.JsonWebTokenError) {
         next(new ForbiddenError());
       }
+
       next(error);
     }
   };
@@ -80,4 +68,4 @@ const refreshTokenController = (dependencies: Dependencies) => {
   return forgotPassword;
 };
 
-export { refreshTokenController };
+export { adminRefreshTokenController };

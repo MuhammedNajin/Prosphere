@@ -8,6 +8,7 @@ import { forgotPasswordController } from "./forgotPassword.controller";
 import { resetPasswordController } from "./resetPassword.controller";
 import { adminLoginController } from "./adminLogin.controller";
 import { refreshTokenController } from './refreshToken.controller'
+import { changePasswordController } from "./changePassword.controller";
 
 export const authController = (dependencies: any) => {
   console.log("auth controller");
@@ -23,5 +24,6 @@ export const authController = (dependencies: any) => {
     resetPasswordController: resetPasswordController(dependencies),
     adminLoginController: adminLoginController(dependencies),
     refreshTokenController: refreshTokenController(dependencies),
+    changePasswordController: changePasswordController(dependencies)
   };
 };

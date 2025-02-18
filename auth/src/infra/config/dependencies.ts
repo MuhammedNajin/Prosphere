@@ -14,7 +14,8 @@ import {
   getUsersUseCase,
   blockUserUseCase,
   googleAuthUseCase,
-  googleAuthFlowUseCase
+  googleAuthFlowUseCase,
+  changePasswordUseCase
 } from "@application/usecase";
 import { Repository, Service, UseCases } from "@domain/entities/interfaces";
 import { transporter } from "@infra/Service";
@@ -34,7 +35,8 @@ const useCases: UseCases = {
   getUsersUseCase,
   blockUserUseCase,
   googleAuthUseCase,
-  googleAuthFlowUseCase
+  googleAuthFlowUseCase,
+  changePasswordUseCase
 };
 console.log(useCases);
 const repository: Repository = {

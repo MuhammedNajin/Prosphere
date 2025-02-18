@@ -30,7 +30,7 @@ const forgotPasswordController = (dependencies: Dependencies) => {
       
       const mail = generatePasswordResetEmail(
         email,
-        `${process.env.URL as string}/reset-password/${token}`
+        `${process.env.URL as string}/reset-password/${token}?email=${email}`
       );
 
       const message = getMessage({

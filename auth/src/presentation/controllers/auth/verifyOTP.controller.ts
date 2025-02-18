@@ -44,13 +44,6 @@ const verifyOTPController = (dependencies: Dependencies) => {
          gender: verified.gender,
        })
 
-      // await grpcClient.CreateUser({
-      //   _id: verified._id.toString(),
-      //   username: verified.username,
-      //   email: verified.email,
-      //   phone: verified.phone,
-      //   jobRole: verified.phone,
-      // })
       const payload = {
         id: verified._id,
         username: verified.username,
@@ -82,7 +75,7 @@ const verifyOTPController = (dependencies: Dependencies) => {
       next(error)
     }
   };
-
+  
   return verifyOtp;
 };
 

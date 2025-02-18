@@ -23,9 +23,9 @@ export class GrpcClient {
                 oneofs: true
             });
             const authProto = grpc.loadPackageDefinition(packageDefinition).auth as any;
-
+            const grpcDomain = process.env.USER_GRPC_DOMAIN ?? 'localhost:50051';
             this.authClient = new authProto.UserService(
-                'localhost:50051',
+                 grpcDomain,
                 grpc.credentials.createInsecure(),
                 {
                     'grpc.keepalive_time_ms': 10000,

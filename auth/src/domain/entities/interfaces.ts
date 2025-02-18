@@ -27,6 +27,7 @@ export interface UseCases {
   blockUserUseCase: any
   googleAuthUseCase: any
   googleAuthFlowUseCase: any;
+  changePasswordUseCase: any
 }
 
 export interface Repository {

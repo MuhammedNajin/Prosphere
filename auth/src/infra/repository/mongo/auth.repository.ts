@@ -1,7 +1,7 @@
 import { IUser } from "@domain/entities/interfaces";
 import Password from "@infra/libs/password";
 import { Auth } from "../../database";
-import { BadRequestError, NotAuthorizedError } from "@muhammednajinnprosphere/common";
+import { BadRequestError, NotAuthorizedError, RequestValidationError } from "@muhammednajinnprosphere/common";
 
 export default {
   getUser: async (user: any) => {
@@ -137,7 +137,7 @@ export default {
 
     const exist = await Auth.findOne({ email });
     if (exist) {
-      return { status: "exsist", user: exist };
+      return { status: "exist", user: exist };
     }
 
     const user = Auth.build({
@@ -164,4 +164,28 @@ export default {
     await user.save();
     return user;
   },
+
+  async changePassword(oldPassword: string , newPassword: string, _id: string) {
+     try {
+         const user = await Auth.findOne({ _id });
+
+         if(!user) {
+           throw new BadRequestError("No such user find!!!!");
+         }
+
+         const compare = await Password.compare(oldPassword, user.password)
+
+         if(!compare) {
+             throw new BadRequestError("The old password you entered is incorrect.")
+         }
+
+         user.password = newPassword;
+
+         await user.save();
+         
+     } catch (error) {
+       console.log("error", error);
+       throw error;
+     }
+  }
 };

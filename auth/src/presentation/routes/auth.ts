@@ -19,6 +19,7 @@ export const authRoutes = (dependencies: any) => {
     resetPasswordController,
     adminLoginController,
     refreshTokenController,
+    changePasswordController
   } = authController(dependencies);
 
   router.post("/login",
@@ -50,6 +51,9 @@ export const authRoutes = (dependencies: any) => {
 
   router.post("/refreshToken", 
     refreshTokenController);
+
+  router.post("/reset-password", 
+     changePasswordController)  
 
   return router;
 };

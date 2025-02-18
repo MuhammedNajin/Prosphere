@@ -11,6 +11,8 @@ import { getUsersUseCase } from "./admin/getUsersUsecase";
 import { blockUserUseCase } from "./admin/blockUserUsecase";
 import { googleAuthUseCase } from "./auth/googleAuth.usecase";
 import { googleAuthFlowUseCase } from "./auth/googleAuthFlow.usecase";
+import { changePasswordUseCase } from "./auth/changePassword.usecase";
+
 export {
   signupUseCase,
   loginUseCase,
@@ -25,4 +27,5 @@ export {
   blockUserUseCase,
   googleAuthUseCase,
   googleAuthFlowUseCase,
+  changePasswordUseCase,
 };
