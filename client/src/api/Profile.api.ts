@@ -84,6 +84,15 @@ class ProfileApi {
          return error
       }
    }
+
+   static async searchUser(search: string) {
+       try {
+           const response = await this.axios.get(`/api/v1/profile/search?search=${search}`);
+           return response.data?.data
+       } catch (error) {
+          throw error
+       }
+   }
 }
 
 export { ProfileApi };

@@ -4,7 +4,6 @@ import { adminRoute } from './routes/adminRoute';
 import { companyRoute } from './routes/companyRoute';
 import { authRoute } from './routes/authRoute';
 
-
 const routes = createBrowserRouter([
     ...userRoute,
     adminRoute,

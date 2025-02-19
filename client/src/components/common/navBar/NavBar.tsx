@@ -1,6 +1,5 @@
-import { Bell, Search } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import Dropdown from "./DropDown";
 import { useGetUser } from "@/hooks/useGetUser";
 import { useNavigate } from "react-router-dom";
@@ -10,9 +9,13 @@ import { SocketContext } from "@/context/socketContext";
 import { NotificationAttrs } from "@/types/notification";
 import { cn } from "@/lib/utils";
 import { ToastAction } from "@/components/ui/toast";
+import SearchWithSuggestions from "./Search";
+import { useQuery } from "react-query";
+import { NotificationApi } from "@/api/Notification.api";
 
 const Header = () => {
   const [count, setCount] = useState(0);
+  const [hasNewNotification, setHasNewNotification] = useState(false);
   const user = useGetUser();
   const isLoggedIn = user ?? null;
   const navigate = useNavigate();
@@ -20,10 +23,23 @@ const Header = () => {
 
   const { notificationSocket } = useContext(SocketContext);
 
+  const { data } = useQuery({
+     queryKey: ['unread-notification'],
+     queryFn: () => NotificationApi.getNotificationCount(user?._id!)
+  })
+
+  useEffect(() => {
+    if (data) {
+      setCount(data);
+      if (data > 0) setHasNewNotification(true);
+    }
+  }, [data]);
+   
   useEffect(() => {
     notificationSocket?.on("notification:sent", (data: NotificationAttrs) => {
-      console.log("notification:sent", data);
       setCount((prev) => prev + 1);
+      setHasNewNotification(true);
+      
       toast({
         title: data.title,
         description: data.message,
@@ -32,40 +48,65 @@ const Header = () => {
         ),
         action: (
           <ToastAction
-            onClick={() => console.log("clicked")}
-            altText="Try again"
+            onClick={() => navigate("/notification")}
+            altText="View notification"
           >
-            See more...
+            View
           </ToastAction>
         ),
       });
     });
-  }, [notificationSocket?.connected]);
+    
+    return () => {
+      notificationSocket?.off("notification:sent");
+    };
+  }, [notificationSocket?.connected, navigate]);
+
+  const handleNotificationClick = () => {
+    setHasNewNotification(false);
+    navigate("/notification");
+  };
 
   return (
-    <header className="flex overflow-hidden fixed w-full md:max-w-[80%] z-50 flex-wrap gap-4 justify-between items-center px-6 py-4 bg-white max-md:px-5 border-b shadow-sm border-solid">
+    <header className="flex fixed w-full md:max-w-[80%] z-50 flex-wrap gap-4 justify-between items-center px-6 py-4 bg-white max-md:px-5 border-b shadow-sm border-solid">
       <div className="flex-1 max-w-xl px-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="w-full pl-10 pr-4 py-2 border rounded-full bg-gray-50 focus:bg-white"
-          />
-        </div>
+        <SearchWithSuggestions />
       </div>
 
       <div className="flex items-center gap-4">
         {isLoggedIn ? (
-          <div className="flex gap-x-2 items-center">
-            <div className="relative" onClick={() => navigate("/notification")}>
+          <div className="flex gap-x-4 items-center">
+            <button 
+              className={cn(
+                "relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300",
+                "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-200"
+              )}
+              onClick={handleNotificationClick}
+              aria-label={`${count} unread notifications`}
+            >
+              <Bell 
+                size={22} 
+                className={cn(
+                  "text-gray-700 transition-all duration-300",
+                  hasNewNotification && "text-orange-600"
+                )} 
+              />
+              
               {count > 0 && (
-                <span className="absolute -top-2 -right-1 bg-orange-700 rounded-full px-1 text-white">
-                  {count}
+                <span className={cn(
+                  "absolute -top-1 -right-1 flex items-center justify-center",
+                  "min-w-5 h-5 px-1 text-xs font-bold text-white rounded-full",
+                  "bg-orange-600 shadow-sm",
+                  hasNewNotification && "animate-pulse"
+                )}>
+                  {count > 99 ? '99+' : count}
                 </span>
               )}
-              <Bell size={25} />
-            </div>
+              
+              {hasNewNotification && (
+                <span className="absolute inset-0 rounded-full animate-ping-slow bg-orange-400 opacity-30"></span>
+              )}
+            </button>
             <Dropdown />
           </div>
         ) : (
@@ -88,5 +129,6 @@ const Header = () => {
     </header>
   );
 };
+
 
 export default Header;

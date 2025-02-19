@@ -16,6 +16,7 @@ import JobPosts from "@/components/company/Profile/Job";
 import MemberManagementPage from "@/components/company/Profile/People";
 import LandingPage from "@/pages/User/LandingPage";
 import SettingsPage from "@/pages/User/SettingsPage";
+import PublicProfilePage from "@/pages/User/PublicProfilePage";
 
 export const userRoute = [
   {
@@ -93,6 +94,10 @@ export const userRoute = [
       {
         path: "/settings",
         element: <SettingsPage />,
+      },
+      {
+        path: "/profile/veiw/:id",
+        element: <PublicProfilePage />,
       },
     ],
   },
