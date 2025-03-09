@@ -5,6 +5,7 @@ export interface UserData {
      phone: string;
      jobRole: string;
      isBlocked: boolean;
+     avatar?: string;
      createdAt: string;
 } 
 
@@ -27,4 +28,5 @@ export interface adminLogin {
 export interface SignInResponse {
   userCredential: UserData;
   resumeKey: string[];
+  avatar?: string
 }  

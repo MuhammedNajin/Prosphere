@@ -155,7 +155,7 @@ class ApiService {
     } catch (error) {}
   };
 
-  static changePassword = async (data: ResetFormData) => {
+  static changePassword = async (data: ResetFormData extends { id: string}) => {
 
       return await this.axios.post("/api/v1/auth/reset-password", data);
   

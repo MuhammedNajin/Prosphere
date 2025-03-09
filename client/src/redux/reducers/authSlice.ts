@@ -20,6 +20,7 @@ const initialState: AuthState = {
   user: null,
   status: "",
   role: "user",
+
   resume: [],
 };
 
@@ -58,9 +59,9 @@ const authSlice = createSlice({
       .addCase(signInThunk.fulfilled, (state, action) => {
 
         console.log("signup paylaod", action.payload);
+         const data = action.payload;
+        state.user = {...data.userCredential, avatar: data.avatar};
         
-        state.user = action.payload.userCredential;
-
         console.log("action.payload", action.payload, action.payload.resumeKey);
         state["resume"] = Array.isArray(action.payload?.resumeKey)
           ? action.payload.resumeKey

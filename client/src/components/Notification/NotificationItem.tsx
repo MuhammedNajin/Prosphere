@@ -50,7 +50,7 @@ const NotificationItem: React.FC<NotificationItemProps> = ({
   isSelected = false,
   onSelect,
 }) => {
-  // const { notificationSocket } = useContext(SocketContext);
+  
   const navigation = useNavigate();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);

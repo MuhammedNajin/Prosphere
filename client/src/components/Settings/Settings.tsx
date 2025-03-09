@@ -40,9 +40,14 @@ const Settings = () => {
 
       setIsLoading(true);
       try {
+
+        if(!user?._id) return 
+
+        
         const newData = { 
             id: user?._id,
         }
+        
         await ApiService.changePassword(newData);
         toast({
           description: <SuccessMessage message="Password reset Successfully" />,

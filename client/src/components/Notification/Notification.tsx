@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import { Bell, Trash2, Check } from 'lucide-react';
+import { Bell, Trash2, Check, Filter } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Alert } from '@/components/ui/alert';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -13,21 +12,13 @@ import { NotificationApi } from '@/api/Notification.api';
 import { useGetUser } from '@/hooks/useGetUser';
 import NotificationItem from './NotificationItem';
 import { FILTER_TABS, FilterType, NotificationAttrs } from '@/types/notification';
-
-
-
-const NotificationSkeleton = () => (
-  <div className="p-4">
-    <div className="flex items-start space-x-4">
-      <Skeleton className="h-10 w-10 rounded-full" />
-      <div className="flex-1 space-y-2">
-        <Skeleton className="h-4 w-3/4" />
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-3 w-1/4" />
-      </div>
-    </div>
-  </div>
-);
+import { NotificationSkeleton } from '../Skeleton/Notification.skeleton';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 
 const NotificationsFeed: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
@@ -68,7 +59,6 @@ const NotificationsFeed: React.FC = () => {
     }, {} as Record<string, number>);
   }, [data]);
 
-  // Selection handling
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       const newSelected = new Set(filteredNotifications.map(n => n.id));
@@ -102,7 +92,7 @@ const NotificationsFeed: React.FC = () => {
       });
       
       setSelectedNotifications(new Set());
-      refetch(); // Refresh the list
+      refetch(); 
     } catch (error) {
       toast({
         variant: "destructive",
@@ -127,7 +117,7 @@ const NotificationsFeed: React.FC = () => {
       });
       
       setSelectedNotifications(new Set());
-      refetch(); // Refresh the list
+      refetch(); 
     } catch (error) {
       toast({
         variant: "destructive",
@@ -149,40 +139,106 @@ const NotificationsFeed: React.FC = () => {
 
   return (
     <Card className="w-full mx-auto">
-      <CardHeader className="pb-0">
-        <div className="flex items-center justify-between mb-4">
-          <Tabs
-            defaultValue="all"
-            value={activeFilter}
-            onValueChange={(value) => setActiveFilter(value as FilterType)}
-            className="w-full"
-          >
-            <TabsList className="w-full justify-start gap-2">
-              {FILTER_TABS.map(({ value, label, icon: Icon }) => (
-                <TabsTrigger
-                  key={value}
-                  value={value}
-                  className="flex items-center gap-2 px-4 py-2 data-[state=active]:bg-orange-600 data-[state=active]:text-white"
-                >
-                  <Icon size={16} />
-                  <span>{label}</span>
-                  {unreadCounts[value] > 0 && (
-                    <Badge 
-                      variant="secondary" 
-                      className="ml-1 bg-white px-2 text-orange-600"
+      <CardHeader className="pb-0 px-2 sm:px-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 w-full">
+          {/* Desktop Tabs */}
+          <div className="hidden sm:block w-full">
+            <Tabs
+              defaultValue="all"
+              value={activeFilter}
+              onValueChange={(value) => setActiveFilter(value as FilterType)}
+              className="w-full"
+            >
+              <TabsList className="w-full justify-start gap-2 overflow-x-auto flex-nowrap">
+                {FILTER_TABS.map(({ value, label, icon: Icon }) => (
+                  <TabsTrigger
+                    key={value}
+                    value={value}
+                    className="flex items-center gap-2 px-3 py-1.5 whitespace-nowrap data-[state=active]:bg-orange-600 data-[state=active]:text-white"
+                  >
+                    <Icon size={16} />
+                    <span>{label}</span>
+                    {unreadCounts[value] > 0 && (
+                      <Badge 
+                        variant="secondary" 
+                        className="ml-1 bg-white px-1.5 text-orange-600 text-xs"
+                      >
+                        {unreadCounts[value]}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {/* Mobile Dropdown Filter */}
+          <div className="flex items-center justify-between w-full sm:hidden mb-3">
+            <div className="flex items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Filter size={16} />
+                    <span>{FILTER_TABS.find(tab => tab.value === activeFilter)?.label || 'All'}</span>
+                    {unreadCounts[activeFilter] > 0 && (
+                      <Badge className="ml-1 bg-orange-600 text-white px-1.5 text-xs">
+                        {unreadCounts[activeFilter]}
+                      </Badge>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  {FILTER_TABS.map(({ value, label, icon: Icon }) => (
+                    <DropdownMenuItem 
+                      key={value}
+                      onClick={() => setActiveFilter(value as FilterType)}
+                      className="flex items-center gap-2"
                     >
-                      {unreadCounts[value]}
-                    </Badge>
-                  )}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </Tabs>
+                      <Icon size={16} />
+                      <span>{label}</span>
+                      {unreadCounts[value] > 0 && (
+                        <Badge className="ml-1 bg-orange-600 text-white px-1.5 text-xs">
+                          {unreadCounts[value]}
+                        </Badge>
+                      )}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {selectedNotifications.size > 0 && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleMarkAsRead}
+                  disabled={isProcessing}
+                  className="p-1 h-8 sm:p-2"
+                  title="Mark as Read"
+                >
+                  <Check className="h-4 w-4" />
+                  <span className="sr-only sm:not-sr-only sm:ml-1.5">Read</span>
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleBulkDelete}
+                  disabled={isProcessing}
+                  className="p-1 h-8 sm:p-2"
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  <span className="sr-only sm:not-sr-only sm:ml-1.5">Delete</span>
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Selection controls */}
         {filteredNotifications.length > 0 && (
-          <div className="flex items-center justify-between py-2 px-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between py-2 px-3 sm:px-4 bg-gray-50 rounded-lg">
             <div className="flex items-center gap-2">
               <Checkbox
                 checked={
@@ -190,23 +246,24 @@ const NotificationsFeed: React.FC = () => {
                   selectedNotifications.size === filteredNotifications.length
                 }
                 onCheckedChange={handleSelectAll}
-                className="h-5 w-5"
+                className="h-4 w-4 sm:h-5 sm:w-5"
               />
-              <span className="text-sm text-gray-600">
+              <span className="text-xs sm:text-sm text-gray-600">
                 {selectedNotifications.size} selected
               </span>
             </div>
             
+            {/* Desktop action buttons */}
             {selectedNotifications.size > 0 && (
-              <div className="flex items-center gap-2 gap">
+              <div className="hidden sm:flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleMarkAsRead}
                   disabled={isProcessing}
-                  className="flex items-center gap-x-2"
+                  className="flex items-center gap-x-1.5 text-sm"
                 >
-                  <Check className="h-2 w-2" />
+                  <Check className="h-3 w-3 sm:h-4 sm:w-4" />
                   Mark as Read
                 </Button>
                 <Button
@@ -214,9 +271,9 @@ const NotificationsFeed: React.FC = () => {
                   size="sm"
                   onClick={handleBulkDelete}
                   disabled={isProcessing}
-                  className="flex items-center gap-x-2"
+                  className="flex items-center gap-x-1.5 text-sm"
                 >
-                  <Trash2 className="h-2 w-2" />
+                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                   Delete
                 </Button>
               </div>
@@ -225,7 +282,7 @@ const NotificationsFeed: React.FC = () => {
         )}
       </CardHeader>
 
-      <CardContent className="mt-4 rounded-lg">
+      <CardContent className="mt-2 sm:mt-4 px-2 sm:px-6">
         <div className="divide-y divide-gray-200">
           {isLoading ? (
             <>
@@ -234,9 +291,9 @@ const NotificationsFeed: React.FC = () => {
               <NotificationSkeleton />
             </>
           ) : filteredNotifications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Bell className="mx-auto h-12 w-12 text-gray-400" />
-              <p className="mt-2">No {activeFilter === 'all' ? '' : activeFilter} notifications</p>
+            <div className="p-4 sm:p-8 text-center text-gray-500">
+              <Bell className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+              <p className="mt-2 text-sm sm:text-base">No {activeFilter === 'all' ? '' : activeFilter} notifications</p>
             </div>
           ) : (
             filteredNotifications.map((notification) => (

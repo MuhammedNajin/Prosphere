@@ -51,7 +51,7 @@ class NotificationApi {
 
   static bulkDeleteNotification = async (ids: string[]) => {
      console.log("id sssssss", ids);
-      await this.axios.delete(`/api/v1/notifications`, { data: { ids }})
+      await this.axios.put(`/api/v1/notifications`, { ids})
      try {
       
      } catch (error) {
@@ -60,9 +60,9 @@ class NotificationApi {
      }
   }
 
-  static readAllNotification = async (userId: string[]) => {
-     console.log("id sssssss", userId);
-      await this.axios.put(`/api/v1/notifications/read-all`, { userId })
+  static readAllNotification = async (ids: string[]) => {
+     console.log("id sssssss", ids);
+      await this.axios.put(`/api/v1/notifications/read-all`, { ids })
      try {
       
      } catch (error) {
@@ -70,8 +70,6 @@ class NotificationApi {
         throw error;
      }
   }
-
-
 
 }
 

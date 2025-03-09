@@ -13,10 +13,23 @@ import { logoutThuck } from '@/redux/action/actions';
 import { useNavigate } from 'react-router-dom';
 import { useGetUser } from '@/hooks/useGetUser';
 import { AppDispatch } from '@/redux/store';
+import { useQuery } from 'react-query';
+import { ProfileApi } from '@/api/Profile.api';
 
 const Dropdown = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const loggedUser = useGetUser();
+  
+  const { data: avatarUrl, isLoading } = useQuery({
+    queryKey: ["avatar", loggedUser?.avatar],
+    queryFn: () => {
+      if (!loggedUser?.avatar) return null;
+      return ProfileApi.getUploadedFile(loggedUser.avatar);
+    },
+    enabled: !!loggedUser?.avatar,
+  });
+  
   const logoutHandler = () => {
     dispatch(logoutThuck())
       .unwrap()
@@ -25,21 +38,25 @@ const Dropdown = () => {
       });
   };
 
-  const loggedUser = useGetUser()
-  const user = {
-    name: loggedUser?.username || 'Maria Anderson',
-    image: 'https://github.com/shadcn.png',
-  };
+  // Determine the image source based on API result or fallback
+  const imageSource = avatarUrl || '/profleIcon.png';
+  const username = loggedUser?.username || 'Maria Anderson';
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="flex bg-gray-100 items-center gap-2 px-2 py-1 md:px-2 md:py-2 hover:bg-gray-200 rounded-full transition-colors outline-none shadow-sm min-w-28 justify-between">
         <Avatar className="h-8 w-8">
-          <AvatarImage src={user.image} alt={user.name} />
-          <AvatarFallback>{user.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+          {isLoading ? (
+            <AvatarFallback>{username.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+          ) : (
+            <>
+              <AvatarImage src={imageSource} alt={username} />
+              <AvatarFallback>{username.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+            </>
+          )}
         </Avatar>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium  hidden sm:inline">{user.name}</span>
+          <span className="text-sm font-medium hidden sm:inline">{username}</span>
           <ChevronDown className="h-4 w-4 text-gray-500" />
         </div>
       </DropdownMenuTrigger>
