@@ -28,6 +28,7 @@ export const signUpFormSchema = z.object({
 
   export const resetPasswordSchema = z
   .object({
+    id: z.string().optional(),
     oldPassword: z.string().min(8, "Old password must be at least 8 characters."),
     newPassword: z.string().min(8, "New password must be at least 8 characters."),
   })

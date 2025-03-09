@@ -4,9 +4,7 @@ import { ResetFormData, signupFormData } from "@/types/formData";
 import { googleSignUpFlow, IOtp } from "@/types/user";
 
 
-interface ResetPasswordData extends ResetFormData {
-  id: string;
-}
+
 class ApiService {
   private static axios: AxiosInstance = axiosInstance;
 
@@ -159,7 +157,7 @@ class ApiService {
     } catch (error) {}
   };
 
-  static changePassword = async (data: ResetPasswordData) => {
+  static changePassword = async (data: ResetFormData) => {
 
       return await this.axios.post("/api/v1/auth/reset-password", data);
   

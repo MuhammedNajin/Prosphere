@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,6 +29,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from 'react-query';
 import { CompanyApi } from '@/api';
+import { User } from '@/types/company';
 
 // Validation schema
 const formSchema = z.object({
@@ -56,7 +57,7 @@ const InterviewSchedulerModal = () => {
     defaultValues: {
       title: "",
       scheduledTime: "",
-      duration: "60",
+      duration: 60,
       interviewType: undefined,
       locationOrLink: "",
       interviewerId: "",
@@ -83,7 +84,7 @@ const InterviewSchedulerModal = () => {
 
   const getSelectedInterviewer = () => {
     const interviewerId = form.watch("interviewerId");
-    return employees.find(emp => emp.id === interviewerId);
+    return employees.find((emp: any) => emp.id === interviewerId);
   };
 
   return (
@@ -227,8 +228,8 @@ const InterviewSchedulerModal = () => {
                             ) : isError ? (
                               <SelectItem value="error">Error loading employees</SelectItem>
                             ) : employees.length > 0 ? (
-                              employees.map(({userId}) => (
-                                <SelectItem key={userId.id} value={userId._id}>
+                              employees.map(({userId}: {userId: User}) => (
+                                <SelectItem key={userId._id} value={userId._id}>
                                   {userId.username}
                                 </SelectItem>
                               ))
