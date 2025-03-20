@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: najinn675943/prosphere_auth_service
+          env:
+            - name: MONGO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MONGO_URL
+            - name: SENDER_MAIL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: SENDER_MAIL
+            - name: PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: PASS
+            - name: TOKEN_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: TOKEN_SECRECT
+            - name: URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: URL
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_EMAIL
+            - name: ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_PASS
+            - name: ADMIN_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_SECRECT
+            - name: ADMIN_REFRESH_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_REFRESH_SECRECT
+            - name: REFRESH_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: REFRESH_SECRECT
+            - name: PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: AUTH_PORT
+            - name: MESSAGE_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MESSAGE_BROKERS
+            - name: AUTH_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: AUTH_CLIENT_ID
+            - name: REDIS_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: REDIS_URL
+            - name: PROD_FRONTEND_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: PROD_FRONTEND_DOMAIN        
+            - name: USER_GRPC_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: USER_GRPC_DOMAIN
+            # Keep only one NODE_ENV variable
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: NODE_ENV             
+          ports:
+            - containerPort: 7000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-srv
+spec:
+  type: ClusterIP
+  selector:
+    app: auth
+  ports:
+    - protocol: TCP
+      port: 7000
+      targetPort: 7000

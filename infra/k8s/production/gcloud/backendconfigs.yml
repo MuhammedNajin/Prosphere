@@ -1,0 +1,69 @@
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: auth-socket-config
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /health
+    port: 7000
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: notification-socket-config
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /health
+    port: 4000
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: chat-socket-config
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /health
+    port: 8080
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: api-gateway-config
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /health
+    port: 6002
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: payment-config
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 1
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /health
+    port: 3005

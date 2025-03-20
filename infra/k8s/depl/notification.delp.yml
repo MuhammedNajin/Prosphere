@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+ name: notification-depl
+spec:
+ replicas: 1
+ selector:
+   matchLabels:
+     app: notification
+ template:
+   metadata:
+     labels:
+       app: notification
+   spec:
+     containers:
+       - name: notification
+         image: najinn675943/prosphere_notification_service
+         env:
+           - name: MONGO_URL
+             valueFrom:
+               secretKeyRef:
+                 name: app-secrets
+                 key: MONGO_URL
+           - name: PORT
+             valueFrom:
+               secretKeyRef:
+                 name: app-secrets
+                 key: NOTIFICATION_PORT
+           - name: MESSAGE_BROKERS
+             valueFrom:
+               secretKeyRef:
+                 name: app-secrets
+                 key: MESSAGE_BROKERS
+           - name: PROD_FRONTEND_DOMAIN
+             valueFrom:
+               secretKeyRef:
+                 name: app-secrets
+                 key: PROD_FRONTEND_DOMAIN      
+         ports:
+           - containerPort: 4000
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+ name: notification-srv
+spec:
+ type: ClusterIP
+ selector:
+   app: notification
+ ports:
+   - protocol: TCP
+     port: 4000
+     targetPort: 4000

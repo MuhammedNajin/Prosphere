@@ -1,0 +1,52 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-srv
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-body-size: 20m
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - mesfashion.shop
+    secretName: prosphere-tls
+  rules:
+  - host: mesfashion.shop
+    http:
+      paths:
+      - path: /api/v1/payment/webhook
+        pathType: Prefix
+        backend:
+          service:
+            name: payment-srv
+            port:
+              number: 3005
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway-srv
+            port:
+              number: 6002
+      - path: /auth-socket
+        pathType: Prefix
+        backend:
+          service:
+            name: auth-srv
+            port:
+              number: 7000
+      - path: /notification-socket
+        pathType: Prefix
+        backend:
+          service:
+            name: notification-srv
+            port:
+              number: 4000
+      - path: /chat-socket
+        pathType: Prefix
+        backend:
+          service:
+            name: chat-srv
+            port:
+              number: 8080
