@@ -158,9 +158,9 @@ const ApplicantProfile: React.FC = () => {
               <NavigationLink to="profile">Applicant Profile</NavigationLink>
               <NavigationLink to="resume">Resume</NavigationLink>
               <NavigationLink to="hiringstage">Hiring Progress</NavigationLink>
-                <NavigationLink to="interview-schedule">
+                {/* <NavigationLink to="interview-schedule">
                 Interview Schedule
-                </NavigationLink>
+                </NavigationLink> */}
             </ul>
           </nav>
           <Outlet
