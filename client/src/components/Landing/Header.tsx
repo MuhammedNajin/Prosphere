@@ -209,10 +209,9 @@ const ProsphereHome = () => {
                 <div className="absolute -bottom-10 -right-10 w-64 h-64 bg-orange-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
                 <div className="relative">
                   <img 
-                    src="/landingpage.png" 
+                    src="/banner-left.png" 
                     alt="Prosphere Platform" 
-                    className="rounded-xl shadow-sm
-                     "
+                    className="rounded-xl shadow-sm"
                   />
                 </div>
               </div>

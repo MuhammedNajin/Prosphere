@@ -19,7 +19,7 @@ class NotificationApi {
   static getNotificationCount = async (userId: string) => {
     console.log("getNotification", userId);
     try {
-       const response = await this.axios.get(`/api/v1/notifications/count/${userId}`);
+       const response = await this.axios.get(`/api/v1/notifications/unread/${userId}`);
        return response.data?.data
     } catch (error) {
         console.log(" errr", error);
