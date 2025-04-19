@@ -1,16 +1,14 @@
 import mongoose, { Model, Document } from "mongoose";
 import { NotificationAttrs, NotificationDoc } from "@/shared/types/interface";
 
-
 export interface NotificationModel extends Model<NotificationDoc> {
   build(attrs: NotificationAttrs): NotificationDoc;
 }
 
-
 const NotificationSchema = new mongoose.Schema<NotificationDoc, NotificationModel>(
   {
     recipient: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: "User",
       required: [true, "Recipient is required"],
       index: true
@@ -18,9 +16,20 @@ const NotificationSchema = new mongoose.Schema<NotificationDoc, NotificationMode
 
     type: {
       type: String,
-      enum: ["application_status", "new_job", "interview_invite", "profile_view", "message", "reminder"],
+      enum: ["application", "job", "interview_invite", "profile_view", "message", "reminder"],
       required: [true, "Notification type is required"],
       index: true
+    },
+
+    context: {
+       type: String,
+       enum: ["user", "company"],
+       default: 'user'
+    },
+
+    companyId: {
+       type: mongoose.Schema.Types.ObjectId,
+       default: null
     },
 
     title: {
@@ -40,22 +49,22 @@ const NotificationSchema = new mongoose.Schema<NotificationDoc, NotificationMode
     data: {
       jobId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Job",
         default: null
       },
       applicationId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Application",
         default: null
       },
       messageId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Message",
         default: null
       },
       employerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        default: null
+      },
+      conversationId: {
+        type: String,
         default: null
       }
     },
@@ -108,36 +117,8 @@ const NotificationSchema = new mongoose.Schema<NotificationDoc, NotificationMode
 NotificationSchema.index({ recipient: 1, status: 1, createdAt: -1 });
 NotificationSchema.index({ recipient: 1, isDeleted: 1 });
 
-NotificationSchema.methods.markAsRead = async function() {
-  this.status = "read";
-  this.readAt = new Date();
-  return await this.save();
-};
-
-NotificationSchema.methods.archive = async function() {
-  this.status = "archived";
-  this.archivedAt = new Date();
-  return await this.save();
-};
-
-NotificationSchema.methods.softDelete = async function() {
-  this.isDeleted = true;
-  this.deletedAt = new Date();
-  return await this.save();
-};
-
 NotificationSchema.statics.build = (attrs: NotificationAttrs) => {
   return new Notification(attrs);
-};
-
-NotificationSchema.statics.getUnreadNotifications = async function(recipientId: string) {
-  return await this.find({
-    recipient: recipientId,
-    status: "unread",
-    isDeleted: false
-  })
-    .sort({ createdAt: -1 })
-    .exec();
 };
 
 const Notification = mongoose.model<NotificationDoc, NotificationModel>(

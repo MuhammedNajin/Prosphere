@@ -3,7 +3,9 @@ import http from 'http';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import cors from 'cors';
-
+import AppRouter from '@/presentation/routes';
+import notificationRepository from '../repository/notification.repository';
+import { NotFoundError } from '@muhammednajinnprosphere/common';
 dotenv.config();
 
 class Server {
@@ -11,12 +13,12 @@ class Server {
   public app: express.Application;
   public httpServer: http.Server;
   private port: number;
-
+  private routes;
   private constructor() {
     this.app = express();
     this.port = parseInt(process.env.PORT || '4000');
     this.httpServer = http.createServer(this.app);
-    
+     this.routes = new AppRouter(notificationRepository).router
   }
 
   public static getInstance(): Server {
@@ -44,10 +46,10 @@ class Server {
   }
 
   private async connectDatabase(): Promise<void> {
-    const mongoUri = process.env.MONGO_URI ;
+    const MONGO_URL = process.env.MONGO_URL ;
 
     try {
-      await mongoose.connect(mongoUri!, {
+      await mongoose.connect(`${MONGO_URL!}/NOTIFICATION-SERVICE`, {
         autoIndex: true,
         serverSelectionTimeoutMS: 5000,
         retryWrites: true
@@ -82,10 +84,14 @@ class Server {
        next();
     })
 
-    this.app.use(cors({
-      origin: ["http://localhost:5173"],
-      credentials: true
-  }))
+    const dev_domain = process.env.DEV_FRONTEND_DOMAIN;
+    const prod_domain = process.env.PROD_FRONTEND_DOMAIN;
+    this.app.use(
+      cors({
+        origin:[ dev_domain!, prod_domain! ],
+        credentials: true,
+      })
+    );
 
     this.app.get('/health', (req, res) => {
       res.status(200).json({
@@ -94,7 +100,12 @@ class Server {
       });
     });
 
-  
+    this.app.use('/api/v1', this.routes);
+
+    this.app.use('*', () => {
+       throw new NotFoundError()
+    })
+
   }
 
   public async shutdown(): Promise<void> {

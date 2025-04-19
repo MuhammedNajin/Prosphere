@@ -1,8 +1,9 @@
 import mongoose, { Document } from "mongoose";
+import { NotificationType } from "@muhammednajinnprosphere/common";
 
 export interface NotificationAttrs {
     recipient: string;
-    type: "application_status" | "new_job" | "interview_invite" | "profile_view" | "message" | "reminder";
+    type: NotificationType;
     title: string;
     message: string;
     data?: {
@@ -15,8 +16,8 @@ export interface NotificationAttrs {
   }
 
   export interface NotificationDoc extends Document {
-    recipient: mongoose.Types.ObjectId;
-    type: "application_status" | "new_job" | "interview_invite" | "profile_view" | "message" | "reminder";
+    recipient: String;
+    type: NotificationType;
     title: string;
     message: string;
     data: {
@@ -25,6 +26,8 @@ export interface NotificationAttrs {
       messageId?: mongoose.Types.ObjectId;
       employerId?: mongoose.Types.ObjectId;
     };
+    context: string;
+    companyId: mongoose.Types.ObjectId;
     status: "unread" | "read" | "archived";
     actionUrl: string | null;
     readAt: Date | null;

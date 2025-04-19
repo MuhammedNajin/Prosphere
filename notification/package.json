@@ -14,7 +14,7 @@
   "dependencies": {
     "@grpc/grpc-js": "^1.12.2",
     "@grpc/proto-loader": "^0.7.13",
-    "@muhammednajinnprosphere/common": "^1.0.87",
+    "@muhammednajinnprosphere/common": "^1.0.118",
     "@types/cors": "^2.8.17",
     "@types/mongoose": "^5.11.96",
     "cookie-parser": "^1.4.6",
