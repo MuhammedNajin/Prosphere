@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Dependencies } from '@domain/entities/interfaces';
+import { StatusCode } from '@muhammednajinnprosphere/common';
 
 
 
@@ -15,7 +16,7 @@ import { Dependencies } from '@domain/entities/interfaces';
           if(!blocked) {
             throw new Error("something went wrong")
           }
-            res.status(200).json({ blocked: true });
+            res.status(StatusCode.OK).json({ blocked: true });
         } catch (error) {
             
         }

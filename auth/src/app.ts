@@ -4,8 +4,6 @@ import dependecies from '@infra/config/dependencies'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { errorHandler, NotFoundError } from '@muhammednajinnprosphere/common';
-import { createServer } from 'http';
-
 
 const app = express();
 
@@ -37,8 +35,6 @@ app.get('/health', (req, res) => {
 });
 
 app.use("/api/v1", routes(dependecies));
-
-
 
 app.use("*", (req: Request, res: Response) => {
     throw new NotFoundError()

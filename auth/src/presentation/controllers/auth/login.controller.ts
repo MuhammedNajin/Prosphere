@@ -1,9 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import { Dependencies } from '@domain/entities/interfaces';
 import Token from '@infra/libs/token';
-import { BadRequestError } from '@muhammednajinnprosphere/common';
+import { BadRequestError, StatusCode } from '@muhammednajinnprosphere/common';
 import { winstonLogger } from '@/presentation/middleware/winstonLogger';
 import { TOKEN_TYPE } from '@/shared/types/enums';
+
+
 
  const loginController = (dependencies: Dependencies) => {
     const {
@@ -53,7 +55,9 @@ import { TOKEN_TYPE } from '@/shared/types/enums';
                 sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
               });
 
-            res.status(200).json({ userCredential, ...profile });
+            res
+             .status(StatusCode.OK)
+             .json({ userCredential, ...profile });
             
         } catch (error) {
             console.log(error);

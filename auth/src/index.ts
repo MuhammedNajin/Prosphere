@@ -6,9 +6,6 @@ import { redisConnection } from './infra/database/redis/connection';
 import { createServer } from 'http';
 import { SocketManager } from './infra/socket';
 
-
-
-
 ( async function start() {
     try {
         redisConnection();
@@ -16,7 +13,6 @@ import { SocketManager } from './infra/socket';
        await kafkaConnect();
        const httpServer = createServer(app);
        SocketManager.getInstance(httpServer);
-
 
        const PORT = process.env.port || 7000
        httpServer.listen(PORT, () => {
@@ -30,7 +26,6 @@ import { SocketManager } from './infra/socket';
         process.exit(1)
     }
     
-  
 })();
 
 

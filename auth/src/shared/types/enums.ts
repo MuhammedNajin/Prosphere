@@ -1,5 +1,3 @@
-
-
 export enum OTP_ERROR_STATE {
      INVALID = 'INVALID',
      EXPIRIED = 'EXPIRED'
@@ -17,5 +15,4 @@ export enum TOKEN_TYPE {
     ADMIN_REFRESH_TOKEN = 'adminRefresh',
     COMPANY_ACCESS_TOKEN = 'companyAccess',
     COMPANY_REFRESH_TOKEN = 'companyRefresh',
-
 } 
