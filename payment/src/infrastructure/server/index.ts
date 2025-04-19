@@ -59,10 +59,14 @@ class Server {
        next();
     })
 
-    this.app.use(cors({
-      origin: ["http://localhost:5173"],
-      credentials: true
-  }))
+    const dev_domain = process.env.DEV_FRONTEND_DOMAIN;
+    const prod_domain = process.env.PROD_FRONTEND_DOMAIN;
+    this.app.use(
+      cors({
+        origin:[ dev_domain!, prod_domain! ],
+        credentials: true,
+      })
+    );
 
     this.app.get('/health', (req, res) => {
       res.status(200).json({
@@ -75,6 +79,10 @@ class Server {
 
 
     // this.app.use(logger);
+    this.app.use((req, res, next) => {
+       console.log("request recieved", req.url, req.method);
+       next()
+    })
     this.app.use('/api/v1', router);
   }
 

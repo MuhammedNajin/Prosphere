@@ -1,5 +1,5 @@
-import Stripe from "stripe";
+import { ICreatePaymentParams } from "@/shared/types/payment.interface";
 
 export interface ICreatePaymentCase {
-    execute(event: Stripe.Event): Promise<void>
+  execute(data: ICreatePaymentParams): Promise<string>;
 }

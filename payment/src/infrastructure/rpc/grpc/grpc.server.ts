@@ -195,8 +195,9 @@ export class GrpcServer {
   }
 
   public start(port: number = 50052) {
+    const grpcDomain = process.env.PAYMENT_GRPC_PATH ?? `0.0.0.0:${port}`
     this.server.bindAsync(
-      `0.0.0.0:${port}`,
+      grpcDomain,
       grpc.ServerCredentials.createInsecure(),
       (err: Error | null) => {
         if (err) {

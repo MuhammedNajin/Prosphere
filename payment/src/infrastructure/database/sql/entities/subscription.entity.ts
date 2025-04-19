@@ -53,13 +53,4 @@ export class Subscription {
 
   @UpdateDateColumn()
   updatedAt: Date;
-
-  isActive(): boolean {
-    return (
-      this.status === SubscriptionStatus.ACTIVE &&
-      new Date() <= this.endDate &&
-      (!this.isTrial || new Date() <= this.trialEndsAt)
-    );
-  }
-
 }

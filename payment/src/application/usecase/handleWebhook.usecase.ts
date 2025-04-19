@@ -9,6 +9,8 @@ import { ICompanyRepository } from "@/domain/IRespository/ICompany.repository";
 import { ICompany } from "@/shared/types/company.interface";
 import { IPaymentRepository } from "@/domain/IRespository/IPayment.repository";
 import { PaymentStatus } from "@/shared/types/enums";
+import { SubscriptionType } from "@/shared/types/payment.interface";
+import { ISubscription } from "@/shared/types/subscription.interface";
 
 
 export class HandleWebhookUseCase implements IHandleWebhookUseCase {
@@ -18,13 +20,13 @@ export class HandleWebhookUseCase implements IHandleWebhookUseCase {
 
   public async execute(
      event: Stripe.Event
-  ): Promise<Subscription |null> {
+  ): Promise<ISubscription |null> {
 
     try {
       const session = event.data.object as Stripe.Checkout.Session;
 
       const { metadata, created, id: paymentId,   } = session
-      const { id, planId, companyId,} = metadata as any
+      const { id, planId, companyId, subscriptionType } = metadata as any
     
       const plan = await this.planRepo.getPlan(planId) as IPlan
       const company = await this.companyRepo.getCompany(companyId) as ICompany
@@ -43,9 +45,23 @@ export class HandleWebhookUseCase implements IHandleWebhookUseCase {
       switch(event.type) {
 
         case "checkout.session.completed":
-          subscription = await this.subscriptionRepo.create(subscriptionDTO)
-          await this.paymentRepo.create(subscription, PaymentStatus.SUCCESS)
-          return subscription;
+
+          if(subscriptionType === SubscriptionType.UPGRADE) {
+               subscription = await this.subscriptionRepo.upgradeSubscription({
+                 company,
+                 plan,
+                 companyId,
+               })
+               if(!subscription) {
+                 return subscription
+               }
+                await this.paymentRepo.create(subscription, PaymentStatus.SUCCESS)
+                return subscription;
+          } else {
+            subscription = await this.subscriptionRepo.create(subscriptionDTO)
+            await this.paymentRepo.create(subscription, PaymentStatus.SUCCESS)
+            return subscription;
+          }
         case "checkout.session.async_payment_failed" :
           subscription = await this.subscriptionRepo.create(subscriptionDTO)
           await this.paymentRepo.create(subscription, PaymentStatus.FAILED)

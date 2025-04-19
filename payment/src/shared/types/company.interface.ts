@@ -11,10 +11,10 @@ export interface ICompany {
     id: number;
     companyId: string;
     name: string;
-    description?: string;
-    logo?: string;
-    contactInfo?: ICompanyContactInfo;
+    description: string;
+    logo: string;
     owner: IUser;
-    createdAt?: Date;
-    updatedAt?: Date;
+    subscription: ISubscription
+    createdAt: Date;
+    updatedAt: Date;
 }

@@ -43,6 +43,7 @@ class PaymentRouter {
     this.router.use(express.json());
     this.router.post("/payment", this.paymentController.create);
     this.router.get("/payment/chekout-session", this.checkOutSessionController.check);
+
   }
 }
 

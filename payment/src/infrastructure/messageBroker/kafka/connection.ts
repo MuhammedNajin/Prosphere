@@ -12,8 +12,10 @@ class MessageBroker {
   }
 
   async connect() {
-   
-    await this.kafka.connect('payment-service', ['localhost:29092'], 'payment-service-group');
+    const KAFKA_BROKER = process.env.MESSAGE_BROKERS || "localhost:29092";
+    const KAFKA_GROUP = process.env.KAFKA_GROUP || "payment-service-group";
+    const KAFKA_CLIENT = process.env.USER_CLIENT_ID || "payment-service";
+    await this.kafka.connect(KAFKA_CLIENT, [KAFKA_BROKER], KAFKA_GROUP);
 
     console.log("connected to kafka");
     

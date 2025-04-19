@@ -15,19 +15,18 @@ export interface ISubscriptionUsageStats {
     videoCallsUsed: number;
     featuredJobsUsed: number;
     lastResetDate: Date;
+    trialUsage: {
+        jobPostsUsed: number;
+        videoCallsUsed: number;
+        messagesUsed: number;
+      };
 }
 
 export interface IPlanSnapshot {
+    id: number;
     name: string;
-    type: PlanType;
     price: number;
-    featuresLimit: {
-        jobPostLimit: number;
-        resumeAccess: number;
-        videoCallLimit: number;
-        candidateNotes: boolean;
-    };
-
+    durationInDays: number;
     features: string[];
 }
 
@@ -46,20 +45,18 @@ export interface ISubscription {
     startDate: Date;
     endDate: Date;
     status: SubscriptionStatus;
-    usageStats: ISubscriptionUsageStats;
     amountPaid: number;
-    autoRenew: boolean;
     isTrial: boolean;
-    trialEndsAt: Date | null;
-    cancelledAt: Date | null;
-    cancellationReason: string | null;
+    trialEndsAt: Date;
+    cancelledAt: Date;
+    cancellationReason: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
 export interface ISubscriptionUsageStats {
     jobPostsUsed: number;
-    resumeDownloads: number;
+
     videoCallsUsed: number;
-    featuredJobsUsed: number;
+
 }

@@ -38,7 +38,6 @@ export class WebhookPaymentController {
         throw new BadRequestError("Stripe signature missing");
       }
 
-      // Use the raw buffer directly from the request
       const payload = req.body.toString()
 
       console.log(" data ", '/n', signature, '\n', payload, '\n', endpointSecret, req.body);
@@ -55,7 +54,7 @@ export class WebhookPaymentController {
       const session = event.data.object as Stripe.Checkout.Session;
 
       const { metadata, created, id: paymentId,   } = session
-      const { id, planId, companyId,} = metadata as any
+      const { id, planId, companyId, subscriptionType } = metadata as any
 
      const subscription =  await new HandleWebhookUseCase(
         this.subscriptionRepo,
@@ -72,6 +71,7 @@ export class WebhookPaymentController {
           duration: subscription.planSnapshot.durationInDays,
           endDate: subscription.endDate,
           startDate: subscription.startDate,
+          subscriptionType,
           isSubscribed: true
          })
       }

@@ -7,7 +7,6 @@ export enum PlanType {
     ACTIVE = 'ACTIVE',
     CANCELLED = 'CANCELLED',
     EXPIRED = 'EXPIRED',
-    SUSPENDED = 'SUSPENDED',
     TRIAL = 'TRIAL'
   }
   
@@ -15,4 +14,10 @@ export enum PlanType {
     PENDING = 'pending',
     SUCCESS = 'success',
     FAILED = 'failed'
+  }
+
+  export enum UsageMetrics {
+    JobPostsUsed = "jobPostsUsed",
+    VideoCallsUsed = "videoCallsUsed",
+    MessagesUsed = "messagesUsed",
   }

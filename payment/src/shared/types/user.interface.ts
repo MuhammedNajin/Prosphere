@@ -4,7 +4,6 @@ export interface IUser {
     userId: string;
     email: string;
     username: string;
-    companies: ICompany[];
     createdAt: Date;
     updatedAt: Date;
 }

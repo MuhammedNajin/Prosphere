@@ -3,5 +3,5 @@ import { ISubscription } from "@/shared/types/subscription.interface";
 import Stripe from "stripe";
 
 export interface IHandleWebhookUseCase {
-    execute(event: Stripe.Event): Promise<Subscription | null>
+    execute(event: Stripe.Event): Promise<ISubscription | null>
 }
