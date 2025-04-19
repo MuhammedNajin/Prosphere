@@ -38,7 +38,7 @@ export interface Education {
   fieldOfStudy?: string;
   startDate?: Date;
   endDate?: Date;
-  currentlyStudying?: string;
+  currentlyStudying?: boolean;
   grade?: string;
 }
 
@@ -181,7 +181,8 @@ const profileSchema = new mongoose.Schema({
       },
 
       currentlyStudying: {
-        type: String,
+        type: Boolean,
+        default: true,
       },
 
       grade: {
@@ -200,7 +201,9 @@ const profileSchema = new mongoose.Schema({
       },
     },
   ],
-});
+},
+  { timestamps: true }
+);
 
 profileSchema.statics.build = (attrs: profileAttrs) => {
   return new Profile(attrs);

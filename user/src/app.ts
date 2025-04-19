@@ -9,10 +9,18 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 const app = express();
-app.use(cors({
-    origin: ["http://localhost:5173"],
-    credentials: true
-}))
+
+const dev_domain = process.env.DEV_FRONTEND_DOMAIN;
+const prod_domain = process.env.PROD_FRONTEND_DOMAIN;
+
+
+app.use(
+  cors({
+    origin:[ dev_domain!, prod_domain! ],
+    credentials: true,
+  })
+);
+
 app.use(cookieParser());
 app.use(express.json());
 app.use((req, res,  next) => {

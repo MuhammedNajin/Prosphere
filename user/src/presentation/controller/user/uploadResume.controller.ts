@@ -15,20 +15,17 @@ export const uploadResumeController = (dependencies: any) => {
   ) => {
     try {
       console.log("files", req.file);
-      
-      const { id } = JSON.parse(req.headers['x-user-data'] as string)
+
+      const { id } = JSON.parse(req.headers["x-user-data"] as string);
       const resume = await uploadResumeUseCase(dependencies).execute({
         file: req.file,
         id,
       });
 
-      res
-       .status(StatusCode.CREATED)
-       .json({ resume });
-       
+      res.status(StatusCode.CREATED).json({ resume });
     } catch (error) {
       console.log(error);
-      next(error)
+      next(error);
     }
   };
   return uploadResume;

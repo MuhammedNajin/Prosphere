@@ -24,8 +24,6 @@ export class GrpcServer {
   private dependencies: any;
   constructor(dependencies: any) {
     try {
-        
-        
       this.dependencies = dependencies;
       const PROTO_PATH = path.resolve("node_modules/@muhammednajinnprosphere/common/src/protoFiles/user.proto");
       const packageDefinition = protoLoader.loadSync(PROTO_PATH, {});
@@ -66,6 +64,7 @@ export class GrpcServer {
         // console.log("profile", profile, profile.resumeKey);
         const response = {
             resumeKey: profile?.resumeKey || [],
+            avatar: profile?.profileImageKey
         }
         console.log("resumekey", response)
         callback(null, response);
@@ -91,8 +90,9 @@ export class GrpcServer {
   }
 
   public start(port: number = 50051) {
+    const grpcDomain = process.env.USER_GRPC_PATH ?? `0.0.0.0:${port}`
     this.server.bindAsync(
-      `0.0.0.0:${port}`,
+      grpcDomain,
       grpc.ServerCredentials.createInsecure(),
       (err: Error | null) => {
         if (err) {

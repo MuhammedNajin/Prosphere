@@ -6,6 +6,9 @@ import { updateProfileUseCase } from './user/updateProfile.usecase'
 import { uploadResumeUseCase} from './user/uploadResume.usecase'
 import { getUploadedFileUseCase } from './user/getUploadedFile.usecase'
 import { deleteFileUseCase } from "./user/deleteFile.usecase";
+import { deleteResumeUseCase } from "./user/deleteResume.usecase";
+import { searchUserUseCase } from "./user/searchUser.usecase";
+
 export {
     uploadProfilePhotoUseCase,
     aboutUseCase,
@@ -14,5 +17,7 @@ export {
     updateProfileUseCase,
     uploadResumeUseCase,
     getUploadedFileUseCase,
-    deleteFileUseCase
+    deleteFileUseCase,
+    deleteResumeUseCase,
+    searchUserUseCase,
 }

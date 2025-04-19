@@ -1,6 +1,5 @@
 import express from "express";
 import { profileController } from "../controller";
-import { requireAuth, curentUser } from '@muhammednajinnprosphere/common';
 import { upload } from "./middleware/multer";
 
 export const profileRoutes = (dependencies: any) => {
@@ -13,14 +12,21 @@ export const profileRoutes = (dependencies: any) => {
     getProfileController,
     updateProfileController,
     uploadResumeController,
-    getUploadedFileController
+    getUploadedFileController,
+    getFilesController,
+    deleteResumeController,
+    searchController
   } = profileController(dependencies);
     
+  router.get('/search', searchController);
   router.post('/photo', upload.single('image'), uploadProfilePhotoController);
   router.post('/resume', upload.single('resume'), uploadResumeController);
   router.get('/file/:key', getUploadedFileController);
   router.put('/about', aboutController);
   router.get('/:id', getProfileController);
   router.put('/:email', updateProfileController)
+  router.post('/files', getFilesController);
+  router.delete('/resume/:key',  deleteResumeController);
+
   return router;
 };
