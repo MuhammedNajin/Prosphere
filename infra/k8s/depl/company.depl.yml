@@ -76,6 +76,11 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: COMPANY_PORT
+            - name: ADMIN_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_SECRECT
           ports:
             - containerPort: 3003
 ---

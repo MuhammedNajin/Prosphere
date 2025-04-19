@@ -1,124 +1,150 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
- name: user-depl
+  name: user-depl
 spec:
- replicas: 1
- selector:
-   matchLabels:
-     app: user
- template:
-   metadata:
-     labels:
-       app: user
-   spec:
-     containers:
-       - name: user
-         image: najinn675943/prosphere_user_service
-         env:
-           - name: MONGO_URL
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: MONGO_URL
-           - name: MESSAGE_BROKERS
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: MESSAGE_BROKERS
-           - name: SENDER_MAIL
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: SENDER_MAIL
-           - name: PASS
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: PASS
-           - name: TOKEN_SECRECT
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: TOKEN_SECRECT
-           - name: NODE_ENV
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: NODE_ENV
-           - name: URL
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: URL
-           - name: ADMIN_EMAIL
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: ADMIN_EMAIL
-           - name: ADMIN_PASS
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: ADMIN_PASS
-           - name: ADMIN_SECRECT
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: ADMIN_SECRECT
-           - name: ADMIN_REFRESH_SECRECT
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: ADMIN_REFRESH_SECRECT
-           - name: REFRESH_SECRECT
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: REFRESH_SECRECT
-           - name: AUTH_PORT
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: AUTH_PORT
-           - name: USER_PORT
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: USER_PORT
-           - name: BUCKET_NAME
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: BUCKET_NAME
-           - name: BUCKET_REGION
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: BUCKET_REGION
-           - name: SECRET_KEY
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: SECRET_KEY
-           - name: USER_CLIENT_ID
-             valueFrom:
-               configMapKeyRef:
-                 name: app-config
-                 key: USER_CLIENT_ID
-           - name: PROD_FRONTEND_DOMAIN
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: PROD_FRONTEND_DOMAIN      
-           - name: port
-             valueFrom:
-               secretKeyRef:
-                 name: app-secrets
-                 key: USER_PORT     
-         ports:
-           - containerPort: 3002
-           - containerPort: 50051
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+        - name: user
+          image: najinn675943/prosphere_user_service
+          env:
+            - name: MONGO_URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MONGO_URL
+
+            - name: MESSAGE_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MESSAGE_BROKERS
+
+            - name: SENDER_MAIL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: SENDER_MAIL
+
+            - name: PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: PASS
+
+            - name: TOKEN_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: TOKEN_SECRECT
+
+            - name: NODE_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: NODE_ENV
+
+            - name: URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: URL
+
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_EMAIL
+
+            - name: ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_PASS
+
+            - name: ADMIN_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_SECRECT
+
+            - name: ADMIN_REFRESH_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_REFRESH_SECRECT
+
+            - name: REFRESH_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: REFRESH_SECRECT
+
+            - name: AUTH_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: AUTH_PORT
+
+            - name: USER_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: USER_PORT
+
+            - name: BUCKET_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: BUCKET_NAME
+
+            - name: BUCKET_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: BUCKET_REGION
+
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: SECRET_KEY
+
+            - name: ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ACCESS_KEY      
+
+            - name: USER_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: USER_CLIENT_ID
+
+            - name: PROD_FRONTEND_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: PROD_FRONTEND_DOMAIN      
+
+            - name: port
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: USER_PORT     
+
+          ports:
+            - containerPort: 3002
+            - containerPort: 50051
 
 ---
 apiVersion: v1
@@ -134,6 +160,7 @@ spec:
       protocol: TCP
       port: 3002
       targetPort: 3002
+
     - name: grpc
       protocol: TCP
       port: 50051

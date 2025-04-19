@@ -22,6 +22,9 @@ import MemberManagementPage from "@/components/company/Profile/People"
 import JobPosts from "@/components/company/Profile/Job"
 import UserRouteWrapper from "../protected/UserRouteWrapper"
 import InterviewList from "@/components/company/Application/InterviewSheduling"
+import React from 'React'
+
+const  LazyLoading =  React.lazy(() => import("@/components/company/Dashboard/Dashboard"))
 
 export const companyRoute = [
     {
@@ -30,7 +33,13 @@ export const companyRoute = [
       children: [
         {
           path: ":id",
-          element: <CompanyWrapper><Dashboard /></CompanyWrapper>
+          element: (
+            <CompanyWrapper>
+            <Suspense fallback={<div>Loading...</div>}>
+              <LazyLoading />
+            </Suspense>
+           </CompanyWrapper>
+          )
         },
 
         {

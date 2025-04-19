@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: auth
-          image: najinn675943/prosphere_auth_service
+          image: najinn675943/prosphere_auth_service:v1.0.3
           env:
             - name: MONGO_URL
               valueFrom:
@@ -96,7 +96,6 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: USER_GRPC_DOMAIN
-            # Keep only one NODE_ENV variable
             - name: NODE_ENV
               valueFrom:
                 configMapKeyRef:
