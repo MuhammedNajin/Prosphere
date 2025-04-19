@@ -2,23 +2,24 @@ import { IChatRepository } from "@/domain/IRepository/IChatRepository";
 import { NextFunction, Request, Response } from "express";
 import { GetConversationUseCase } from "@/application/usecase/chatUsecase/getConversation.usecase";
 import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
-import { GetChatUseCase } from "@/application/usecase/chatUsecase/getChat.usecase";
+import { DeleteMessageUseCase } from "@/application/usecase/chatUsecase/deleteMessage.usecase";
 
 
-export class GetChatController {
+export class DeleteMessageController {
   
    constructor(private chatRepo: IChatRepository) {} 
 
-   public getChat = async (req: Request, res: Response, next: NextFunction) => {
+   public delete = async (req: Request, res: Response, next: NextFunction) => {
        try {
 
-        const { conversationId } = req.params
-        const { userId } = req.query
-        console.log("userId", userId)
-          const chat = await new GetChatUseCase(this.chatRepo).execute(conversationId, userId as string)
+        const { id } = req.params
+        const { userId } = req.body;
+            console.log("userId", userId)
+           await new DeleteMessageUseCase(this.chatRepo).execute(id, userId)
+
         res
          .status(StatusCode.OK)
-         .json(ResponseUtil.success(chat));
+         .json(ResponseUtil.success({ success: true }));
 
        } catch (error) {
           next(error);

@@ -1,7 +1,7 @@
 import { ConversationProps } from "@/domain/interface/IChat";
 
 export interface IGetConversationUseCase {  
-    execute(id: string): Promise<ConversationProps[]>
+    execute(queryParams: { userId?: string, companyId?: string }): Promise<ConversationProps[]>
 }
 
 

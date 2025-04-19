@@ -8,7 +8,7 @@ export class GetChatUseCase implements IGetChatUseCase {
   
      constructor(private chatRepo: IChatRepository) {}
 
-     public async execute(conversationId: string): Promise<MessageProps[]> {
-        return await this.chatRepo.getChat(conversationId)
+     public async execute(conversationId: string, userId: string): Promise<MessageProps[]> {
+        return await this.chatRepo.getChat(conversationId, userId)
      }
 }

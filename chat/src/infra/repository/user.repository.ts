@@ -20,6 +20,15 @@ class UserRepository implements IUserRepository {
             throw new Error(`Failed to create user: ${error}`);
         }
     }
+
+    public async updateUser(_id: string, query: object) {
+        try {
+            await User.updateOne({ _id }, query)
+        } catch (error) {
+            console.log("error", error);
+            throw error;
+        }
+    }
 }
 
 export default new UserRepository();

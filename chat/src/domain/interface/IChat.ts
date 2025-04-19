@@ -1,9 +1,11 @@
 export interface MessageProps {
   _id: string
   conversation: string;
+  receiver: string;
   sender: string;
   content: {
     type: "text" | "image" | "file" | "audio";
+    text?: string;
     fileUrl?: string;
     fileName?: string;
     fileSize?: number;

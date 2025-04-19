@@ -6,7 +6,7 @@ import cors from 'cors'
 import AppRouter from '@/presentation/routes';
 import chatRepository from '../repository/chat.repository';
 dotenv.config();
-
+import { messageBroker } from '../MessageBroker/Kafka/config';
 class Server {
   private static instance: Server;
   public app: express.Application;
@@ -45,10 +45,11 @@ class Server {
   }
 
   private async connectDatabase(): Promise<void> {
-    const mongoUri = process.env.MONGO_URI ;
-
+    const mongoUri = process.env.MONGO_URL
+    console.log("mongodburi", mongoUri);
+    
     try {
-      await mongoose.connect(mongoUri, {
+      await mongoose.connect(`${mongoUri}/CHAT-SERVICE`, {
         autoIndex: true,
         serverSelectionTimeoutMS: 5000,
         retryWrites: true
@@ -83,10 +84,14 @@ class Server {
        next();
     })
 
-    this.app.use(cors({
-      origin: ["http://localhost:5173"],
-      credentials: true
-  }))
+    const dev_domain = process.env.DEV_FRONTEND_DOMAIN;
+    const prod_domain = process.env.PROD_FRONTEND_DOMAIN;
+    this.app.use(
+      cors({
+        origin:[ dev_domain!, prod_domain! ],
+        credentials: true,
+      })
+    );
 
     this.app.get('/health', (req, res) => {
       res.status(200).json({
@@ -95,9 +100,11 @@ class Server {
       });
     });
 
-    const router = new AppRouter(chatRepository).router
+    const router = new AppRouter(chatRepository, messageBroker.getProducer()).router
     console.log("router", router);
     
+
+
     this.app.use(router)
   }
 

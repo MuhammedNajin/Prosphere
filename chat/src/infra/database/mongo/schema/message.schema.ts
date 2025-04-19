@@ -16,6 +16,7 @@ export interface MessageAttrs {
 export interface MessageDoc extends Document {
   conversation: mongoose.Types.ObjectId;
   sender: mongoose.Types.ObjectId;
+  receiver: mongoose.Types.ObjectId;
   content: {
     type: "text" | "image" | "file" | "audio";
     text: string | null;
@@ -34,6 +35,7 @@ export interface MessageDoc extends Document {
     user: mongoose.Types.ObjectId;
     deliveredAt: Date;
   }>;
+  deletedBy: Array<mongoose.Types.ObjectId>;
   deleted: boolean;
   deletedAt: Date | null;
 }
@@ -55,6 +57,12 @@ const MessageSchema = new mongoose.Schema<MessageDoc, MessageModel>(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: [true, "Sender is required"],
+    },  
+
+    receiver: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "reciever is required"],
     },
 
     content: {
@@ -124,6 +132,10 @@ const MessageSchema = new mongoose.Schema<MessageDoc, MessageModel>(
 
       },
     ],
+
+    deletedBy: {
+       type: [mongoose.Schema.Types.ObjectId]
+    },
 
     deleted: {
       type: Boolean,

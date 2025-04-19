@@ -1,17 +1,18 @@
-import mongoose, { Model, Document } from 'mongoose';
-
+import mongoose, { Model, Document } from "mongoose";
 export interface ConversationAttrs {
-  type: 'direct' | 'group';
+  type: "direct" | "group";
   participants: mongoose.Types.ObjectId[];
   lastMessage?: mongoose.Types.ObjectId;
+  context: string;
   admins?: mongoose.Types.ObjectId[];
 }
-
 export interface ConversationDoc extends Document {
-  type: 'direct' | 'group';
+  type: "direct" | "group";
   participants: mongoose.Types.ObjectId[];
   lastMessage: mongoose.Types.ObjectId | null;
   admins: mongoose.Types.ObjectId[];
+  context: string;
+  companyId: mongoose.Schema.Types.ObjectId;
   muted: Array<{
     user: mongoose.Types.ObjectId;
     mutedUntil: Date | null;
@@ -23,63 +24,91 @@ export interface ConversationModel extends Model<ConversationDoc> {
   build(attrs: ConversationAttrs): ConversationDoc;
 }
 
-// Conversation Schema
-const ConversationSchema = new mongoose.Schema<ConversationDoc, ConversationModel>({
-  type: {
-    type: String,
-    enum: ['direct', 'group'],
-    required: [true, 'Conversation type is required']
-  },
+const ConversationSchema = new mongoose.Schema<
+  ConversationDoc,
+  ConversationModel
+>(
+  {
+    type: {
+      type: String,
+      enum: ["direct", "group"],
+      required: [true, "Conversation type is required"],
+    },
 
-  participants: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
+    participants: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
 
-  lastMessage: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Message',
-    default: null
-  },
- 
-  admins: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
+    context: {
+      type: String,
+      enum: ["user", "company"],
+      default: "user",
+    },
 
-  muted: [{
-    user: {
+    companyId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User'
+      ref: 'Company',
+      default: null,
     },
-    mutedUntil: {
-      type: Date,
-      default: null
-    }
-  }],
 
-  pinnedBy: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }]
-}, {
-  timestamps: true,
-  toJSON: {
-    transform: function(doc, ret) {
-      ret.id = ret._id;
-      delete ret._id;
-      delete ret.__v;
-      return ret;
+    lastMessage: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null,
     },
-    virtuals: true
+
+    admins: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    muted: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        mutedUntil: {
+          type: Date,
+          default: null,
+        },
+      },
+    ],
+
+    pinnedBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
   },
-  toObject: { virtuals: true }
-});
+  {
+    timestamps: true,
+    toJSON: {
+      transform: function (doc, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      },
+      virtuals: true,
+    },
+    toObject: { virtuals: true },
+  }
+);
 
 ConversationSchema.statics.build = (attrs: ConversationAttrs) => {
   return new Conversation(attrs);
 };
 
-const Conversation = mongoose.model<ConversationDoc, ConversationModel>('Conversation', ConversationSchema);
+const Conversation = mongoose.model<ConversationDoc, ConversationModel>(
+  "Conversation",
+  ConversationSchema
+);
 
 export default Conversation;

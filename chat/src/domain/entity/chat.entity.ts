@@ -2,6 +2,7 @@ import { MessageProps } from "../interface/IChat";
   
   export class Message {
     private _id: string
+    private receiver: string;
     private conversation: string;
     private sender: string;
     private content: {
@@ -16,6 +17,7 @@ import { MessageProps } from "../interface/IChat";
   
     constructor(props: MessageProps) {
       this._id = props._id
+      this.receiver = props.receiver;
       this.conversation = props.conversation;
       this.sender = props.sender;
       this.content = props.content;
@@ -58,6 +60,7 @@ import { MessageProps } from "../interface/IChat";
     public toDTO(): MessageProps {
       return Object.freeze({
         _id: this._id,
+        receiver: this.receiver,
         conversation: this.conversation,
         sender: this.sender,
         content: Object.freeze({
