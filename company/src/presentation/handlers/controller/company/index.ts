@@ -5,8 +5,13 @@ import { upadateCompanyLogoController } from './updateCompanyLogo.controller'
 import { getFileController } from './getUploadedFile.controller'
 import { getCompanyProfileController } from './getCompanyProfile.controller'
 import { uploadCompanyVerificationController } from "./uploadCompanyVerificationDocs.controller";
+import { generateCompanyAccessTokenController } from './generateCompanyToken.controller';
+import { addEmployeeController } from './addEmployee.controller';
+import { searchUserController  } from "./searchUser.controller";
+import { getEmployeeController } from "./getEmployees.controller";
+import { getFilesController } from "./getUploadedImages.controller";
  const companyController = (dependencies: any) => {
-    console.log("company controller");
+    console.log("company controller",dependencies );
   
     return {
       createCompanyController: createCompanyController(dependencies),
@@ -16,6 +21,11 @@ import { uploadCompanyVerificationController } from "./uploadCompanyVerification
       getFileController: getFileController(dependencies),
       getCompanyProfileController: getCompanyProfileController(dependencies),
       uploadCompanyVerificationController: uploadCompanyVerificationController(dependencies),
+      generateCompanyAccessTokenController: generateCompanyAccessTokenController(dependencies),
+      addEmployeeController: addEmployeeController(dependencies),
+      searchUserController: searchUserController(dependencies),
+      getEmployeeController: getEmployeeController(dependencies),
+      getFilesController: getFilesController(dependencies),
     };
   };
   

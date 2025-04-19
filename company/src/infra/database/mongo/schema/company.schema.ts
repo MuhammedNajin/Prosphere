@@ -1,38 +1,37 @@
 import mongoose, { Model, Document } from "mongoose";
 import { CompanyStatus, TeamRole } from '@/shared/types/company'
-
 interface CompanyVerificationDoc {
   documentType: string;
   documentUrl: string;
   uploadedAt: Date;
 }
-
 interface OwnerVerificationDoc {
   documentType: string;
   documentUrl: string;
   uploadedAt: Date;
 }
-
 interface TeamMember {
   userId: mongoose.Types.ObjectId;
-  role: TeamRole;
 }
-
 interface LocationPoint {
   placename: string;
   type: "Point";
   coordinates: number[];
 }
 
+interface StatusHistoryEntry {
+  status: string;
+  updatedAt: Date;
+}
+
 export interface CompanyAttrs {
   name: string;
-  url?: string;
   website?: string;
-  industry?: string;
+  industry?: string;  
   type?: string;
   size?: string;
   headquarters?: LocationPoint;
-  location: LocationPoint[];
+  location: LocationPoint[];  
   foundedDate?: Date;
   techStack?: string[];
   description?: string;
@@ -46,13 +45,13 @@ export interface CompanyAttrs {
   verifiedAt?: Date;
   reUploadDocLimit?: number;
   status?: CompanyStatus;
+  statusHistory?: StatusHistoryEntry[];
 }
 
 export interface CompanyDoc extends Document {
   name: string;
-  url?: string;
   website?: string;
-  industry: string;
+  industry: string; 
   type?: string;
   size?: string;
   headquarters?: LocationPoint;
@@ -63,12 +62,13 @@ export interface CompanyDoc extends Document {
   linkedInUrl?: string;
   logo?: string;
   team?: TeamMember[];
-  verified: boolean;
+  verified: boolean;  
   companyVerificationDoc?: CompanyVerificationDoc;
   ownerVerificationDoc?: OwnerVerificationDoc;
   verifiedAt?: Date;
-  reUploadDocLimit: number;
-  status: CompanyStatus;
+  reUploadDocLimit: number; 
+  status: CompanyStatus; 
+  statusHistory?: StatusHistoryEntry[];
   owner: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -98,6 +98,7 @@ export interface UpdateCompanyAttrs extends Partial<CompanyAttrs> {
   verifiedAt?: Date;
   reUploadDocLimit?: number;
   status?: CompanyStatus;
+  statusHistory?: StatusHistoryEntry[];
 }
 
 const companySchema = new mongoose.Schema(
@@ -186,12 +187,7 @@ const companySchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "User",
           required: true,
-        },
-        role: {
-          type: String,
-          enum: ["HR", "Owner", "Employee"],
-          default: "Employee",
-        },
+        }
       },
     ],
 

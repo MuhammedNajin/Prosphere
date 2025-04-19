@@ -23,7 +23,11 @@ export const updateCompanyLogoUseCase = (dependencies: any) => {
   
       console.log("fileName", bucketKey, "/n", "data", data);
       await companyRepository.updateCompany(id, { logo: bucketKey });
-      return await s3Operation.getImageUrlFromBucket(bucketKey);
+      const url = await s3Operation.getImageUrlFromBucket(bucketKey);
+      return { 
+         url,
+         bucketKey,
+      }
     };
     return {
       execute,

@@ -3,14 +3,18 @@ import { CompanyAttrs, } from "../database/mongo/schema/company.schema";
 import { ICompany } from '@domain/entities/ICompany'
 import { CompanyStatus } from '@/shared/types/company'
 import { BadRequestError, NotFoundError } from '@muhammednajinnprosphere/common'
+import { Types } from "mongoose";
+import Subscription from "../database/mongo/schema/subscription.schema";
 
 export default {
   createCompany: async (attrs: CompanyAttrs) => {
-    return await Company.build(attrs).save();
+   const company = await Company.build(attrs).save();
+    await Subscription.build({ companyId: company._id }).save();
+    return company;
   },
 
-  getCompany: async (_id: string) => {
-    const company = await Company.findOne({ _id }).populate('owner')
+  getCompany: async (name: string) => {
+    const company = await Company.findOne({ name }).populate('owner')
     return company;
   },
 
@@ -31,7 +35,7 @@ export default {
         $set: { 
           ownerVerificationDoc, 
           companyVerificationDoc, 
-          status: 'pending' 
+          status: 'uploaded' 
         }
       },
       {
@@ -48,8 +52,11 @@ export default {
 
   getCompanyById: async (_id: string) => {
      try {
-      console.log("_id", _id)
-        return await Company.findById(_id);
+      console.log("getCompanyById from _id", _id)
+        const company = await Company.findById(_id).populate('owner');
+        const subscription = await Subscription.findOne({ companyId : _id });
+
+        return { company, subscription };
      } catch (error) {
         console.log(error)
         throw error;
@@ -117,6 +124,11 @@ export default {
        }
 
        company.status = status;
+
+       if(status === CompanyStatus.Verified) {
+          company.verified = true;
+       }
+
        company?.statusHistory?.push({
          status: status,
          updatedAt: Date.now(),
@@ -128,5 +140,51 @@ export default {
         console.log(error)
         throw error;
      }
+  },
+
+   addEmployee: async (companyId: string, userId: string) => {
+    try {
+     
+      if (!companyId || !userId) {
+        throw new Error('Company ID and User ID are required');
+      }
+  
+      if (!Types.ObjectId.isValid(companyId) || !Types.ObjectId.isValid(userId)) {
+        throw new Error('Invalid Company ID or User ID format');
+      }
+  
+  
+      const existingEmployee = await Company.findOne({
+        _id: companyId,
+        'team.userId': userId
+      });
+  
+      if (existingEmployee) {
+        throw new BadRequestError('Employee already exists')
+      }
+
+      const result = await Company.updateOne(
+        { _id: companyId },
+        {
+          $addToSet: {
+            team: { userId }
+          }
+        }
+      );
+
+    } catch (error) {
+      console.error('Error in addEmployee:', error)
+      throw new Error('Failed to add employee to company');
+    }
+  },
+
+  getEployees: async (companyId: string) => {
+     try {
+       return await Company.findOne({ _id: companyId }, { team: 1}).populate('team.userId');
+     } catch (error) {
+        console.log(error);
+        throw error;
+        
+     }
   }
-};
+}

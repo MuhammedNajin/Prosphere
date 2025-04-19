@@ -14,7 +14,7 @@ export const getCompanyProfileController = (dependencies: any) => {
       console.log(req.body, req.params, "dee");
       const { id } = req.params;
 
-      const company = await getCompanyByIdUseCase(dependencies).execute(id);
+      const {company} = await getCompanyByIdUseCase(dependencies).execute(id);
       console.log("company", company)
       res.status(200).json(company);
       

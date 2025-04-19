@@ -1,8 +1,8 @@
 import express, { NextFunction, Request, Response } from "express";
-import { z } from "zod"; // For input validation
+import { z } from "zod";
 // import { Logger } from "./logger"; // Assuming a logger implementation
 
-// Define types for better type safety
+
 interface VerificationDocument {
   documentType: string;
   documentUrl: string;
@@ -18,7 +18,7 @@ interface Dependencies {
       uploadImageToBucket: (buffer: Buffer, mimeType: string, key: string) => Promise<void>;
     };
   };
-//   logger: Logger;
+
 }
 
 // Input validation schema
@@ -46,7 +46,7 @@ export const uploadCompanyVerificationController = (dependencies: Dependencies) 
   const {
     useCases: { uploadCompanyVerificationDocsUseCase },
     service: { s3Operation },
-    // logger
+   
   } = dependencies;
 
   /**
@@ -83,11 +83,10 @@ export const uploadCompanyVerificationController = (dependencies: Dependencies) 
       const { companyDocType, ownerDocType } = req.body;
       const { companyDoc, ownerDoc } = req.files;
      console.log(" files", companyDoc, ownerDoc)
-      // Generate unique keys for S3
+    
       const companyDocKey = generateUniqueKey(companyDoc[0].originalname);
       const ownerDocKey = generateUniqueKey(ownerDoc[0].originalname);
 
-      // Upload documents to S3
       try {
        const p = await Promise.all([
           s3Operation.uploadImageToBucket(

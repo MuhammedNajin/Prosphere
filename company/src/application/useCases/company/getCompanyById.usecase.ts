@@ -10,15 +10,15 @@ export const getCompanyByIdUseCase = (dependencies: any) => {
     throw new Error("dependency required, missing dependency");
   }
 
-  const execute = async (_id: string) => {
+  const execute = async (id: string) => {
     try {
-        console.log(_id)
+        console.log(id)
         
-        if(!_id || !validateObjectId(_id)) {
+        if(!id || !validateObjectId(id)) {
             throw new Error("argumen is not provided")
         }
         
-        return await companyRepository.getCompanyById(_id);
+        return await companyRepository.getCompanyById(id);
 
     } catch (error) {
         console.log(error);

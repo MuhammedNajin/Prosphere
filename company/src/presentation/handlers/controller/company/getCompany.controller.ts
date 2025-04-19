@@ -11,10 +11,10 @@ export const getCompanyController = (dependencies: any) => {
 
   const getCompany = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(req.body, req.query, "dee");
-      const { id } = req.params;
-
-      const company = await getMyCompanyUseCase(dependencies).execute(id);
+      const user = JSON.parse(req.headers['x-user-data'] as string)
+      console.log(req.body, req.query, "dee",  user);
+    
+      const company = await getMyCompanyUseCase(dependencies).execute(user.id);
       console.log("company", company)
       res.status(200).json(company);
       

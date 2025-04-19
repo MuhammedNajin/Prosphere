@@ -5,7 +5,7 @@ export const getCompanyController = (dependencies: any) => {
 
   const {
 
-    useCases: { getCompanyUseCase },
+    useCases: { getCompanyByIdUseCase },
 
   } = dependencies;
 
@@ -14,7 +14,7 @@ export const getCompanyController = (dependencies: any) => {
       console.log(req.body, req.query, "dee");
       const { id } = req.params;
 
-      const company = await getCompanyUseCase(dependencies).execute(id);
+      const { company } = await getCompanyByIdUseCase(dependencies).execute(id);
       console.log("company", company)
       res.status(200).json(company);
       

@@ -6,6 +6,7 @@ export const upadateCompanyLogoController = (dependencies: any) => {
   const {
     service: { s3Operation },
     useCases: { updateCompanyLogoUseCase, getCompanyByIdUseCase },
+    messageBroker: { CompanyUpdateProducer, kafka },
   } = dependencies;
 
   const updateCompanyLogo = async (
@@ -17,11 +18,12 @@ export const upadateCompanyLogoController = (dependencies: any) => {
       console.log("files", req.file);
       const { id } = req.params;
       const file = req.file;
-      console.log("depen", dependencies)
+
       const company = await getCompanyByIdUseCase(dependencies).execute(id);
       console.log("company", company);
       const prevLogo = company.logo;
       let logoUrl = null;
+      let key;
       const status = prevLogo
         ? prevLogo.replace(id, "") !== file?.originalname
         : true;
@@ -34,17 +36,28 @@ export const upadateCompanyLogoController = (dependencies: any) => {
       // }
 
       if (status) {
-        logoUrl = await updateCompanyLogoUseCase(dependencies).execute({
+        const { url, bucketKey } = await updateCompanyLogoUseCase(
+          dependencies
+        ).execute({
           id,
           file,
         });
+        logoUrl = url;
+        key = bucketKey;
       }
-     console.log(logoUrl)
+      console.log(logoUrl);
+
+      await new CompanyUpdateProducer(kafka.producer).produce({
+        id,
+        logo: key,
+      });
+
       res.status(201).json({
         success: status,
         logoUrl,
         message: `Logo updated successfully: ${status}`,
       });
+
     } catch (error) {
       console.log(error);
       next(error);

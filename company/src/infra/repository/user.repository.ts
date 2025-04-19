@@ -10,4 +10,23 @@ export default {
     return await User.build(profile).save();
   }, 
 
+  searchUser: async (searchQuery: string) => {
+    try {
+      if (!searchQuery?.trim()) {
+        return [];  
+      }
+  
+      return User.find({ 
+        $or: [
+          { username: { $regex: searchQuery, $options: 'i' }},
+          { email: { $regex: searchQuery, $options: 'i' }}
+        ]
+      });
+          
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
 };

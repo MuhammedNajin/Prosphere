@@ -8,25 +8,36 @@ import {
   updateProfileUseCase,
   uploadCompanyVerificationDocsUseCase,
   getCompaniesUseCase,
-  changeCompanyStatusUseCase
+  changeCompanyStatusUseCase,
+  searchUserUseCase,
+  addEmployeeUseCase,
+  getEmployeesUseCase,
+  subscriptionCheckUseCase
 } from "../../application/useCases";
-import { userRepository, companyRepository } from "../repository/";
-import { CompanyCreatedProducer } from '../messageBroker/kafka';
+
+import { userRepository, companyRepository, subscriptionRepository } from "../repository/";
+import { CompanyCreatedProducer, CompanyUpdateProducer } from '../messageBroker/kafka';
 import { kafka } from './messageBroker'
 import s3Operation from '@infra/externalService/aws-s3-service';
+import { GrpcClient } from "../rpc/grpc/grpc.client";
+
 
 const repository = {
   userRepository,
-  companyRepository
+  companyRepository,
+  subscriptionRepository
 };
 
 const messageBroker = {
    CompanyCreatedProducer,
+   CompanyUpdateProducer,
    kafka
 }
 
+
 const service = {
   s3Operation,
+  grpcClient: GrpcClient.getInstance()
 }
 
 const useCases = {
@@ -39,7 +50,11 @@ const useCases = {
   updateProfileUseCase,
   uploadCompanyVerificationDocsUseCase,
   getCompaniesUseCase,
-  changeCompanyStatusUseCase
+  changeCompanyStatusUseCase,
+  searchUserUseCase,
+  addEmployeeUseCase,
+  getEmployeesUseCase,
+  subscriptionCheckUseCase
 };
 
 export default {

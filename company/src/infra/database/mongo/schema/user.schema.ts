@@ -38,10 +38,6 @@ const userSchema = new mongoose.Schema({
     unique: [true, "phone should be unique"],
   },
 
-  password: {
-    type: String,
-  },
-
   jobRole: {
     type: String,
   },

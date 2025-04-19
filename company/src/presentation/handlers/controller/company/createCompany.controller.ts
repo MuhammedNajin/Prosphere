@@ -1,5 +1,5 @@
 import express, { NextFunction, Request, Response } from "express";
-import { StatusCode } from "@muhammednajinnprosphere/common";
+import { BadRequestError, StatusCode } from "@muhammednajinnprosphere/common";
 export const createCompanyController = (dependencies: any) => {
   console.log("signup");
 
@@ -11,13 +11,13 @@ export const createCompanyController = (dependencies: any) => {
   const createCompany = async (req: Request, res: Response, next: NextFunction) => {
     try {
       console.log(req.body, req.headers["x-user-data"]);
+      const { id } = JSON.parse(req.headers["x-user-data"] as string);
+      const { name, url, website, location, size, type } = req.body;
 
-      const { name, url, website, location, size, type, id } = req.body;
-
-      const companyExist = await getCompanyUseCase(dependencies).execute(url);
+      const companyExist = await getCompanyUseCase(dependencies).execute(name);
 
       if (companyExist) {
-        throw new Error("comapy exist");
+        throw new BadRequestError("Company already exist");
       }
 
       const company = await createCompanyUseCase(dependencies).execute({

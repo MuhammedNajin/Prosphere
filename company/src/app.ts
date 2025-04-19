@@ -7,10 +7,14 @@ import { errorHandler, NotFoundError } from '@muhammednajinnprosphere/common';
 
 
 const app = express();
-app.use(cors({
-    origin: ["http://localhost:5173"],
-    credentials: true
-}))
+const dev_domain = process.env.DEV_FRONTEND_DOMAIN;
+const prod_domain = process.env.PROD_FRONTEND_DOMAIN;
+app.use(
+  cors({
+    origin:[ dev_domain!, prod_domain! ],
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 app.use((req, res,  next) => {
@@ -19,6 +23,14 @@ app.use((req, res,  next) => {
    
     next();
 })
+
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'UP',
+        timestamp: new Date().toISOString(),
+        message: 'Service is running successfully',
+    });
+});
 
 app.use("/api/v1", routes(dependecies));
 
