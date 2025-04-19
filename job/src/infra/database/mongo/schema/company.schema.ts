@@ -1,6 +1,5 @@
 import mongoose, { Model, Document } from "mongoose";
 
-// Define the attributes for creating a new Company
 export interface CompanyAttrs {
   _id: string
   name: string;
@@ -8,17 +7,16 @@ export interface CompanyAttrs {
   location: string;
 }
 
-// Define the document structure for a Company
 export interface CompanyDoc extends Document {
   _id: string
   name: string;
   owner: string;
   location: string;
+  logo?: string
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Define the Company Model with a custom build function
 export interface CompanyModel extends Model<CompanyDoc> {
   build(attrs: CompanyAttrs): CompanyDoc;
 }
@@ -51,15 +49,18 @@ const companySchema = new mongoose.Schema(
         },
       }
     ],
+
+    logo: {
+       type: String,
+       default: null,
+    }
   },
   { timestamps: true }
 );
 
-// Static method to create a new company
 companySchema.statics.build = (attrs: CompanyAttrs) => {
   return new Company(attrs);
 };
 
 const Company = mongoose.model<CompanyDoc, CompanyModel>("Company", companySchema);
-
 export default Company;

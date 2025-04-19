@@ -1,4 +1,5 @@
 export class JobEntity {
+    _id?: string
     jobTitle: string;
     employment: string;
     description: string;

@@ -41,7 +41,7 @@ export class CreateApplicationController {
       const application = await this.CreateApplicationUseCase.execute(req.body);
 
       await this.notificationProducer.produce({
-        actionUrl: `/my-application`,
+        actionUrl: `/myapplication`,
         data: {
           applicationId: application?._id,
         },

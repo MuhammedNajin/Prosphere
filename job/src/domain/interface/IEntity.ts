@@ -58,3 +58,25 @@ export interface IComment {
   commentText: string;
   replies: ReplyDoc[];
 }
+
+
+export interface IJob {
+  jobTitle: string;
+  employment: string;
+  jobDescription: string;
+  jobLocation: string;
+  salary: {
+    status: boolean;
+    from: number;
+    to: number;
+  };
+  vacancies: number;
+  experience: string;
+  companyId: string;
+  expiry: Date;
+  responsibility: string[];
+  skills: string[];
+  qualifications: string[];
+  status?: boolean;
+  expired?: boolean;
+}

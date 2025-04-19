@@ -20,8 +20,6 @@ export interface JobAttrs {
   status?: boolean;
   expired?: boolean;
 }
-
-// Define the document structure for a Job
 export interface JobDoc extends Document {
   jobTitle: string;
   employment: string;
@@ -40,17 +38,17 @@ export interface JobDoc extends Document {
   skills: string[];
   qualifications: string[];
   status: boolean;
+  seenStatus: string[];
   expired: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Define the Job Model with a custom build function
 export interface JobModel extends Model<JobDoc> {
   build(attrs: JobAttrs): JobDoc;
 }
 
-const jobSchema = new mongoose.Schema(
+const jobSchema = new mongoose.Schema (
   {
     jobTitle: {
       type: String,
@@ -64,6 +62,7 @@ const jobSchema = new mongoose.Schema(
       type: String,
       required: [true, "Job description is required"],
     },
+    
     jobLocation: {
       type: String,
       required: [true, "Job location is required"],
@@ -115,15 +114,31 @@ const jobSchema = new mongoose.Schema(
       required: [true, "Qualifications are required"],
     },
 
-
-    likeCount: {
-      type: Number,
-      default: 0,
-    }, 
-
+    niceToHave: {
+      type: [String],
+    },
+    
+    likes: {
+       type: [mongoose.Schema.ObjectId]
+    },
+    
     commentCount: {
       type: Number,
       default: 0,
+    },
+
+    veiws: {
+       type: [{
+         userId: {
+           type: mongoose.Types.ObjectId,
+         },
+         
+         seenAt: {
+           type: Date,
+           default: Date.now()
+         }
+       }],
+       default: [],
     },
 
     status: {
@@ -138,6 +153,14 @@ const jobSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+
+jobSchema.index({
+  jobTitle: 'text',
+  jobDescription: 'text',
+  requiredSkills: 'text',
+});
+
 
 jobSchema.statics.build = (attrs: JobAttrs) => {
   return new Job(attrs);

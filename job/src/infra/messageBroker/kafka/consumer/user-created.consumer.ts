@@ -7,7 +7,6 @@ export class UserCreatedConsumer extends KafkaConsumer<UserCreatedEvent> {
 
     constructor(consumer: Consumer, dependecies: any) {
         super(consumer);
-        console.log("consuer", dependecies.userUseCase)
         this.dependencies = dependecies;
     }
 

@@ -1,3 +1,4 @@
+import { ApplicationStatus } from "@/shared/types/enums";
 import mongoose, { Model, Document } from "mongoose";
 
 export interface ApplicationAttrs {
@@ -5,7 +6,7 @@ export interface ApplicationAttrs {
   jobId: string;
   applicantId: string;
   coverLetter?: string;
-  status: 'Applied' | 'Inreview' | 'Shortlisted' | 'Interview' | 'Rejected' | 'Selected';
+  status: ApplicationStatus;
   resume?: string;
   linkedinUrl?: string;
   portfolioUrl?: string;
@@ -30,7 +31,7 @@ export interface ApplicationDoc extends Document {
   jobId: string;
   applicantId: string;
   coverLetter?: string;
-  status: 'Applied' | 'Inreview' | 'Shortlisted' | 'Interview' | 'Rejected' | 'Selected';
+  status: ApplicationStatus;
   resume?: string;
   linkedinUrl?: string;
   portfolioUrl?: string;
@@ -82,8 +83,8 @@ const ApplicationSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ['Applied', 'Inreview', 'Shortlisted', 'Interview', 'Rejected', 'Selected'],
-    default: 'Applied',
+    enum: ['applied', 'inreview', 'shortlisted', 'interview', 'rejected', 'selected'],
+    default: 'applied',
   },
 
   resume: {
@@ -103,23 +104,7 @@ const ApplicationSchema = new mongoose.Schema({
     default: false
   },
 
-  interviewSchedules: [{
-    title: {
-      type: String,
-      required: true
-    },
-    time: {
-      type: String,
-      required: true
-    },
-    status: {
-      type: String,
-      enum: ['Pending', 'Completed'],
-      default: 'Pending'
-    },
-    feedback: String,
-    feedbackDescription: String
-  }],
+ 
 
   statusDescription: {
     title: String,

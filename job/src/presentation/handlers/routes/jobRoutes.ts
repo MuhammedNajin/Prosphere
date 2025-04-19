@@ -1,38 +1,66 @@
 import { Router } from "express";
-import { JobController } from '../controller/'
-import JobUseCase from '@application/interface/jobUsecase_interface'
+import { CompanyController, JobController } from "../controller/";
+import JobUseCase from "@application/interface/jobUsecase_interface";
+import { currentCompany } from "@muhammednajinnprosphere/common";
+import { Job } from "@/infra/database/mongo";
+import { GrpcPaymentClient } from "@/infra/rpc/grpc/grpcPaymentClient";
+import { Dependency } from "@/infra/config/dependencies";
+import CompanyUseCases from "@/application/interface/companyUsecase_interface.ts";
 export class JobRoutes {
+  constructor(private jobUseCase: JobUseCase, private companyUseCases: CompanyUseCases) {}
+
+  get router() {
+    const router = Router();
+  
+    const {
+      jobPostUseCase,
+      getJobsUseCase,
+      updateJobUseCase,
+      addCommentUseCase,
+      likeJobUseCase,
+      getCommentUseCase,
+      getJobDetailsUseCase,
+      jobSeenUseCase,
+    } = this.jobUseCase;
 
 
-    constructor( private jobUseCase: JobUseCase) {}
+    const {
+      getAllJobByCompanyIdUseCase,
+    } = this.companyUseCases;
+    router.use((req, res, next) => {
+      console.log("job route hellos i am herer", req.url, req.method);
+      next();
+    });
 
-    get router() {
+    router.get(
+      "/all",
+      CompanyController.getAllJob(getAllJobByCompanyIdUseCase)
+    );
 
-        const router = Router();
-        console.log("job routes", this.jobUseCase)
-        const { jobPostUseCase, getJobsUseCase, updateJobUseCase, addCommentUseCase } = this.jobUseCase;
-        router.use((req, res, next) => {
-          console.log("application route", req.url, req.method)
-          next()
-        })
+    
+    router.route("/public").get(JobController.getJobs(getJobsUseCase));
+    
+    router
+      .route("/:id")
+      .get(JobController.getJobDetails(getJobDetailsUseCase))
+      .post(JobController.updateJob(updateJobUseCase));
 
-        router
-        .route('/comment')
-        .post(JobController.addComment(addCommentUseCase));
+    router
+      .route("/comment")
+      .post(JobController.addComment(addCommentUseCase))
+      .get(JobController.getComment(getCommentUseCase));
+
+    router.route("/like").post(JobController.likeJob(likeJobUseCase));
 
 
-        router
-         .route('/')
-         .post(JobController.jobPost(jobPostUseCase))
-         .get(JobController.getJobs(getJobsUseCase))
+    router.patch('/view/:id', JobController.jobSeen(jobSeenUseCase));
 
-        router
-         .route('/:id')
-         .get(JobController.getJobs(getJobsUseCase))
-         .post(JobController.updateJob(updateJobUseCase));
+    
 
-       
-        return router;
+    // router
+    //  .route('/all/:id')
+    //  .get(JobController.getJobs(getJobsUseCase))
 
-    }
+    return router;
+  }
 }

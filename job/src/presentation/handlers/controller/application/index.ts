@@ -6,15 +6,18 @@ import {
   IgetAllApplicationUseCase,
   IChangeApplicationStatusUseCase,
   IgetApplicationUseCase,
-  IgetMyApplicationUseCase
+  IgetMyApplicationUseCase,
+  IisAppliedUseCase,
 } from "@application/interface/applicationUsecase_interface.ts";
 import { GetApplicationController } from "./getApplication.controller";
 import { GetMyApplicationController } from "./getMyApplication.controller";
+import { IsAppliedController } from "./IsApplied.controller";
+import { Dependency } from "@/infra/config/dependencies";
 
 export class ApplicationController {
 
-  static createApplication(applicationPostUseCase: ICreateApplicationUseCase) {
-    return new CreateApplicationController(applicationPostUseCase).handler;
+  static createApplication(ApplicationPostUseCase: ICreateApplicationUseCase, IsAppliedUseCase: IisAppliedUseCase, notificationProducer: Dependency['messageBroker']['notificationProducer']) {
+    return new CreateApplicationController(ApplicationPostUseCase, IsAppliedUseCase, notificationProducer).handler;
   }
 
   static getAllApplication(getAllapplicationUseCase: IgetAllApplicationUseCase) {
@@ -23,6 +26,10 @@ export class ApplicationController {
 
   static getApplication(getApplicationUseCase: IgetApplicationUseCase) {
     return new GetApplicationController(getApplicationUseCase).handler;
+  }
+
+  static isApplied(isAppliedUseCase: IisAppliedUseCase) {
+    return new IsAppliedController(isAppliedUseCase).handler;
   }
 
   static getMyApplication(getMyApplicationUseCase: IgetMyApplicationUseCase) {

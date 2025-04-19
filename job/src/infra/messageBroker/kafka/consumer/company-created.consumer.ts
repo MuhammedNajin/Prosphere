@@ -1,13 +1,12 @@
 import { KafkaConsumer, Topics, CompanyCreatedEvent } from '@muhammednajinnprosphere/common'
 import { Consumer, KafkaMessage } from 'kafkajs';
-
+import subscriptionRepository from '@infra/repository/subscription/subscription.repository'
 export class CompanyCreatedConsumer extends KafkaConsumer<CompanyCreatedEvent> {
     topic: Topics.companyCreated = Topics.companyCreated;
     dependencies: any;
 
     constructor(consumer: Consumer, dependecies: any) {
         super(consumer);
-        console.log("consuer company", dependecies)
         this.dependencies = dependecies;
      
     }
@@ -32,6 +31,8 @@ export class CompanyCreatedConsumer extends KafkaConsumer<CompanyCreatedEvent> {
             owner,
             _id,
            })
+
+           await subscriptionRepository.createSubscription({ companyId: company._id });
 
            console.log("onMessage", company);
        } catch (error) {

@@ -1,13 +1,17 @@
 import { Router } from "express";
 import { ApplicationController } from '../controller'
 import ApplicationUseCase from '@application/interface/applicationUsecase_interface.ts';
-import { validateRequestBody, CreateApplicationSchema } from '@muhammednajinnprosphere/common'
+import { validateRequestBody, CreateApplicationSchema, currentCompany } from '@muhammednajinnprosphere/common'
+import dotenv from 'dotenv'
+import { Dependency } from "@/infra/config/dependencies";
+
+dotenv.config()
 export class ApplicationRoutes {
   
     private applicationUseCase;
 
-    constructor(applicationUseCase: ApplicationUseCase) {
-      console.log("contructor", applicationUseCase)
+    constructor(applicationUseCase: ApplicationUseCase, private notificationProducer: Dependency['messageBroker']['notificationProducer']) {
+      console.log("contructor", applicationUseCase, notificationProducer)
       this.applicationUseCase = applicationUseCase;
     }
 
@@ -19,28 +23,25 @@ export class ApplicationRoutes {
           getAllApplicationUseCase,
           changeApplicationStatusUseCase,
           getApplicationUseCase,
-          getMyApplicationUseCase
+          getMyApplicationUseCase,
+          isAppliedUseCase
+
                } = this.applicationUseCase;
-        console.log("job routes", createApplicationUseCase)
+
 
         router.use((req, res, next) => {
           console.log("application route", req.url, req.method)
           next()
         })
-        router
-         .route('/')
-         .post(validateRequestBody(CreateApplicationSchema), ApplicationController.createApplication(createApplicationUseCase));
 
         router
-        .route('/all/:companyId')
-        .get(ApplicationController.getAllApplication(getAllApplicationUseCase))
+        .route('/')
+         .post(validateRequestBody(CreateApplicationSchema), ApplicationController.createApplication(createApplicationUseCase, isAppliedUseCase, this.notificationProducer));
 
-        router
-        .route('/:id')
-        .get(ApplicationController.getApplication(getApplicationUseCase))
-        .put(ApplicationController.changeApplicationStatus(changeApplicationStatusUseCase))
+         router.get('/my-application', ApplicationController.getMyApplication(getMyApplicationUseCase))
+         
+         router.get('/:jobId',ApplicationController.isApplied(isAppliedUseCase))
 
-        router.get('/my-application/:userId', ApplicationController.getMyApplication(getMyApplicationUseCase))
         
         return router;
     }

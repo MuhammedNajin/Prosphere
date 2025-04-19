@@ -53,15 +53,7 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
 
-  coverImageUrl: {
-    type: String,
-  },
-
-  profilePhoto: {
-    type: String,
-  },
-
-  profileImageKey: {
+  avatar: {
     type: String,
   },
 });

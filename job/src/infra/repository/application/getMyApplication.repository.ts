@@ -145,7 +145,7 @@ export class GetMyApplicationRepository {
         const [applications, totalCount, countArray] = await Promise.all([
             Application.aggregate(aggregationPipeline),
             
-            Application.countDocuments(),
+            Application.countDocuments({ applicantId: userId }),
             Application.aggregate([
                 {
                     $match: { 
@@ -170,12 +170,12 @@ export class GetMyApplicationRepository {
 
        const filtersCount = {
          All: totalCount,
-         Applied: 0,
-         Inreview:0,
-         Shortlisted: 0,
-         Interview: 0,
-         Rejected: 0,
-         Selected: 0,
+         applied: 0,
+         inreview:0,
+         shortlisted: 0,
+         interview: 0,
+         rejected: 0,
+         selected: 0,
        }
        
        for(let i = 0; i < countArray.length; i++) {

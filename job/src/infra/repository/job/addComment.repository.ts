@@ -7,5 +7,4 @@ export class AddCommentRepository {
        return await Comment.build(comment).save();
     }
 
-
 }
