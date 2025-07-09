@@ -31,7 +31,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
       setSuggestions([]);
       return;
     }
-
+    console.log("mapbox api key", MAPBOX_API_KEY, import.meta.env.MAPBOX_API_KEY, import.meta.env, process.env.MAPBOX_API_KEY);
     setIsLoading(true);
     try {
       const endpoint = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(
@@ -72,6 +72,7 @@ const LocationSearch: React.FC<LocationSearchProps> = ({
   };
 
   const handleSelectLocation = (suggestion: MapboxResult) => {
+    console.log("mapbox key", MAPBOX_API_KEY, );
     setQuery(suggestion.place_name);
     setSelectedPlace(suggestion.place_name);
     setSuggestions([]);

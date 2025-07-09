@@ -1,20 +1,25 @@
-# Use Node 20.9.0 as the base image
+# Build stage
+FROM node:22-alpine3.19 as builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+# Production stage
 FROM node:22-alpine3.19
 
-# Set the working directory in the container
-WORKDIR  /app
+WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Install 'serve' globally to serve static files
+RUN npm install -g serve
 
-# Install dependencies
-RUN npm install
+# Copy built files from builder
+COPY --from=builder /app/dist .
 
-# Copy the rest of the application code
-COPY . .
-
-# Expose the port the app runs on
+# Expose port 1573 for the static server
 EXPOSE 1573
 
-# Command to run the application
-CMD ["npm", "run", "dev"]
+# Serve using 'serve'
+CMD ["serve", "-s", ".", "-l", "1573"]

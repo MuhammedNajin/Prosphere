@@ -1,3 +1,4 @@
+import { lazy } from 'react'
 import CompanyOverview from "@/components/company/Profile/About"
 import Home from "@/components/company/Profile/Home"
 import { CompanySettings } from "@/components/company/Settings/ProfileSettings"
@@ -11,7 +12,6 @@ import HiringStage from "@/components/company/Application/HiringStage"
 import ApplicantResume from "@/components/company/Application/ApplicantResume"
 import CompanyWrapper from "../protected/CompanyWrapper"
 import DocumentVerificationPage from "@/pages/Company/DocumentVerificationPage"
-import Dashboard from "@/components/company/Dashboard/Dashboard"
 import JobInspectPage from "@/pages/Company/JobInspectPage"
 import ApplicationTable from "@/components/company/Jobs/ApplicationTable"
 import JobDescription from "@/components/job/JobDescription"
@@ -22,9 +22,8 @@ import MemberManagementPage from "@/components/company/Profile/People"
 import JobPosts from "@/components/company/Profile/Job"
 import UserRouteWrapper from "../protected/UserRouteWrapper"
 import InterviewList from "@/components/company/Application/InterviewSheduling"
-import React from 'React'
 
-const  LazyLoading =  React.lazy(() => import("@/components/company/Dashboard/Dashboard"))
+const LazyLoading = lazy(() => import("@/components/company/Dashboard/Dashboard"))
 
 export const companyRoute = [
     {
@@ -35,9 +34,7 @@ export const companyRoute = [
           path: ":id",
           element: (
             <CompanyWrapper>
-            <Suspense fallback={<div>Loading...</div>}>
               <LazyLoading />
-            </Suspense>
            </CompanyWrapper>
           )
         },
