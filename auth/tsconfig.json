@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2018",
-    "module": "ES6",
+    "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
     "strict": true,
@@ -11,19 +11,19 @@
     "rootDir": "../../",
     "declaration": true,
     "resolveJsonModule": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "baseUrl": "./",
     "paths": {
       "@/*": ["src/*"],
-      "@domain/*": ["src/domain/*"], // Alias for the domain folder
-      "@application/*": ["src/application/*"], // Alias for the application folder
-      "@infra/*": ["src/infra/*"], // Alias for the infra folder
-      "@presentation/*": ["src/presentation/*"]
+      "@domain/*": ["src/domain/*"],
+      "@application/*": ["src/application/*"],
+      "@infrastructure/*": ["src/infrastructure/*"],
+      "@presentation/*": ["src/presentation/*"],
+      "@di/*": ["src/di/*"],
+      "@config/*": ["src/config/*"]
     }
-
   },
-  "include": [
-    "src/**/*",
-    "../../common/src/**/*"
-  ],
+  "include": ["src/**/*", "../../common/src/**/*"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

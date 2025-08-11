@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Dependencies, TokenData } from "@domain/entities/interfaces";
-import Token from "@infra/libs/token";
+import Token from "@/infrastructure/libs/token";
 import { ForbiddenError } from "@muhammednajinnprosphere/common";
 import jwt from "jsonwebtoken";
 import { ROLE, TOKEN_TYPE } from "@/shared/types/enums";

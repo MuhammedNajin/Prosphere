@@ -1,21 +1,33 @@
+import { injectable, inject } from "inversify";
+import { IAuthRepository } from "@/infrastructure/interface/repository/IAuthRepository";
+import { IAuth } from "@/domain/interface/IAuth";
+import { Repositories } from "@/di/symbols";
+import { NotFoundError } from "@muhammednajinnprosphere/common";
 
-import { Dependencies} from "@domain/entities/interfaces";
 
-export const blockUserUseCase = (dependencies: Dependencies) => {
-    const {
-        repository: { userRepository }
-    } = dependencies;
+@injectable()
+export class BlockUserUseCase {
+  constructor(
+    @inject(Repositories.UserRepository) private userRepository: IAuthRepository
+  ) {}
 
-    if(!userRepository) {
-        throw new Error("dependencies error, missing dependencies");
+  /**
+   * Toggles the block status of a user.
+   * @param userId The ID of the user to block or unblock.
+   * @returns The updated user object.
+   * @throws {NotFoundError} If the user with the given ID is not found.
+   */
+  async execute(userId: string): Promise<IAuth> {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user) {
+      // Use NotFoundError with a specific error code
+      throw new NotFoundError("User not found", "USER_NOT_FOUND");
     }
 
-    const execute = async (id: string) => {
-        const bloked = await userRepository.blockUser(id);
-        return bloked;
-    }
+    user.isBlocked = !user.isBlocked;
+    await this.userRepository.update(userId, user);
 
-    return {
-        execute,
-    }
+    return user;
+  }
 }

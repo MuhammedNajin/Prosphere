@@ -3,7 +3,7 @@ import { Dependencies } from "@domain/entities/interfaces";
 import {
   generatePasswordResetEmail,
   getMessage,
-} from "@infra/libs/genarateMail";
+} from "@/infrastructure/libs/genarateMail";
 
 const forgotPasswordController = (dependencies: Dependencies) => {
   const {

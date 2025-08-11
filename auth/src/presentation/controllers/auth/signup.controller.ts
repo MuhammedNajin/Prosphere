@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
-import OTP from "@infra/libs/otp";
-import { generateOTPEmail, getMessage } from "@infra/libs/genarateMail";
+import OTP from "@/infrastructure/libs/otp";
+import { generateOTPEmail, getMessage } from "@/infrastructure/libs/genarateMail";
 import { BadRequestError } from "@muhammednajinnprosphere/common";
 
 export const signupController = (dependencies: any) => {

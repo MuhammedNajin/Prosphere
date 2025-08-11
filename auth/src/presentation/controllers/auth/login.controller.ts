@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Dependencies } from '@domain/entities/interfaces';
-import Token from '@infra/libs/token';
+import Token from '@/infrastructure/libs/token';
 import { BadRequestError, StatusCode } from '@muhammednajinnprosphere/common';
 import { winstonLogger } from '@/presentation/middleware/winstonLogger';
 import { TOKEN_TYPE } from '@/shared/types/enums';

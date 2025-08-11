@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction, json } from "express";
 import { Dependencies } from "@domain/entities/interfaces";
-import Token from "@infra/libs/token";
+import Token from "@/infrastructure/libs/token";
 import { TOKEN_TYPE } from "@/shared/types/enums";
 
 const googleAuthController = (dependencies: Dependencies) => {

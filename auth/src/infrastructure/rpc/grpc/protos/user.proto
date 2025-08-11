@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+package user;
+
+service AuthService {
+  rpc Signin(SigninRequest) returns (SigninResponse);
+  rpc Signup(SignupRequest) returns (SignupResponse);
+  rpc VerifyOtp(VerifyOtpRequest) returns (VerifyOtpResponse);
+  rpc ForgotPassword(ForgotPasswordRequest) returns (ForgotPasswordResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
+  rpc GoogleAuth(GoogleAuthRequest) returns (GoogleAuthResponse);
+  rpc GoogleAuthFlow(GoogleAuthFlowRequest) returns (GoogleAuthFlowResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (RefreshTokenResponse);
+  rpc ChangePassword(ChangePasswordRequest) returns (ChangePasswordResponse);
+}
+
+// Location message
+message Location {
+  string placeName = 1;
+  string type = 2;
+  repeated double coordinates = 3;
+}
+
+// User message
+message User {
+  string id = 1;
+  string email = 2;
+  string username = 3;
+  string phone = 4;
+  string role = 5;
+  string profileImageKey = 6;
+  string coverImageKey = 7;
+  repeated string resumeKeys = 8;
+  string createdAt = 9;
+  string updatedAt = 10;
+}
+
+// Signin
+message SigninRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message SigninResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
+  User user = 3;
+}
+
+// Signup
+message SignupRequest {
+  string email = 1;
+  string password = 2;
+  string username = 3;
+  optional string phone = 4;
+  optional Location location = 5;
+  optional string companyName = 6;
+}
+
+message SignupResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Verify OTP
+message VerifyOtpRequest {
+  string email = 1;
+  string otp = 2;
+}
+
+message VerifyOtpResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
+  User user = 3;
+}
+
+// Forgot Password
+message ForgotPasswordRequest {
+  string email = 1;
+}
+
+message ForgotPasswordResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Reset Password
+message ResetPasswordRequest {
+  string token = 1;
+  string newPassword = 2;
+}
+
+message ResetPasswordResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Google Auth
+message GoogleAuthRequest {
+  string token = 1;
+}
+
+message GoogleAuthResponse {
+  optional string accessToken = 1;
+  optional string refreshToken = 2;
+  optional User user = 3;
+  bool profile_complete = 4;
+}
+
+// Google Auth Flow
+message GoogleAuthFlowRequest {
+  string email = 1;
+  string phone = 3;
+  Location location = 4;
+}
+
+message GoogleAuthFlowResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
+  User user = 3;
+}
+
+// Refresh Token
+message RefreshTokenRequest {
+  string refreshToken = 1;
+}
+
+message RefreshTokenResponse {
+  string accessToken = 1;
+  string refreshToken = 2;
+}
+
+// Change Password
+message ChangePasswordRequest {
+  string id = 1;
+  string oldPassword = 2;
+  string newPassword = 3;
+}
+
+message ChangePasswordResponse {
+  bool success = 1;
+  string message = 2;
+}

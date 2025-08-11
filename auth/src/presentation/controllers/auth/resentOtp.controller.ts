@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { Dependencies } from "@domain/entities/interfaces";
-import OTP from "@infra/libs/otp";
-import { generateOTPEmail, getMessage } from "@infra/libs/genarateMail";
+import OTP from "@/infrastructure/libs/otp";
+import { generateOTPEmail, getMessage } from "@/infrastructure/libs/genarateMail";
 
 const resentOTPController = (dependencies: Dependencies) => {
   const {

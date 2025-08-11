@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{subject}}</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #fafafa;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+      }
+      
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        background-color: #ffffff;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      
+      .header {
+        background: linear-gradient(135deg, #ff6b35, #ff8c42);
+        padding: 30px 20px;
+        text-align: center;
+        color: #ffffff;
+      }
+      
+      .logo {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        margin: 0 auto 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: bold;
+        color: white;
+      }
+      
+      h1 {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+      }
+      
+      .subtitle {
+        font-size: 14px;
+        margin-top: 5px;
+        opacity: 0.9;
+      }
+      
+      .content {
+        padding: 40px 30px;
+        text-align: center;
+        background-color: #ffffff;
+      }
+      
+      .greeting {
+        color: #333333;
+        font-size: 18px;
+        font-weight: 500;
+        margin-bottom: 20px;
+      }
+      
+      .message {
+        color: #666666;
+        font-size: 16px;
+        margin-bottom: 30px;
+        line-height: 1.5;
+      }
+      
+      .otp-section {
+        background-color: #fff7f0;
+        border: 2px solid #ffebe0;
+        border-radius: 8px;
+        padding: 25px;
+        margin: 25px 0;
+      }
+      
+      .otp-label {
+        color: #ff6b35;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 10px;
+      }
+      
+      .otp-code {
+        font-family: 'Courier New', monospace;
+        font-size: 32px;
+        font-weight: bold;
+        color: #ff6b35;
+        letter-spacing: 6px;
+        margin: 15px 0;
+        padding: 10px;
+        background-color: #ffffff;
+        border-radius: 4px;
+        border: 1px solid #ffebe0;
+      }
+      
+      .validity-info {
+        background-color: #fff3cd;
+        border: 1px solid #ffeaa7;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 20px 0;
+        color: #856404;
+        font-size: 14px;
+        font-weight: 500;
+      }
+      
+      .security-warning {
+        background-color: #f8f9fa;
+        border-left: 4px solid #ff6b35;
+        padding: 20px;
+        margin: 25px 0;
+        text-align: left;
+      }
+      
+      .security-warning h3 {
+        color: #ff6b35;
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      
+      .security-warning p {
+        color: #666666;
+        font-size: 14px;
+        margin: 0;
+        line-height: 1.5;
+      }
+      
+      .security-warning a {
+        color: #ff6b35;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      
+      .security-warning a:hover {
+        text-decoration: underline;
+      }
+      
+      .footer {
+        background-color: #f8f9fa;
+        padding: 30px 20px;
+        text-align: center;
+        border-top: 1px solid #e9ecef;
+      }
+      
+      .company-name {
+        color: #333333;
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 10px;
+      }
+      
+      .company-details {
+        color: #666666;
+        font-size: 14px;
+        margin-bottom: 15px;
+      }
+      
+      .company-details a {
+        color: #ff6b35;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      
+      .company-details a:hover {
+        text-decoration: underline;
+      }
+      
+      .divider {
+        height: 1px;
+        background-color: #e9ecef;
+        margin: 20px 0;
+      }
+      
+      .footer-note {
+        color: #999999;
+        font-size: 12px;
+        line-height: 1.4;
+      }
+      
+      /* Responsive Design */
+      @media only screen and (max-width: 600px) {
+        .email-container {
+          margin: 0;
+          border-radius: 0;
+        }
+        
+        .header {
+          padding: 25px 15px;
+        }
+        
+        h1 {
+          font-size: 22px;
+        }
+        
+        .content {
+          padding: 30px 20px;
+        }
+        
+        .otp-code {
+          font-size: 28px;
+          letter-spacing: 4px;
+        }
+        
+        .footer {
+          padding: 25px 15px;
+        }
+      }
+      
+      @media screen and (max-width: 480px) {
+        .otp-section {
+          padding: 20px 15px;
+        }
+        
+        .security-warning {
+          padding: 15px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="header">
+        <div class="logo">{{CompanyInitial}}</div>
+        <h1>{{subject}}</h1>
+        <p class="subtitle">Verification Required</p>
+      </div>
+      
+      <div class="content">
+        <div class="greeting">Hello {{name}},</div>
+        
+        <p class="message">
+          You have requested to {{type}}. Please use the verification code below to complete this process securely.
+        </p>
+        
+        <div class="otp-section">
+          <div class="otp-label">Verification Code</div>
+          <div class="otp-code">{{otp}}</div>
+        </div>
+        
+        <div class="validity-info">
+          ⏱️ This code is valid for 15 minutes only
+        </div>
+        
+        <div class="security-warning">
+          <h3>🔐 Security Notice</h3>
+          <p>
+            If you did not request this verification code, please ignore this email and your account will remain secure. 
+            If you have concerns about your account security, please contact our support team at 
+            <a href="mailto:support@{{CompanyDomain}}">support@{{CompanyDomain}}</a>.
+          </p>
+        </div>
+      </div>
+      
+      <div class="footer">
+        <div class="company-name">{{CompanyName}}</div>
+        <div class="company-details">
+          <a href="https://{{CompanyDomain}}">{{CompanyDomain}}</a> | 
+          <a href="mailto:support@{{CompanyDomain}}">Contact Support</a>
+        </div>
+        
+        <div class="divider"></div>
+        
+        <div class="footer-note">
+          This is an automated message. Please do not reply to this email.<br>
+          © 2025 {{CompanyName}}. All rights reserved.
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

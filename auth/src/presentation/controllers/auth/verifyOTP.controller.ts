@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { Dependencies } from "@domain/entities/interfaces";
-import Token from "@infra/libs/token";
+import Token from "@/infrastructure/libs/token";
 import { BadRequestError, StatusCode } from "@muhammednajinnprosphere/common";
 import { OTP_ERROR_STATE, ROLE, TOKEN_TYPE } from "@/shared/types/enums";
 

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { Dependencies } from '@domain/entities/interfaces';
-import Token from '@infra/libs/token';
+import Token from '@/infrastructure/libs/token';
 import { BadRequestError } from '@muhammednajinnprosphere/common';
 
  const adminLoginController = (dependencies: Dependencies) => {
