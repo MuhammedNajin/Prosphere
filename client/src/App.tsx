@@ -7,7 +7,7 @@ import ErrorAlert from "./components/ErrorAlert/ErrorAlert";
 import { useAlertStore } from "./api";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { logout } from "./redux/reducers/authSlice";
+import { logout } from "./redux/reducers/userSlice";
 
 function App() {
   const { isLogout, isOpen, title, message, type, retryAction, closeAlert,  } =

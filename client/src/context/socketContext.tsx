@@ -1,4 +1,4 @@
-import { useGetUser } from "@/hooks/useGetUser";
+import { useCurrentUser } from "@/hooks/useSelectors";
 import { logoutThuck } from "@/redux/action/actions";
 import store from "@/redux/store";
 import React, { createContext, useEffect, useState } from "react";
@@ -36,7 +36,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [notificationSocket, setNotificationSocket] = useState<Socket | null>(null);
   const [authSocket, setAuthSocket] = useState<Socket | null>(null);
   
-  const user = useGetUser();
+  const user = useCurrentUser();
 
   useEffect(() => {
  
@@ -56,7 +56,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       instances.auth.on('connect', () => {
         console.log('Connected to auth Socket.IO server', user);
-        instances.auth?.emit('join_room', user?._id);
+        instances.auth?.emit('join_room', user?.id);
       });
 
       instances.auth.on('block:user', (roomId: string) => {
@@ -83,7 +83,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       instances.chat.on('connect', () => {
         console.log('Connected to Chat Socket.IO server', user);
-        instances.chat?.emit('join_room', { receiver: user?._id });
+        instances.chat?.emit('join_room', { receiver: user?.id });
       });
 
       instances.chat.on('connect_error', (error) => {
@@ -98,7 +98,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
       instances.notification.on('connect', () => {
         console.log('Connected to Notification Socket.IO server', user);
-        instances.notification?.emit('subscribe', user?._id);
+        instances.notification?.emit('subscribe', user?.id);
       });
 
       instances.notification.on('connect_error', (error) => {
@@ -127,7 +127,7 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           socket.disconnect();
         }
       });
-      instances?.chat?.emit('last_seen', { id: user?._id });
+      instances?.chat?.emit('last_seen', { id: user?.id });
       setChatSocket(null);
       setNotificationSocket(null);
       setAuthSocket(null);

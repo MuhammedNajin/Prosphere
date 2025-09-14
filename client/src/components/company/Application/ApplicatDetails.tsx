@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
-import { ProfileApi } from "@/api/Profile.api";
+import { UserApi } from "@/api/user.api";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -18,8 +18,9 @@ const ApplicantDetails = () => {
   const { data: profileData, isLoading } = useQuery({
     queryKey: ['profiledetails'],
     queryFn: () => {
+      console.log("fetching profile for id:", applicantId);
       if(applicantId) {
-        return ProfileApi.getProfile(applicantId)
+        return UserApi.getUserById(applicantId)
       }
     },
     enabled: !!applicantId
@@ -27,8 +28,8 @@ const ApplicantDetails = () => {
 
   useEffect(() => {
      console.log("id", applicantId);
-     
-  }, [])
+     console.log("profileData", profileData);
+  }, [profileData, applicantId]);
 
 
   const SkillBadge = ({ skill }: { skill: Skill }) => (

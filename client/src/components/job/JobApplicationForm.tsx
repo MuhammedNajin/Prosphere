@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Paperclip, CircleCheck, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,14 +15,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useGetUser } from "@/hooks/useGetUser";
-import { ProfileApi } from "@/api/Profile.api";
+import { UserApi } from "@/api/user.api";
 import { ApplicationApi } from "@/api/application.api";
 import ResumeFile from "./ResumeFile";
-import { useResume } from "@/hooks/useResume";
 import { useDispatch } from "react-redux";
-import { setResume } from "@/redux/reducers/authSlice";
-import { useMutation, useQueryClient } from "react-query";
+import { setResume } from "@/redux/reducers/userSlice";
+import { useMutation, useQueryClient, useQuery } from "react-query";
 import LoaderSubmitButton from "../common/spinner/LoaderSubmitButton";
 import { useToast } from "@/hooks/use-toast";
 import { JobApplicationFormProps } from "@/types/application";
@@ -30,6 +28,7 @@ import { Spinner } from "../common/spinner/Loader";
 import { AxiosError, HttpStatusCode } from "axios";
 import { ApplicationFormData, ResumeValues } from "@/types/formData";
 import { jobApplicationFormSchema, resumeSchema } from "@/types/schema";
+import { useCurrentUser } from "@/hooks/useSelectors";
 
 const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   companyId,
@@ -40,11 +39,31 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
   const [state, setState] = useState<boolean>(false);
   const [uploadError, setUploadError] = useState<any | null>(null);
   const [charCount, setCharCount] = useState<number>(0);
-  const user = useGetUser();
-  const profile = useResume();
+  const user = useCurrentUser();
   const dispatch = useDispatch();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch user profile to get resume data
+  const { data: userProfile, isLoading: isLoadingProfile } = useQuery(
+    "userProfile",
+    UserApi.getProfile,
+    {
+      enabled: !!user?.id,
+      onError: (error) => {
+        console.error("Error fetching user profile:", error);
+        toast({
+          description: (
+            <div className="flex items-center gap-2">
+              <AlertCircle className="text-red-800" size={20} />
+              <h1>Error loading profile data</h1>
+            </div>
+          ),
+          variant: "destructive",
+        });
+      },
+    }
+  );
 
   const resumeForm = useForm<ResumeValues>({
     resolver: zodResolver(resumeSchema),
@@ -66,15 +85,29 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
     },
   });
 
+  // Update form values when user profile is loaded
+  useEffect(() => {
+    if (userProfile) {
+      form.setValue("fullName", userProfile.username || user?.username || "");
+      form.setValue("email", userProfile.email || user?.email || "");
+      form.setValue("phone", userProfile.phone || user?.phone || "");
+      // form.setValue("linkedinUrl", userProfile.linkedinUrl || "");
+      // form.setValue("portfolioUrl", userProfile.portfolioUrl || "");
+    }
+  }, [userProfile, user, form]);
+
   const resumeMutation = useMutation({
-    mutationFn: ProfileApi.uploadResume,
+    mutationFn: UserApi.uploadResume,
     onSuccess: () => {
       setUploadError(null);
       const filename = resumeForm.getValues("resume");
       if (filename && filename instanceof FileList && filename.length > 0) {
-        const resumeKey = `${user?._id}${filename[0].name}`;
+        const resumeKey = `${user?.id}${filename[0].name}`;
         form.setValue("resume", resumeKey);
         dispatch(setResume(resumeKey));
+
+        // Refetch user profile to get updated resume data
+        queryClient.invalidateQueries("userProfile");
 
         toast({
           description: (
@@ -141,21 +174,53 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
     },
   });
 
-  const onResumeSubmit = async (data: ResumeValues) => {
-    resumeMutation.mutate({ data });
-  };
+  const onResumeSubmit = (data: ResumeValues) => {
+  const formData = new FormData();
+
+  const resumeFile = data.resume;
+
+  if (resumeFile instanceof FileList && resumeFile.length > 0) {
+    // Case: FileList
+    formData.append("resume", resumeFile[0]);
+    console.log("Appending file from FileList:", resumeFile[0]);
+  } else if (resumeFile instanceof File) {
+    // Case: Single File
+    formData.append("resume", resumeFile);
+    console.log("Appending file:", resumeFile);
+  } else {
+    console.warn("No valid file found in resume field:", resumeFile);
+    return;
+  }
+
+  resumeMutation.mutate({ data: formData });
+};
+
 
   const onSubmit = async (data: ApplicationFormData) => {
-    if (!user?._id) return;
+    if (!user?.id) return;
 
     const applicationData = {
       ...data,
-      applicantId: user._id,
+      applicantId: user.id,
       jobId,
       companyId,
     };
     applicationMutation.mutate({ data: applicationData });
   };
+
+  // Get resume data from user profile instead of useResume hook
+  const userResumes = userProfile?.resumeKeys || [];
+
+  if (isLoadingProfile) {
+    return (
+      <div className="bg-white md:p-6 rounded w-full md:mx-auto flex items-center justify-center">
+        <div className="flex items-center gap-2">
+          <Spinner color="#f59e0b" size={20} />
+          <span>Loading profile data...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white md:p-6 rounded w-full md:mx-auto">
@@ -276,17 +341,17 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
             />
 
             <div>
-              {profile &&
-                profile?.map((key: string, index: number) => (
+              {userResumes &&
+                userResumes.map((resumeKey: string, index: number) => (
                   <ResumeFile
                     key={index}
-                    fileName={key}
+                    fileName={resumeKey}
                     onDownload={() => {}}
                     setResume={() => {
-                      form.setValue("resume", key);
+                      form.setValue("resume", resumeKey);
                       setState(!state);
                     }}
-                    active={key === form.getValues("resume")}
+                    active={resumeKey === form.getValues("resume")}
                   />
                 ))}
             </div>
@@ -389,4 +454,3 @@ const JobApplicationForm: React.FC<JobApplicationFormProps> = ({
 };
 
 export default JobApplicationForm;
-  

@@ -207,7 +207,7 @@ const AdminDashboard = () => {
                   {jobStats?.recentJobs?.map((job) => (
                     <tr key={job._id} className="border-b bg-white">
                       <td className="px-6 py-4">{job.jobTitle}</td>
-                      <td className="px-6 py-4">{job.companyId.name}</td>
+                      <td className="px-6 py-4">{job.companyId?.name}</td>
                       <td className="px-6 py-4">-</td>
                       <td className="px-6 py-4">{job.jobLocation}</td>
                       <td className="px-6 py-4">

@@ -19,34 +19,55 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AddMemberModal from "./AddMemberModal";
 import { useQuery } from "react-query";
 import { CompanyApi } from "@/api";
-import { User } from "@/types/company";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
+import { IUser } from "@/types/user";
 
 const PublicMemberDirectory = () => {
-
-  const { data } = useQuery({
+  const company = useCurrentCompany();
+  const employees = useQuery({
     queryKey: ['people'],
-     queryFn: () => CompanyApi.getEmployees()
-
+     queryFn: () => CompanyApi.getCompanyEmployees(company?.id as string)
   })
 
   useEffect(() => {
-     console.log(data);
-     
-  }, [data])
+     console.log('!!!!!!!!!!!!!!!!!!!!!!!!!', employees.data);
+  }, [employees.data])
 
   const onSuccessCallback = () => {
-     
+     // Refetch the employees data when a new member is added
+     employees.refetch();
   }
 
   const getInitial = (username: string) => {
     return username ? username[0].toUpperCase() : "U";
   };
 
-  
   const formatPhoneNumber = (phone: string) => {
     if (!phone) return "";
     return phone.replace(/(\d{3})(\d{3})(\d{4})/, "$1 $2 $3");
   };
+
+  // Show loading state
+  if (employees.isLoading) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg">Loading team members...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (employees.isError) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="flex justify-center items-center h-64">
+          <div className="text-lg text-red-600">Error loading team members</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
@@ -73,10 +94,10 @@ const PublicMemberDirectory = () => {
         </div>
       </div>
 
-      {data && data?.team.length > 0 ? (
+      {employees.data?.team && employees.data.team.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {data?.team?.map(({ userId }: { userId: User}) => (
-             <Card className="w-full max-w-sm transform transition-all duration-300 hover:scale-105 hover:shadow-xl bg-white dark:bg-zinc-900">
+          {employees.data.team.map(({ userId: user }: { userId: IUser}) => (
+             <Card key={user.id || user.email} className="w-full max-w-sm transform transition-all duration-300 hover:scale-105 hover:shadow-xl bg-white dark:bg-zinc-900">
              <CardHeader className="pt-6 pb-4">
                <div className="relative flex flex-col items-center">
             
@@ -86,20 +107,20 @@ const PublicMemberDirectory = () => {
                  
                  <div className="p-1 rounded-full bg-gradient-to-r from-orange-400 to-orange-600">
                    <Avatar className="h-24 w-24 border-4 border-white dark:border-zinc-900">
-                     <AvatarImage src={userId.profilePhoto ?? ''} alt={userId.username} />
+                     <AvatarImage src={user.profileImageKey ?? ''} alt={user.username} />
                      <AvatarFallback className="text-2xl font-bold bg-orange-100 text-orange-700">
-                       {getInitial(userId.username)}
+                       {getInitial(user.username)}
                      </AvatarFallback>
                    </Avatar>
                  </div>
 
                  <div className="mt-4 text-center">
                    <h3 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">
-                     {userId.username}
+                     {user.username}
                    </h3>
-                   {userId.about && (
+                   {user.about && (
                      <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                       {userId.about}
+                       {user.about}
                      </p>
                    )}
                  </div>
@@ -110,15 +131,15 @@ const PublicMemberDirectory = () => {
                <div className="space-y-3">
                  <div className="flex items-center space-x-3 text-sm text-zinc-600 dark:text-zinc-300">
                    <Mail className="h-4 w-4 text-orange-600" />
-                   <span className="truncate">{userId.email}</span>
+                   <span className="truncate">{user.email}</span>
                  </div>
                  <div className="flex items-center space-x-3 text-sm text-zinc-600 dark:text-zinc-300">
                    <Phone className="h-4 w-4 text-orange-600" />
-                   <span>{formatPhoneNumber(userId.phone)}</span>
+                   <span>{formatPhoneNumber(user.phone)}</span>
                  </div>
                  <div className="flex items-center space-x-3 text-sm text-zinc-600 dark:text-zinc-300">
                    <Briefcase className="h-4 w-4 text-orange-600" />
-                   <span>{userId.jobRole}</span>
+                   <span>{user.headline}</span>
                  </div>
                </div>
              </CardContent>

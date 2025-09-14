@@ -1,10 +1,9 @@
-import { RootState } from '@/redux/store';
+import { useCurrentUser } from '@/hooks/useSelectors';
 import { Mail, Phone, User } from 'lucide-react';
-import { useSelector } from 'react-redux';
 
 const ContactInfoModalContent = () => {
 
-    const { user } = useSelector((state: RootState) => state.auth);
+    const user = useCurrentUser()
   return (
     <div className="p-6 space-y-6">
       <div className="text-center">
@@ -12,7 +11,7 @@ const ContactInfoModalContent = () => {
           <User size={48} className="text-gray-500" />
         </div>
         <h2 className="text-2xl font-bold">{user?.username}</h2>
-        <p className="text-gray-500">{user?.jobRole}</p>
+        {/* <p className="text-gray-500">{user?.}</p> */}
       </div>
       
       <div className="space-y-4">

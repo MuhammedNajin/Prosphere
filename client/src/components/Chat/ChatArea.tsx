@@ -9,7 +9,6 @@ import {
   Trash2,
 } from "lucide-react";
 import { TbCircleCheckFilled } from "react-icons/tb";
-import { useGetUser } from "@/hooks/useGetUser";
 import { SocketContext } from "@/context/socketContext";
 import { ChatApi } from "@/api/Chat.api";
 import { useQuery, useQueryClient } from "react-query";
@@ -26,10 +25,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import TypingIndicator from "./TypingIndicator";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 import { Popover } from "../ui/popover-dialog";
 import { PopoverContent, PopoverTrigger } from "../ui/popover";
 import EmojiPicker from "emoji-picker-react";
+import { useCurrentUser } from "@/hooks/useSelectors";
 
 interface ChatAreaProps extends ChatRole {
   conversation: SelectedConversation;
@@ -59,15 +59,15 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   setTyping,
   context,
 }) => {
-  const user = useGetUser();
+  const user = useCurrentUser();
   const [content, setContent] = useState("");
   const { chatSocket } = useContext(SocketContext);
   const queryClient = useQueryClient();
   const chatContainerRef = useRef<HTMLDivElement>(null);
-  const company = useSelectedCompany();
+  const company = useCurrentCompany();
   const { data } = useQuery({
     queryKey: ["chat", conversation],
-    queryFn: () => ChatApi.getChat(conversation?.id as string, user?._id as string),
+    queryFn: () => ChatApi.getChat(conversation?.id as string, user?.id as string),
   });
 
   useEffect(() => {
@@ -212,8 +212,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
     delete: async (msg: Message) => {
       console.log("Delete message:", msg);
-      if (!user?._id) return;
-      await ChatApi.delete(msg.id, user._id);
+      if (!user?.id) return;
+      await ChatApi.delete(msg.id, user.id);
       deleteMessage(msg.id);
     },
 
@@ -287,7 +287,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
   }, [chatSocket?.connected]);
 
   const handleSend = async () => {
-    if (!content || !user?._id) return;
+    if (!content || !user?.id) return;
     console.log("context", context);
     const id = generateObjectId();
     console.log("msg id", id);
@@ -296,7 +296,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
     const newMessage = {
       id: id,
       conversation: conversation.id,
-      sender: user._id,
+      sender: user.id,
       receiver: conversation?.receiverId,
       content: {
         type: "text",
@@ -308,7 +308,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
       newConv: newConv,
       receiverDetails: newConv ? newConv : undefined,
       context,
-      companyId: company?._id,
+      companyId: company?.id,
       company: company,
     };
 
@@ -317,17 +317,17 @@ const ChatArea: React.FC<ChatAreaProps> = ({
     console.log("receieeeeeeeeeeeeeeeeeeee!!!!!!!!!!!!!!!!!", conversation?.receiverId);
     
     addNewMessage(newMessage);
-    console.log("receieeeeeeeeeeeeeeeeeeee!!!!!!!!!!!!!!!!! after adding the message", conversation?.receiverId);
+    console.log("receieeeeeeeeeeeeeeeeeeee!!!!!!!!!!!!!!!!! after adding the message", conversation);
     
     await ChatApi.sendMessage(
       {
         id,
-        sender: user._id,
+        sender: user.id,
         receiver: conversation?.receiverId,
         content: { type: "text", text: content },
         conversationId: conversation?.id,
         context,
-        companyId: company?._id,
+        companyId: company?.id,
       },
     );
 
@@ -353,7 +353,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({
 
   const MessageComponent = ({ msg }: { msg: Message }) => {
     const [showActions, setShowActions] = useState(false);
-    const isOwnMessage = msg?.sender === user?._id;
+    const isOwnMessage = msg?.sender === user?.id;
 
     const currentTime = new Date();
     const messageTime = new Date(msg.createdAt);

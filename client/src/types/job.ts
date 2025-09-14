@@ -27,6 +27,11 @@ export interface Job {
   expired?: boolean;
   likes: string[]
   createdAt: string;
+  salary: {
+    from: number;
+    to: number;
+    status: boolean
+  }
 }
 
 export interface GetjobByCompanyArgs {

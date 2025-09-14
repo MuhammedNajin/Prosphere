@@ -1,7 +1,8 @@
 import { useLocation, Navigate } from 'react-router-dom';
-import { useSelectedCompany } from '@/hooks/useSelectedCompany';
+import { useCurrentCompany } from '@/hooks/useSelectedCompany';
 import { VerificationAlert } from '@/components/company/Verification/VerificationAlertDialoag';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { CompanyStatus } from '@/types/company';
 
 const VERIFICATION_ROUTES = [
   '/company/verification',
@@ -13,8 +14,12 @@ interface CompanyWrapperProps {
 }
 
 const CompanyWrapper: React.FC<CompanyWrapperProps> = ({ children }) => {
-  const company = useSelectedCompany();
+  const company = useCurrentCompany();
   const location = useLocation();
+
+  useEffect(() => {
+    console.log("CompanyWrapper mounted or company changed", company);  
+  }, [company]);
   
   const isVerificationRoute = () => {
     return VERIFICATION_ROUTES.some(route => location.pathname.startsWith(route));
@@ -26,7 +31,7 @@ const CompanyWrapper: React.FC<CompanyWrapperProps> = ({ children }) => {
   }
 
   switch (company?.status) {
-    case 'pending':
+    case CompanyStatus.PENDING:
 
       if (!isVerificationRoute()) {
         return <VerificationAlert />;
@@ -34,7 +39,7 @@ const CompanyWrapper: React.FC<CompanyWrapperProps> = ({ children }) => {
     
       return <>{children}</>;
 
-    case 'rejected':
+    case CompanyStatus.SUSPENDED:
       if (!isVerificationRoute()) {
         return <VerificationAlert 
           rejectionReason={company.rejectionReason}
@@ -45,7 +50,8 @@ const CompanyWrapper: React.FC<CompanyWrapperProps> = ({ children }) => {
       }
       return <>{children}</>;
 
-    case 'uploaded':
+    case CompanyStatus.UNDER_REVIEW:
+      console.log("under review")
       return <VerificationAlert 
         uploadedAt={company.lastVerificationAttempt}
         companyDocType={company.companyVerificationDoc?.documentType}

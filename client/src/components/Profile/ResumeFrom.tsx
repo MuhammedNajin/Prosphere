@@ -1,18 +1,20 @@
 import React from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation } from 'react-query';
-import { ProfileApi } from '@/api/Profile.api';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, CircleCheck } from 'lucide-react';
+import { queryClient } from '@/main';
 import { Button } from '@/components/ui/button';
-
-interface ResumeFormProps {
-  onClose: (show: boolean) => void;
-}
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import ErrorMessage from '../common/Message/ErrorMessage';
+import SuccessMessage from '../common/Message/SuccessMessage';
+import LoaderSubmitButton from '../common/spinner/LoaderSubmitButton';
+import { AxiosError, HttpStatusCode } from 'axios';
+import { ApiErrorResponse } from '@/api';
+import { useCurrentUser } from '@/hooks/useSelectors';
+import { UserApi } from '@/api/user.api';
+import { Input } from '../ui/input';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_FILE_TYPES = [
@@ -27,84 +29,95 @@ const resumeSchema = z.object({
     .refine((file) => file.size <= MAX_FILE_SIZE, 'File size must be less than 5MB')
     .refine(
       (file) => ACCEPTED_FILE_TYPES.includes(file.type),
-      'Only PDF and Word documents are accepted'
+      'Only PDF and Word documents are allowed'
     ),
 });
 
+type ResumeFormValues = z.infer<typeof resumeSchema>;
+
+interface ResumeFormProps {
+  onClose: () => void;
+}
+
 const ResumeForm: React.FC<ResumeFormProps> = ({ onClose }) => {
-  const { user } = useSelector((state: RootState) => state.auth);
+  const user = useCurrentUser()
   const { toast } = useToast();
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
+
+  const form = useForm<ResumeFormValues>({
     resolver: zodResolver(resumeSchema),
+    defaultValues: {
+      resume: undefined,
+    },
   });
 
-  const mutation = useMutation({
-    mutationFn: ProfileApi.uploadResume,
+  const { mutate: uploadResume, isLoading } = useMutation({
+    mutationFn: (formData: FormData) => UserApi.uploadResume({ data: formData }),
     onSuccess: () => {
       toast({
-        description: (
-          <div className="flex items-center gap-2">
-            <CircleCheck className="text-green-800" size={20} />
-            <h1>Resume uploaded successfully</h1>
-          </div>
-        ),
+        description: <SuccessMessage message="Resume uploaded successfully" />,
       });
-      onClose(false);
+      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+      onClose();
     },
-    onError: () => {
-      const errorMessage = 'Error uploading resume, try again';
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      const errorMessage =
+        error.response?.status === HttpStatusCode.BadRequest
+          ? error.response?.data?.errors?.[0]?.message || 'Invalid resume file'
+          : 'Error uploading resume, please try again';
       toast({
-        description: (
-          <div className="flex items-center gap-2">
-            <AlertCircle className="text-red-800" size={20} />
-            <h1>{errorMessage}</h1>
-          </div>
-        ),
+        description: <ErrorMessage message={errorMessage} />,
         variant: 'destructive',
       });
     },
   });
 
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: ResumeFormValues) => {
+    if (!user?.id) {
+      toast({
+        description: <ErrorMessage message="User ID is missing" />,
+        variant: 'destructive',
+      });
+      return;
+    }
+
     const formData = new FormData();
     formData.append('resume', data.resume);
-    formData.append('userId', user?._id!);
-    mutation.mutate({ data: formData });
+    formData.append('userId', user.id);
+    uploadResume(formData);
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      <div>
-        <Controller
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
           name="resume"
-          control={control}
-          defaultValue={null}
           render={({ field }) => (
-            <input
-              type="file"
-              accept=".pdf,.doc,.docx"
-              onChange={(e) => field.onChange(e.target.files?.[0] || null)}
-              className="w-full p-2 border rounded"
-            />
+            <FormItem>
+              <FormLabel>Upload Resume</FormLabel>
+              <FormControl>
+                <Input
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  onChange={(e: any) => field.onChange(e.target.files?.[0] || undefined)}
+                  className="w-full p-2 border rounded"
+                />
+              </FormControl>
+              <p className="text-sm text-gray-600 mt-1">
+                Accepted formats: PDF, Word (.doc, .docx). Max size: 5MB
+              </p>
+              <FormMessage />
+            </FormItem>
           )}
         />
-        {errors.resume && (
-          <p className="text-red-500 text-sm mt-1">{errors.resume?.message?.toString() || 'Invalid resume file' }</p>
-        )}
-      </div>
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={() => onClose(false)}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={mutation.isLoading}>
-          {mutation.isLoading ? 'Uploading...' : 'Upload Resume'}
-        </Button>
-      </div>
-    </form>
+        <div className="flex justify-end gap-4">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <LoaderSubmitButton state={isLoading}>Upload Resume</LoaderSubmitButton>
+        </div>
+      </form>
+    </Form>
   );
 };
 

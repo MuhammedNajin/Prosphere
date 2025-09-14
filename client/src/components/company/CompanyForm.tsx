@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { CompanyApi } from '@/api/Company.api';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import LocationSearch from '../common/LocationField/LocationField';
 import { MapboxResult } from '@/types/company';
@@ -28,20 +27,22 @@ import { useMutation } from 'react-query';
 import LoaderSubmitButton from '../common/spinner/LoaderSubmitButton';
 import { companyformSchema } from '@/types/schema';
 import { Companydata } from '@/types/formData';
-import { RootState } from '@/redux/store';
+import { useCurrentUser } from '@/hooks/useSelectors';
+import { CompanyType } from '@/constants/constance';
+import { useToast } from '@/hooks/use-toast';
+
 
 export type CompanyDetails = {
-  name: string;
-  url: string;
+  name: string;  
   website: string;
-  industry: string;
+  industry: string;   
   size: string;
   type: string;
-  location: string;
+  location: string;  
 };
 
-
 const CompanyDetailsForm: React.FC = () => {
+  const { toast } = useToast();
   const form = useForm<Companydata>({
     resolver: zodResolver(companyformSchema),
     defaultValues: {
@@ -53,7 +54,7 @@ const CompanyDetailsForm: React.FC = () => {
     },
   });
 
-  const { user } = useSelector((state: RootState) => state.auth);
+  const user = useCurrentUser()
   const navigate = useNavigate()
 
   const companyMutation = useMutation({
@@ -61,20 +62,31 @@ const CompanyDetailsForm: React.FC = () => {
     onSuccess: () => {
       navigate('/mycompany', { state: false });
     },
-    onError: (error) => {
-       console.log(error);
-       
+    onError: ({ errors }) => {
+       console.log("errordddddddddddddddddd", errors);
+       toast({
+         title: "Error",
+         description: errors.message ?? "Failed to create company. Please try again.",
+         variant: "destructive",
+       });
     }
   })
-  console.log(user)
+
   const onSubmit = async (companyData: Companydata) => {
     console.log("companyData", companyData);
-    const data = { ...companyData, id: user?._id }
-    companyMutation.mutate({ data })
-  
+    
+    // Match exactly what your current backend controller expects
+    const data = { 
+      name: companyData.name,
+      website: companyData.website,
+      location: companyData.location,   // Keep as location (singular) as controller expects
+      size: companyData.size,
+      type: companyData.type,
+      id: user?.id 
+    };
+    
+    companyMutation.mutate({ data });
   };
-
-
 
   return (
     <div className="max-w-4xl mx-auto p-6 mb-8">
@@ -111,8 +123,10 @@ const CompanyDetailsForm: React.FC = () => {
                 </FormItem>
               )}
             />
+
+            {/* Keep the disabled IT field as is since your backend doesn't handle industry */}
             <div className='space-y-4'>
-            <Input disabled placeholder="IT"/>
+              <Input disabled placeholder="IT"/>
             </div>
              
             <FormField
@@ -131,6 +145,7 @@ const CompanyDetailsForm: React.FC = () => {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="size"
@@ -145,13 +160,9 @@ const CompanyDetailsForm: React.FC = () => {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="0-1">0-1 employees</SelectItem>
-                      <SelectItem value="2-10">2-10 employees</SelectItem>
                       <SelectItem value="11-50">11-50 employees</SelectItem>
                       <SelectItem value="51-200">51-200 employees</SelectItem>
-                      <SelectItem value="201-500">201-500 employees</SelectItem>
-                      <SelectItem value="501-1000">501-1000 employees</SelectItem>
-                      <SelectItem value="1001-5000">1001-5000 employees</SelectItem>
-                      <SelectItem value="5001-10000">5001-10000 employees</SelectItem>
+                      <SelectItem value="201-1000">1001-5000 employees</SelectItem>
                       <SelectItem value="10001+">10001+ employees</SelectItem>
                     </SelectContent>
                   </Select>
@@ -159,6 +170,7 @@ const CompanyDetailsForm: React.FC = () => {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="type"
@@ -172,22 +184,25 @@ const CompanyDetailsForm: React.FC = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="public">Public company</SelectItem>
-                      <SelectItem value="private">Private company</SelectItem>
-                      <SelectItem value="nonprofit">Nonprofit</SelectItem>
-                      <SelectItem value="government">Government agency</SelectItem>
-                      <SelectItem value="partnership">Partnership</SelectItem>
-                      <SelectItem value="soleProprietorship">Sole proprietorship</SelectItem>
-                      <SelectItem value="selfEmployed">Self-employed</SelectItem>
+                      <SelectItem value={CompanyType.STARTUP}>{CompanyType.STARTUP}</SelectItem>
+                      <SelectItem value={CompanyType.PUBLIC}>{CompanyType.PUBLIC}</SelectItem>
+                      <SelectItem value={CompanyType.PRIVATE}>{CompanyType.PRIVATE}</SelectItem>
+                      <SelectItem value={CompanyType.NON_PROFIT}>{CompanyType.NON_PROFIT}</SelectItem>
+                      <SelectItem value={CompanyType.GOVERNMENT}>{CompanyType.GOVERNMENT}</SelectItem>
+                      <SelectItem value={CompanyType.EDUCATIONAL}>{CompanyType.EDUCATIONAL}</SelectItem>
+                      <SelectItem value={CompanyType.SELF_EMPLOYED}>{CompanyType.SELF_EMPLOYED}</SelectItem>
+                      <SelectItem value={CompanyType.PARTNERSHIP}>{CompanyType.PARTNERSHIP}</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-           <LoaderSubmitButton state={companyMutation.isLoading} >Save</LoaderSubmitButton>
+
+           <LoaderSubmitButton state={companyMutation.isLoading}>Save</LoaderSubmitButton>
           </form>
         </Form>
+        
         <div>
           <Card className="p-4 bg-gray-50">
             <h2 className="text-lg font-semibold mb-4">Page preview</h2>

@@ -1,6 +1,6 @@
-import { RootState } from "@/redux/store";
+import { useCurrentUser } from "@/hooks/useSelectors";
+import { UserRole } from "@/types/user";
 import React from "react";
-import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 
 
@@ -11,10 +11,10 @@ interface AdminRouteWrapperProps {
 const AdminRouteWrapper: React.FC<AdminRouteWrapperProps> = (props) => {
     
     const { children } = props
-    const { user } = useSelector((state: RootState) => state.auth);
+    const user = useCurrentUser()
     console.log("user", user);
     
-     if(user) {
+     if(user?.role === UserRole.Admin) {
 
         return children
 

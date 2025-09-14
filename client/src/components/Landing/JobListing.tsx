@@ -29,7 +29,7 @@ const CompanyLogo = ({ logo, companyName }: { logo: string | null; companyName: 
   }
 
   // Get first letter and create background color based on company name
-  const firstLetter = companyName.charAt(0).toUpperCase();
+  const firstLetter = companyName?.charAt(0)?.toUpperCase();
   const colors = [
     'bg-blue-500',
     'bg-green-500',
@@ -42,7 +42,7 @@ const CompanyLogo = ({ logo, companyName }: { logo: string | null; companyName: 
   ];
   
   // Use company name length to determine color (creates consistent color for same company)
-  const colorIndex = companyName.length % colors.length;
+  const colorIndex = companyName?.length % colors?.length;
   const bgColor = colors[colorIndex];
 
   return (
@@ -115,8 +115,8 @@ const LatestJobs = () => {
               <div className="flex items-start gap-4">
                 <div className="flex-shrink-0">
                   <CompanyLogo 
-                    logo={job.companyId.logo} 
-                    companyName={job.companyId.name} 
+                    logo={job?.companyId?.logo} 
+                    companyName={job?.companyId?.name} 
                   />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -129,7 +129,7 @@ const LatestJobs = () => {
                         {job.companyId && (
                           <div className="flex items-center gap-1">
                             <Building2 size={16} />
-                            <span>{job.companyId.name}</span>
+                            <span>{job?.companyId?.name}</span>
                           </div>
                         )}
                         {job.jobLocation && (

@@ -4,15 +4,20 @@ import { CompanyApi } from '@/api/Company.api';
 import { Loader2, FileWarning, Download, ExternalLink } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ApplicantProp } from '@/types/company';
+import { useEffect } from 'react';
 
 const ApplicantResume = () => {
   const { applicant } = useOutletContext<ApplicantProp>();
   
   const { data, isLoading, isError } = useQuery({
     queryKey: ['resume'],
-    queryFn: () => CompanyApi.getUploadedFIle(applicant.resume),
+    queryFn: () => CompanyApi.getCompanyAssetByKey(applicant.resume),
     enabled: !!applicant.resume,
   });
+
+  useEffect(() => {
+    console.log("resume data", data);
+  }, [data])
 
   if (!applicant.resume) {
     return (
@@ -50,7 +55,7 @@ const ApplicantResume = () => {
     );
   }
 
-  const pdfUrl = data?.data?.url;
+  const pdfUrl = data?.url;
   
   const googleDocsUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
 

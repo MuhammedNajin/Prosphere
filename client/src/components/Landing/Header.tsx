@@ -2,13 +2,12 @@ import { useState, useEffect } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import Logo from '../common/Logo/Logo';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
 import FeatureCards from './FeaturesCard';
+import { useCurrentUser } from '@/hooks/useSelectors';
 
 const ProsphereHome = () => {
   const navigate = useNavigate();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const user = useCurrentUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   

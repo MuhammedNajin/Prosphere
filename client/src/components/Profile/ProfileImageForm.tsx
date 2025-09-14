@@ -1,16 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Camera, ImagePlus, Trash2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ProfileApi } from "@/api/Profile.api";
+import { UserApi } from "@/api/user.api";
 import { useMutation, useQueryClient } from "react-query";
 import { IMAGEKEY } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
 import ErrorMessage from "../common/Message/ErrorMessage";
 
 interface ProfileImageFormProps {
-  avatarKey: string;
-  avatarUrl: string;
-  onClose: React.Dispatch<React.SetStateAction<boolean>>;
+  avatarKey?: string;
+  avatarUrl?: string;
+  onClose:(shouldRefetch?: boolean) => void
 }
 
 const ProfileImageForm: React.FC<ProfileImageFormProps> = ({
@@ -51,11 +51,11 @@ const ProfileImageForm: React.FC<ProfileImageFormProps> = ({
   };
 
   useEffect(() => {
-    setPreview(avatarUrl);
+    setPreview(avatarUrl ?? null);
   }, []);
 
   const profileImageMutation = useMutation({
-    mutationFn: ProfileApi.uploadProfilePhoto,
+    mutationFn: UserApi.uploadProfilePhoto,
     onSuccess: (data) => {
       console.log("Upload successful:", data);
       client.invalidateQueries("profile");
@@ -78,7 +78,7 @@ const ProfileImageForm: React.FC<ProfileImageFormProps> = ({
     profileImageMutation.mutate({
       data: formData,
       key: IMAGEKEY.AVATAR,
-      existingKey: avatarKey ?? null,
+      existingKey: avatarKey,
     });
   };
 

@@ -42,7 +42,7 @@ import { useDispatch } from "react-redux";
 import { JobFormData } from "@/types/formData";
 import { jobFormSchema } from "@/types/schema";
 import { AxiosError } from "axios";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 interface CreateJobModalProps {
   isOpen: boolean;
   onClose: React.Dispatch<React.SetStateAction<boolean>>;
@@ -108,8 +108,8 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
       form.reset({
         jobTitle: job.jobTitle,
         employment: job.employment,
-        minSalary: job.minSalary,
-        maxSalary: job.maxSalary,
+        minSalary: job.salary.from,
+        maxSalary: job.salary.to,
         skills: job.skills,
         jobDescription: job.jobDescription,
         qualifications: job.qualifications,
@@ -192,7 +192,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
     }
   };
 
-  const company = useSelectedCompany();
+  const company = useCurrentCompany();
   const dispatch = useDispatch()
 
 
@@ -227,7 +227,7 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
   });
   
   const onSubmit = async (formData: JobFormData) => {
-    if (!company?._id) {
+    if (!company?.id) {
       toast({
         description: <ErrorMessage message="Company information is missing" />,
         variant: "destructive"
@@ -246,13 +246,13 @@ const CreateJobModal: React.FC<CreateJobModalProps> = ({
       
       jobCreationMutation.mutate({
         formData,
-        companyId: company._id,
+        companyId: company.id,
         id: job._id as string
       });
     } else {
       jobCreationMutation.mutate({
         formData,
-        companyId: company._id
+        companyId: company.id
       });
     }
   };

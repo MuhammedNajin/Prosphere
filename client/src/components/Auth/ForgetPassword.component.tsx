@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -39,9 +39,11 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 const ResetPassword = () => {
   const navigate = useNavigate();
-  const { token } = useParams();
-  const location = useLocation();
-  const email = new URLSearchParams(location.search).get("email");
+  const [searchParams] = useSearchParams();
+  
+  const token = searchParams.get('token');
+  const email = searchParams.get('email');
+
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -60,11 +62,17 @@ const ResetPassword = () => {
       return;
     }
 
+    if (!email) {
+      toast.error("Email is required for password reset");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await ApiService.resetPassword({
         password: data.password,
         token,
+        email
       });
 
       if (response.status) {

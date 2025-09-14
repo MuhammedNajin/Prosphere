@@ -28,13 +28,13 @@ import DocumentReviewModal from "./DocumentModal";
 import { CompanyStatus } from "@/types/company";
 import {
   Select,
-  SelectContent,  
+  SelectContent,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { VerificationStatusConfirmation } from "./VerificationStatusConfirmation";
 import { useToast } from "@/hooks/use-toast";
-import SuccessMessage from '@/components/common/Message/SuccessMessage'
+import SuccessMessage from "@/components/common/Message/SuccessMessage";
 const CompanyVerificationDetails = () => {
   const [progress] = useState(65);
   const { id } = useParams();
@@ -48,31 +48,34 @@ const CompanyVerificationDetails = () => {
   useEffect(() => {
     console.log("admin company details", data);
   }, [data]);
-  
 
   function handleStatusChange() {}
 
   const getStatusColor = (status: CompanyStatus) => {
-    const statusColors = {
-      uploaded: "bg-yellow-100 text-yellow-800",
-      verified: "bg-green-100 text-green-800",
-      rejected: "bg-red-100 text-red-800",
-      pending: "bg-blue-100 text-blue-800",
+    const statusColors: Record<CompanyStatus, string> = {
+      UNDER_REVIEW: "bg-yellow-100 text-yellow-800",
+      VERIFIED: "bg-green-100 text-green-800",
+      REJECTED: "bg-red-100 text-red-800",
+      PENDING: "bg-blue-100 text-blue-800",
+      SUSPENDED: "bg-orange-100 text-orange-800",
+      INACTIVE: "bg-gray-100 text-gray-800",
     };
-    return statusColors[status] || "bg-gray-100 text-gray-800";
+    return statusColors[status];
   };
 
   const CompanyVerificationStatusMutation = useMutation({
     mutationFn: AdminApi.changeCompanyVerificationStatus,
     onSuccess: (data, variables) => {
-        const { status } = variables
+      const { status } = variables;
       console.log("success", data, variables);
-      queryClient.invalidateQueries('companydetails')
-      const message = status === CompanyStatus.Verified ? "Company documents verified Successfully"
-      : "Company documents rejected successfully"
-       toast({
-         description: <SuccessMessage message={message}  className=""/>
-       })
+      queryClient.invalidateQueries("companydetails");
+      const message =
+        status === CompanyStatus.VERIFIED
+          ? "Company documents .VERIFIED Successfully"
+          : "Company documents rejected successfully";
+      toast({
+        description: <SuccessMessage message={message} className="" />,
+      });
     },
     onError: (err) => {
       console.log("error", err);
@@ -101,7 +104,10 @@ const CompanyVerificationDetails = () => {
                   <Calendar className="w-4 h-4" />
                   <span>
                     Submitted:{" "}
-                    {format(data?.ownerVerificationDoc?.uploadedAt || new Date(), "PPP")}
+                    {format(
+                      data?.ownerVerificationDoc?.uploadedAt || new Date(),
+                      "PPP"
+                    )}
                   </span>
                   <span className="mx-2">•</span>
                   <span>ID: VR-2024-001</span>
@@ -110,7 +116,7 @@ const CompanyVerificationDetails = () => {
               <div className="flex gap-3">
                 <Select
                   onValueChange={handleStatusChange}
-                  disabled={data.status === CompanyStatus.Verified}
+                  disabled={data.status === CompanyStatus.VERIFIED}
                 >
                   <SelectTrigger className="w-[200px] bg-white border-gray-200 hover:bg-gray-50 transition-colors">
                     <SelectValue
@@ -121,20 +127,20 @@ const CompanyVerificationDetails = () => {
                         </div>
                       }
                     >
-                      {data.status == CompanyStatus.Verified && (
+                      {data.status == CompanyStatus.VERIFIED && (
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                           <span className={getStatusColor(data.status)}>
-                            {CompanyStatus.Verified}
+                            {CompanyStatus.VERIFIED}
                           </span>
                         </div>
                       )}
 
-                      {data.status == CompanyStatus.Rejected && (
+                      {data.status == CompanyStatus.REJECTED && (
                         <div className="flex items-center gap-2">
                           <XCircle className="h-4 w-4 text-red-600" />
                           <span className={getStatusColor(data.status)}>
-                            {CompanyStatus.Rejected}
+                            {CompanyStatus.REJECTED}
                           </span>
                         </div>
                       )}
@@ -145,24 +151,26 @@ const CompanyVerificationDetails = () => {
                       <div className="flex items-center gap-2 hover:bg-slate-100 p-3">
                         <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                         <VerificationStatusConfirmation
-                         isLoading={CompanyVerificationStatusMutation.isLoading}
+                          isLoading={
+                            CompanyVerificationStatusMutation.isLoading
+                          }
                           onSubmit={onSubmit}
-                          status={CompanyStatus.Verified}
+                          status={CompanyStatus.VERIFIED}
                         />
                       </div>
 
-                      {
-                        data.status !== CompanyStatus.Rejected && (
-                            <div className="flex items-center gap-2 hover:bg-slate-100 p-3">
-                        <XCircle className="h-4 w-4 text-red-600" />
-                        <VerificationStatusConfirmation
-                        isLoading={CompanyVerificationStatusMutation.isLoading }
-                          onSubmit={onSubmit}
-                          status={CompanyStatus.Rejected}
-                        />
-                      </div>
-                        )
-                      }
+                      {data.status !== CompanyStatus.REJECTED && (
+                        <div className="flex items-center gap-2 hover:bg-slate-100 p-3">
+                          <XCircle className="h-4 w-4 text-red-600" />
+                          <VerificationStatusConfirmation
+                            isLoading={
+                              CompanyVerificationStatusMutation.isLoading
+                            }
+                            onSubmit={onSubmit}
+                            status={CompanyStatus.REJECTED}
+                          />
+                        </div>
+                      )}
                     </div>
                   </SelectContent>
                 </Select>
@@ -205,7 +213,6 @@ const CompanyVerificationDetails = () => {
 
             <TabsContent value="company">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
                 <Card className="lg:col-span-2 bg-white shadow-lg rounded-lg overflow-hidden">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gray-900">
@@ -259,9 +266,13 @@ const CompanyVerificationDetails = () => {
                           <label className="text-sm font-medium text-gray-500">
                             Location
                           </label>
-                          {data.location.map((el: {placename: string}) => (
-                            <p className="text-lg">{el.placename}</p>
-                          ))}
+                          {data.locations.map(
+                            (el: { placename: string }, index: number) => (
+                              <p key={index} className="text-lg">
+                                {el.placename}
+                              </p>
+                            )
+                          )}
                         </div>
                       </div>
                     </div>
@@ -282,7 +293,7 @@ const CompanyVerificationDetails = () => {
                         <span>Business License</span>
                       </div>
                       <Badge className="bg-green-100 text-green-800">
-                        Verified
+                        .VERIFIED
                       </Badge>
                     </div>
                     <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
@@ -318,7 +329,9 @@ const CompanyVerificationDetails = () => {
                           </p>
                         </div>
                         <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                          <DocumentReviewModal document={data?.companyVerificationDoc} />
+                          <DocumentReviewModal
+                            document={data?.companyVerificationDoc}
+                          />
                         </div>
                       </div>
                     </CardContent>
@@ -340,7 +353,6 @@ const CompanyVerificationDetails = () => {
 
             <TabsContent value="owner">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  
                 <Card className="lg:col-span-2 bg-white shadow-lg rounded-lg overflow-hidden">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-gray-900">

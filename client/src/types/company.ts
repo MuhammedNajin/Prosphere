@@ -1,81 +1,80 @@
 import { Applicants, ApplicationStatus } from "./application";
 
 export interface ApplicantProfileProps {
-    applicant: {
-      name: string;
+  applicant: {
+    name: string;
+    title: string;
+    rating: number;
+    avatar: string;
+    appliedJobs: {
       title: string;
-      rating: number;
-      avatar: string;
-      appliedJobs: {
-        title: string;
-        company: string;
-        type: string;
-        appliedDate: string;
-      }[];
-      stage: {
-        name: string;
-        progress: number;
-      };
-      personalInfo: {
-        fullName: string;
-        dateOfBirth: string;
-        age: number;
-        gender: string;
-        languages: string[];
-        address: string;
-      };
-      professionalInfo: {
-        aboutMe: string;
-        currentJob: string;
-        highestQualification: string;
-        experienceYears: number;
-        skillSet: string[];
-      };
-      contactInfo: {
-        email: string;
-        phone: string;
-        instagram: string;
-        twitter: string;
-        website: string;
-      };
+      company: string;
+      type: string;
+      appliedDate: string;
+    }[];
+    stage: {
+      name: string;
+      progress: number;
     };
-  }
+    personalInfo: {
+      fullName: string;
+      dateOfBirth: string;
+      age: number;
+      gender: string;
+      languages: string[];
+      address: string;
+    };
+    professionalInfo: {
+      aboutMe: string;
+      currentJob: string;
+      highestQualification: string;
+      experienceYears: number;
+      skillSet: string[];
+    };
+    contactInfo: {
+      email: string;
+      phone: string;
+      instagram: string;
+      twitter: string;
+      website: string;
+    };
+  };
+}
 
-  export interface Job {
-    _id: string;
-    jobTitle: string;
-    employment: string;
-    jobLocation: string;
-    officeLocation: string;
-    createdAt: string;
-  }
+export interface Job {
+  _id: string;
+  jobTitle: string;
+  employment: string;
+  jobLocation: string;
+  officeLocation: string;
+  createdAt: string;
+}
 
+interface Applicant extends Applicants {
+  resume: string;
+  status: ApplicationStatus;
+  updatedAt: string;
+}
 
-  interface Applicant extends Applicants {
-     resume: string;
-     status: ApplicationStatus;
-     updatedAt: string
-  }
-  
-  export interface ApplicantProp {
-      applicantId: {
-        _id: string;
-        username: string;
-        jobRole: string;
-        phone: string;
-        email: string;
-        avatar: string;
-      }
-      resume: string;
-      status: ApplicationStatus;
-      jobId: Job;
-      applicant: Applicant
-  }
-
-  export interface MapboxResult {
+export interface ApplicantProp {
+  applicantId: {
     id: string;
-    place_name: string;
-    coordinates: [number, number];
+    username: string;
+    jobRole: string;
+    phone: string;
+    email: string;
+    avatar: string;
+  };
+  resume: string;
+  status: ApplicationStatus;
+  jobId: Job;
+  applicant: Applicant;
+}
+
+export interface MapboxResult {
+  id: string;
+  place_name: string;
+  coordinates: [number, number];
 }
 
 export enum TeamRole {
@@ -85,36 +84,37 @@ export enum TeamRole {
 }
 
 export enum CompanyStatus {
-  Pending = "pending",
-  Uploaded = "uploaded",
-  Rejected = "rejected",
-  Verified = "verified",
+  PENDING = "PENDING",
+  UNDER_REVIEW = "UNDER_REVIEW",
+  SUSPENDED = "SUSPENDED",
+  INACTIVE = "INACTIVE",
+  VERIFIED = "VERIFIED",
+  REJECTED = "REJECTED",
 }
 
 export enum Message {
-  denied = "Access denied"
+  denied = "Access denied",
 }
 
 export enum GraphOptions {
-   OVERVIEW = 'overview',
-   JOBAPPLED = 'jobApplied',
-   JOBSEEN = 'jobSeen'
+  OVERVIEW = "overview",
+  JOBAPPLED = "jobApplied",
+  JOBSEEN = "jobSeen",
 }
 
 export enum Time_Frame {
-   YEAR = 'year',
-   MONTH = 'month',
-   WEEK = 'week',
+  YEAR = "year",
+  MONTH = "month",
+  WEEK = "week",
 }
-
 
 export enum UsageStatsType {
-  JOB_POSTS_Limit = 'jobPostLimit',
-  VIDEO_CALLS_Limit = 'videoCallLimit',
-  MESSAGES_Limit = 'messageLimit'
+  JOB_POSTS_Limit = "jobPostLimit",
+  VIDEO_CALLS_Limit = "videoCallLimit",
+  MESSAGES_Limit = "messageLimit",
 }
 
-export type VerificationStatus = 'uploaded' | 'pending' | 'rejected';
+export type VerificationStatus = "uploaded" | "pending" | "rejected";
 
 export interface Company {
   name: string;
@@ -130,7 +130,7 @@ export interface Company {
   reUploadDocLimit: number;
   status: VerificationStatus;
   foundedDate: string;
-  owner: string[]
+  owner: string[];
   team: ITeamMember[];
   statusHistory: IStatusHistory[];
   createdAt: Date;
@@ -151,7 +151,6 @@ export interface User {
   profilePhoto: string | null;
 }
 
-
 interface ILocation {
   placename: string;
   type: "Point";
@@ -160,18 +159,15 @@ interface ILocation {
 
 interface ILocationDetail extends ILocation {
   placename: string;
-  
 }
 
 interface ITeamMember {
   userId: string;
-
 }
 
 interface IStatusHistory {
   status: string;
   updatedAt: Date;
-
 }
 
 interface IVerificationDoc {
@@ -180,3 +176,25 @@ interface IVerificationDoc {
   uploadedAt: Date;
 }
 
+export interface ILocationPoint {
+  placename: string;
+  type: "Point";
+  coordinates: number[];
+}
+
+export interface ICompany {
+  id: string;
+  name: string;
+  logo?: string;
+  website?: string;
+  industry: string;
+  locations: ILocationPoint[];
+  description: string;
+  size?: string;
+  type?: string;
+  owner: string;
+  verified: boolean;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

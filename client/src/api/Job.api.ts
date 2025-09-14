@@ -2,7 +2,7 @@ import { GetjobByCompanyArgs, UpdateJobProps } from "@/types/job";
 import axiosInstance from "./config";
 import { AxiosInstance } from "axios";
 import { JobFormData } from "@/types/formData";
-import { CommentFormData } from "@/components/job/jobCommentDialog";
+import { CommentFormData } from "@/components/job/JobCommentDialog";
 
 class JobApi {
   private static axios: AxiosInstance = axiosInstance;
@@ -129,6 +129,7 @@ class JobApi {
 
   static getJobDetails = async (id: string) => {
     try {
+      console.log("job details api ", id);
       const response = await this.axios.get(`/api/v1/job/${id}`);
       return response.data;
     } catch (error) {
@@ -210,6 +211,46 @@ class JobApi {
       return response.data?.data;
     } catch (error) {
       console.log(error);
+      throw error;
+    }
+  };
+
+  static getJobApplications = async (
+    jobId: string, 
+    page: number = 1, 
+    limit: number = 10
+  ) => {
+    try {
+      const response = await this.axios.get(`/api/v1/jobs/${jobId}/applications`, {
+        params: { page, limit },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching job applications:", error);
+      throw error;
+    }
+  };
+
+  static getJobStatistics = async (
+    companyId: string,
+    filters: {
+      startDate: Date;
+      endDate: Date;
+      timeFrame?: string;
+    }
+  ) => {
+    try {
+      const response = await this.axios.get("/api/v1/jobs/statistics", {
+        params: {
+          companyId,
+          startDate: filters.startDate.toISOString(),
+          endDate: filters.endDate.toISOString(),
+          timeFrame: filters.timeFrame || "year",
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching job statistics:", error);
       throw error;
     }
   };

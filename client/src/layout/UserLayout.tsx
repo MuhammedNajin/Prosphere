@@ -1,8 +1,7 @@
 import NavBar from "../components/common/navBar/NavBar";
 import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-import SidebarNavigation from "../components/common/sidebar/SideBar";
-import { UserSideBarItems } from "../constants/SidebarItems";
+
 const UserLayout: React.FC = () => {
   const [sideBar, ] = useState(false);
   return (
@@ -13,16 +12,10 @@ const UserLayout: React.FC = () => {
             sideBar && "translate-x-0"
           }`}
         >
-          <SidebarNavigation
-            userImage="/company.png"
-            userType="user"
-            userName="Muhammed Najin"
-            mainNavItems={UserSideBarItems()}
-          />
         </div>
         <div className="flex-1 bg-white h-screen overflow-y-auto">
           <NavBar />
-          <div className="p-4 mt-16">
+          <div className="max-w-[95%] p-4 mt-16 mx-auto">
             <Outlet />
           </div>
         </div>

@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useQuery } from "react-query";
 import {
   AreaChart,
   Area,
@@ -13,7 +11,6 @@ import { startOfYear, endOfYear, startOfMonth, endOfMonth, startOfWeek, endOfWee
 // Component imports
 import JobUpdates from "./JobCard";
 import RecentApplicationsHistory from "./RecentApplicationsHistory";
-import { useGetUser } from "@/hooks/useGetUser";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import {
@@ -30,6 +27,9 @@ import YearPicker from "@/components/common/DatePicker/YearPicker";
 // API and type imports
 import { CompanyApi } from "@/api";
 import { Time_Frame, GraphOptions } from "@/types/company";
+import { useCurrentUser } from "@/hooks/useSelectors";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
+import { useQuery } from "react-query";
 
 // Type definitions for our component's state and props
 interface GraphData {
@@ -56,8 +56,8 @@ interface ChartConfig {
 
 const Dashboard: React.FC = () => {
 
-  const { id } = useParams<{ id: string }>();
-  const user = useGetUser();
+  const { id } = useCurrentCompany()
+  const user = useCurrentUser();
 
   const [activeTab, setActiveTab] = useState<Time_Frame>(Time_Frame.YEAR);
   const [graphOption, setGraphOption] = useState<GraphOptions>(GraphOptions.OVERVIEW);
@@ -81,13 +81,13 @@ const Dashboard: React.FC = () => {
 
   const { data: jobStats } = useQuery({
     queryKey: ["jobStats", dateRange, activeTab],
-    queryFn: () => CompanyApi.getJobStats(id!, dateRange, activeTab),
+    queryFn: () => CompanyApi.getCompanyJobStatistics(id!, dateRange, activeTab),
     enabled: !!id,
   });
 
   const { data: viewStats } = useQuery({
     queryKey: ["view", dateRange, activeTab],
-    queryFn: () => CompanyApi.getJobVeiwStats(id!, dateRange, activeTab),
+    queryFn: () => CompanyApi.getCompanyJobViewStatistics(id!, dateRange, activeTab),
     enabled: !!id,
   });
 

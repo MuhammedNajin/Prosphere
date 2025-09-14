@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   FormControl,
   FormDescription,
@@ -23,13 +23,13 @@ import { UseFormReturn } from "react-hook-form";
 import { DialogFooter } from "@/components/ui/dialog";
 import { UseMutationResult, useQuery } from "react-query";
 import { CompanyApi } from "@/api/Company.api";
-import { useParams } from "react-router-dom";
 import { AxiosError, AxiosResponse } from "axios";
 import LoaderSubmitButton from "../common/spinner/LoaderSubmitButton";
 
 import {Popover, PopoverContent, PopoverTrigger } from "../ui/popover-dialog";
 import EnhancedCalendar from "../Profile/Calender";
 import { CreateJobProps, UpdateJobProps } from "@/types/job";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 
 interface CreateJobModalThreeProps {
   form: UseFormReturn<any>;
@@ -37,10 +37,10 @@ interface CreateJobModalThreeProps {
 }
 
 const CreateJobModalThree: React.FC<CreateJobModalThreeProps> = ({ form, mutation }) => {
-  const { id } = useParams();
+  const { id } = useCurrentCompany();
   const company = useQuery({
     queryKey: ['companyLocation'],
-    queryFn: () => CompanyApi.getCompany(id as string)
+    queryFn: () => CompanyApi.getCompanyById(id as string)
   });
 
   const FormSection = ({ children }: { children: React.ReactNode }) => (
@@ -52,6 +52,10 @@ const CreateJobModalThree: React.FC<CreateJobModalThreeProps> = ({ form, mutatio
     const handleCalendarClick = (e: React.MouseEvent) => {
       e.stopPropagation();
     };
+
+    useEffect(() => {
+      console.log("company data in job", company.data, company);
+    }, [company])
   
 
   return (
@@ -233,7 +237,7 @@ const CreateJobModalThree: React.FC<CreateJobModalThreeProps> = ({ form, mutatio
                       <SelectValue placeholder="Select location type" />
                     </SelectTrigger>
                     <SelectContent>
-                      {company.data && company.data?.location?.map((location: { placename: string }) => (
+                      {company.data && company.data?.locations?.map((location: { placename: string }) => (
                         <SelectItem key={location.placename} value={location.placename}>
                           {location.placename}
                         </SelectItem>

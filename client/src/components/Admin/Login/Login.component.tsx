@@ -39,16 +39,27 @@ const LoginPage = () => {
           navigate("/admin/dashboard");
         })
         .catch((err: string) => {
+          // Show toast
           toast.error(err || "Login failed", { duration: 2000 });
+
+          // Attach field-level errors if possible
+          if (err.toLowerCase().includes("password")) {
+            setErrors((prev) => ({ ...prev, password: err }));
+          } else if (err.toLowerCase().includes("email")) {
+            setErrors((prev) => ({ ...prev, email: err }));
+          }
         });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const formattedErrors = error.issues.reduce<LoginErrors>((acc, issue) => {
-          if (typeof issue.path[0] === 'string') {
-            acc[issue.path[0]] = issue.message;
-          }
-          return acc;
-        }, {});
+        const formattedErrors = error.issues.reduce<LoginErrors>(
+          (acc, issue) => {
+            if (typeof issue.path[0] === "string") {
+              acc[issue.path[0]] = issue.message;
+            }
+            return acc;
+          },
+          {}
+        );
         setErrors(formattedErrors);
       }
     } finally {
@@ -74,10 +85,19 @@ const LoginPage = () => {
 
         {/* Login Card */}
         <div className="bg-white shadow-xl rounded-2xl p-8 space-y-6">
-          <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+          <form
+            className="space-y-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSubmit();
+            }}
+          >
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Email address
               </label>
               <div className="relative">
@@ -90,7 +110,9 @@ const LoginPage = () => {
                   type="email"
                   autoComplete="email"
                   className={`pl-10 pr-3 py-2.5 w-full rounded-lg border ${
-                    errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    errors.email
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
                   } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors`}
                   placeholder="you@example.com"
                   value={email}
@@ -110,7 +132,10 @@ const LoginPage = () => {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Password
               </label>
               <div className="relative">
@@ -123,7 +148,9 @@ const LoginPage = () => {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   className={`pl-10 pr-10 py-2.5 w-full rounded-lg border ${
-                    errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                    errors.password
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300"
                   } focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors`}
                   placeholder="••••••••"
                   value={password}
@@ -161,11 +188,17 @@ const LoginPage = () => {
                   type="checkbox"
                   className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600">
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-600"
+                >
                   Remember me
                 </label>
               </div>
-              <button type="button" className="text-sm font-medium text-orange-600 hover:text-orange-500">
+              <button
+                type="button"
+                className="text-sm font-medium text-orange-600 hover:text-orange-500"
+              >
                 Forgot password?
               </button>
             </div>
@@ -190,8 +223,11 @@ const LoginPage = () => {
 
         {/* Footer */}
         <p className="mt-6 text-center text-sm text-gray-600">
-          Need help? Contact{' '}
-          <a href="mailto:support@prosphere.com" className="font-medium text-orange-600 hover:text-orange-500">
+          Need help? Contact{" "}
+          <a
+            href="mailto:support@prosphere.com"
+            className="font-medium text-orange-600 hover:text-orange-500"
+          >
             support@prosphere.com
           </a>
         </p>

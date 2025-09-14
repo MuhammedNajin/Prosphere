@@ -1,9 +1,9 @@
 import { AdminApi, ApiService } from "@/api";
 import { SignInFormData } from "@/types/formData";
-import { adminLogin, googleSignUpFlow, IOtp, SignInResponse, UserData } from "@/types/user";
+import { adminLogin, googleSignUpFlow, IOtp, IUser, SignInResponse } from "@/types/user";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-export const verifyOtpThunk = createAsyncThunk<UserData, IOtp, { rejectValue: string }>(
+export const verifyOtpThunk = createAsyncThunk<IUser, IOtp, { rejectValue: string }>(
     "auth/verify-otp",
     ApiService.verifyOtp
   );
@@ -13,12 +13,26 @@ export const verifyOtpThunk = createAsyncThunk<UserData, IOtp, { rejectValue: st
     ApiService.signIn
   );
 
-  export const googleAuthThunk = createAsyncThunk<UserData, googleSignUpFlow, { rejectValue: unknown }>(
-    "auth/google-auth",
-    ApiService.googleSignUpFlow
-  );
+ export const googleAuthThunk = createAsyncThunk<
+  IUser, 
+  googleSignUpFlow, 
+  { rejectValue: unknown }
+>(
+  "auth/google-auth",
+  async (payload, { rejectWithValue }) => {
+    try {
+      const response = await ApiService.googleSignUpFlow(payload);
+      return response;
+    } catch (error: any) {
+      console.log("error", error)
+      
+      // Return the error payload so it can be handled in the rejected case
+      return rejectWithValue(error.response?.data?.errors?.message || "Something went wrong try again.");
+    }
+  }
+);
 
-  export const adminLoginThunk = createAsyncThunk<UserData, adminLogin, { rejectValue: unknown }>(
+  export const adminLoginThunk = createAsyncThunk<IUser, adminLogin, { rejectValue: unknown }>(
     "auth/admin",
     AdminApi.signIn
   );

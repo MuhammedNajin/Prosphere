@@ -3,7 +3,7 @@ import { useQuery } from "react-query";
 import { CompanyApi } from "@/api";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import NavigationLink from "../Application/NavigationLink";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 import Pagination from "@/components/common/Pagination/Pagination";
 import { ItemsPerPageOption } from "@/types/job";
 import { Applicant } from "@/types/application";
@@ -19,7 +19,7 @@ const JobInspect: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPageOption>(10);
   const navigate = useNavigate();
-  const company = useSelectedCompany();
+  const company = useCurrentCompany();
   const { id } = useParams();
 
   const { 
@@ -30,7 +30,7 @@ const JobInspect: React.FC = () => {
     queryKey: ["applications", id!, currentPage, itemsPerPage],
     queryFn: async () => {
       // Add pagination parameters to the API call
-      const response = await CompanyApi.getApplicationByJob(
+      const response = await CompanyApi.getJobApplications(
         id as string,
         currentPage,
         itemsPerPage

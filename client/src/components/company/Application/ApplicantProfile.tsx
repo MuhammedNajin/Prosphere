@@ -13,12 +13,12 @@ import { ApplicationApi } from "@/api/application.api";
 import { ArrowRight } from "lucide-react";
 import NavigationLink from "./NavigationLink";
 import { ApplicationStatus } from "@/types/application";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 
 const ApplicantProfile: React.FC = () => {
   const { id } = useParams();
   const [applicant, setApplicant] = useState<ApplicantProp>({} as ApplicantProp);
-  const company = useSelectedCompany();
+  const company = useCurrentCompany();
   const applicants = useQuery({
     queryKey: ["applicant", id],
     queryFn: () => ApplicationApi.getApplication(id as string),
@@ -55,6 +55,10 @@ const ApplicantProfile: React.FC = () => {
         return 3;
       case ApplicationStatus.Selected:
         return 4;
+      case ApplicationStatus.Rejected:
+        return 0;
+      case ApplicationStatus.InReview:
+        return 2
       default:
         return 4;
     }
@@ -72,10 +76,10 @@ const ApplicantProfile: React.FC = () => {
         </div>
         <button
           onClick={() => {
-            console.log("back button", company?._id);
+            console.log("back button", company?.id);
 
             if (company?._id) {
-              navigte(`/company/application/${company?._id}`);
+              navigte(`/company/application/${company?.id}`);
             }
           }}
           className="inline-flex gap-2 justify-center items-center rounded-lg self-stretch px-4 py-2 my-auto text-base font-bold leading-relaxed text-center text-orange-700 border border-orange-700 border-solid hover:text-white hover:bg-orange-700"
@@ -164,7 +168,7 @@ const ApplicantProfile: React.FC = () => {
             </ul>
           </nav>
           <Outlet
-            context={{ applicant, applicantId: applicant.applicantId?._id }}
+            context={{ applicant, applicantId: applicant.applicantId?.id }}
           />
         </main>
       </div>

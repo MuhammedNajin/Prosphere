@@ -3,6 +3,6 @@ import { useSelector } from "react-redux";
 
 
 export const useResume = () => {
-   const { resume } = useSelector((state: RootState) => state.auth);
+   const { resume } = useSelector((state: RootState) => state.user);
    return resume;
 }

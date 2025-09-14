@@ -4,17 +4,17 @@ import { loadStripe } from '@stripe/stripe-js';
 import { useMutation, useQuery } from 'react-query';
 import { PaymentApi } from '@/api/Payment.api';
 import { AxiosError } from 'axios';
-import { useGetUser } from '@/hooks/useGetUser';
 import { Card, CardContent } from '@/components/ui/card';
 import { format } from 'date-fns';
 import { PlanData } from '@/types/subscription';
-import { useSelectedCompany } from '@/hooks/useSelectedCompany';
+import { useCurrentCompany } from '@/hooks/useSelectedCompany';
+import { useCurrentUser } from '@/hooks/useSelectors';
 
 const Premium: React.FC = () => {
   const [billingCycle] = useState('monthly');
   const [currentPlanId, setCurrentPlanId] = useState(-1)
-  const user = useGetUser();
-  const company = useSelectedCompany()
+  const user = useCurrentUser();
+  const company = useCurrentCompany()
 
   const { data: plans } = useQuery({
     queryKey: ["premium"],
@@ -23,7 +23,7 @@ const Premium: React.FC = () => {
 
   const { data: currentPlan } = useQuery({
     queryKey: ["currentPlan"],
-    queryFn: () => PaymentApi.getCurrentPlan(company._id!)
+    queryFn: () => PaymentApi.getCurrentPlan(company.id!)
   });
 
   useEffect(() => {
@@ -69,8 +69,8 @@ const Premium: React.FC = () => {
     if(!user) return;
     const data = {
       name: plan.name,
-      id: user._id,
-      companyId: company._id,
+      id: user.id,
+      companyId: company.id,
       price: plan.price,
       planId: plan.id
     };
@@ -79,11 +79,11 @@ const Premium: React.FC = () => {
 
   const handleUpgradeSubscription = (plan: PlanData) => {
     console.log("upgradeSubscriptionMutation", plan);
-    if(!user) return;
+    if(!user?.id) return;
     const data = {
       name: plan.name,
-      id: user._id,
-      companyId: company._id as string,
+      id: user.id,
+      companyId: company.id as string,
       price: plan.price,
       planId: plan.id
     };

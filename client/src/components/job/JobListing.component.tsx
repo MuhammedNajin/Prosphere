@@ -22,11 +22,11 @@ import { useInfiniteQuery, useMutation } from "react-query";
 import { JobApi } from "@/api";
 import { Job } from "@/types/job";
 import { useNavigate } from "react-router-dom";
-import { useGetUser } from "@/hooks/useGetUser";
 import { queryClient } from "@/main";
 import { Separator } from "../ui/separator";
 import SalaryRangeSlider from "../common/RangeSlider";
 import LocationSearch from "../common/LocationField/LocationField";
+import { useCurrentUser } from "@/hooks/useSelectors";
 
 const JobListing = () => {
   const [_, setComment] = useState(false);
@@ -46,7 +46,7 @@ const JobListing = () => {
 
   const observer = useRef<IntersectionObserver>();
   const navigate = useNavigate();
-  const user = useGetUser();
+  const user = useCurrentUser();
 
   const { data, fetchNextPage, hasNextPage, isLoading, isFetchingNextPage, refetch } =
     useInfiniteQuery(
@@ -104,10 +104,10 @@ const JobListing = () => {
   });
 
   const handleLikes = (id: string, index: number) => {
-    if(!user?._id) return;
+    if(!user?.id) return;
     const data = {
       jobId: id,
-      userId: user._id,
+      userId: user.id,
       index,
     };
     likeMutation.mutate({ data });
@@ -374,7 +374,7 @@ const JobListing = () => {
                                 className="inline-flex items-center gap-x-2"
                               >
                                 <span>{job?.likes?.length}</span>
-                                {job?.likes?.includes(user?._id ?? '') ? (
+                                {job?.likes?.includes(user?.id ?? '') ? (
                                   <BiSolidLike
                                     size={18}
                                     className="text-blue-950"

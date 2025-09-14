@@ -13,7 +13,7 @@ import { Clock, Shield, XCircle, FileCheck2, ArrowRight, AlertCircle, LucideIcon
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate, useParams } from "react-router-dom";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 import { format } from "date-fns";
 import { Company, VerificationStatus } from "@/types/company";
 
@@ -35,7 +35,7 @@ export function VerificationAlert({
   const [isOpen, setIsOpen] = useState(true);
   const navigate = useNavigate();
   const { id } = useParams();
-  const company = useSelectedCompany() as Company
+  const company = useCurrentCompany() as Company
 
   const selectStatus: Record<VerificationStatus, {
     title: string;

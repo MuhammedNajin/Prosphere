@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-import { ProfileApi } from "@/api/Profile.api";
+import { UserApi } from "@/api/user.api";
 import { IMAGEKEY } from "@/types/profile";
 import { useMutation, useQueryClient } from "react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -30,8 +30,8 @@ export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 interface CoverImageModalProps {
   currentImageUrl?: string;
-  onClose: React.Dispatch<React.SetStateAction<boolean>>;
-  coverKey: string;
+  onClose: (shouldRefetch?: boolean) => void;
+  coverKey?: string;
 }
 
 export function CoverImageModal({
@@ -55,7 +55,7 @@ export function CoverImageModal({
   });
 
   const uploadMutation = useMutation({
-    mutationFn: ProfileApi.uploadProfilePhoto,
+    mutationFn: UserApi.uploadProfilePhoto,
     onSuccess: () => {
       client.invalidateQueries("profile");
       handleReset();
@@ -116,7 +116,7 @@ export function CoverImageModal({
     uploadMutation.mutate({
       data,
       key: IMAGEKEY.COVER,
-      existingKey: coverKey ?? null,
+      existingKey: coverKey,
     });
   };
 

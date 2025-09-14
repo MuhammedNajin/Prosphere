@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Search } from "lucide-react";
-import { ProfileApi } from "@/api/Profile.api";
+import { UserApi } from "@/api/user.api";
 import { useNavigate } from "react-router-dom";
 
 interface SearchSuggestion {
@@ -43,7 +43,7 @@ const SearchWithSuggestions = () => {
      if(!Array.isArray(keys)) {
         return null
      }
-      const response = await ProfileApi.getFiles(keys);
+      const response = await UserApi.getFiles(keys);
       console.log("response", response);
      if(Array.isArray(response)) {
       const map: Record<string, string> = {}; 
@@ -84,7 +84,7 @@ const SearchWithSuggestions = () => {
 
       setIsLoading(true);
       try {
-        const results = await ProfileApi.searchUser(debouncedQuery);
+        const results = await UserApi.searchUser(debouncedQuery);
         const formattedResults = formatUserResults(results);
         setSuggestions(formattedResults);
         setShowAll(false);

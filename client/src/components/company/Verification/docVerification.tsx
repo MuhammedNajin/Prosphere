@@ -9,7 +9,7 @@ import {
   File,
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 import { Navigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import {
@@ -34,7 +34,6 @@ import { useToast } from "@/hooks/use-toast";
 import SuccessMessage from "@/components/common/Message/SuccessMessage";
 import ErrorMessage from "@/components/common/Message/ErrorMessage";
 
-// Define interfaces for better type safety
 interface Company {
   verified: boolean;
   status: "uploaded" | "rejected" | "pending";
@@ -49,7 +48,7 @@ interface DocumentVerificationFormData {
 
 const DocumentVerification: React.FC = () => {
   const { id } = useParams() as { id: string };
-  const company = useSelectedCompany() as Company;
+  const company = useCurrentCompany() as Company;
   const [ , setUploadStatus] = React.useState({
     companyDocs: false,
     ownerDocs: false,
@@ -104,7 +103,7 @@ const DocumentVerification: React.FC = () => {
       console.log("error from doc verification ", err);
       toast({
         description: (
-          <ErrorMessage message="Failed to upload documents, Try again" />
+          <ErrorMessage className="bg-red-600" message="Failed to upload documents, Try again" />
         ),
       });
     },
@@ -120,8 +119,8 @@ const DocumentVerification: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log("mounted", company.status);
-  }, []); // Added dependency array
+    console.log("mounted", company);
+  }, []); 
 
   const renderFileUploadSection = (
     title: string,

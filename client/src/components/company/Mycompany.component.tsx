@@ -8,28 +8,36 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useDispatch, useSelector } from "react-redux";
-import { CircleCheck, Settings2, Users, Calendar, Briefcase, Plus } from "lucide-react";
+import { useDispatch } from "react-redux";
+import {
+  CircleCheck,
+  Settings2,
+  Users,
+  Calendar,
+  Briefcase,
+  Plus,
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   getCompaniesThunk,
-  setSelectedCompany,
-  setCompanySubscription
+  setCurrentCompany,
+  setCompanySubscription,
 } from "@/redux/reducers/companySlice";
 import { useMutation } from "react-query";
 import { CompanyApi } from "@/api";
 import ErrorMessage from "../common/Message/ErrorMessage";
 import { AxiosError } from "axios";
 import EmptyCompanyState from "./EmptyCompanyState";
-import { useGetUser } from "@/hooks/useGetUser";
 import { AppDispatch } from "@/redux/store";
+import { useCompanies, useCurrentUser } from "@/hooks/useSelectors";
+import { CompanyStatus, ICompany } from "@/types/company";
 
 const MyCompany: React.FC = () => {
-  const user = useGetUser()
+  const user = useCurrentUser();
   const { state } = useLocation();
   const { toast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
-  const { companies } = useSelector((state: any) => state.company);
+  const companies = useCompanies();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,13 +52,14 @@ const MyCompany: React.FC = () => {
         ),
       });
     }
-  }, [dispatch, state, toast, user?._id]);
+  }, [dispatch, state, toast, user?.id]);
 
   const tokenMutation = useMutation({
-    mutationFn: CompanyApi.generateToken,
+    mutationFn: CompanyApi.generateAccessToken,
     onSuccess: (data, variables) => {
-      const { id, el } = variables;
-      dispatch(setSelectedCompany(el));
+      console.log("dataaaaaaa", data);
+      const { id } = variables;
+      // dispatch(setSelectedCompany(el));
       dispatch(setCompanySubscription(data.data?.data));
       navigate(`/company/${id}`);
     },
@@ -65,30 +74,37 @@ const MyCompany: React.FC = () => {
           ),
         });
       } else {
-        const { id, el } = variables;
-        dispatch(setSelectedCompany(el));
+        const { id } = variables;
+        // dispatch(setSelectedCompany(el));
         navigate(`/company/verification/${id}`);
       }
     },
   });
 
+  const handleTokenGeneration = (el: ICompany) => {
+    dispatch(setCurrentCompany(el));
+    tokenMutation.mutate({ id: el.id });
+  };
+
   const getInitials = (name: string): string => {
     return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
       .toUpperCase();
   };
 
   const getRandomColor = (str: string): string => {
     const colors = [
-      'bg-blue-600',
-      'bg-green-600',
-      'bg-purple-600',
-      'bg-pink-600',
-      'bg-indigo-600'
+      "bg-blue-600",
+      "bg-green-600",
+      "bg-purple-600",
+      "bg-pink-600",
+      "bg-indigo-600",
     ];
-    const index = str.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const index = str
+      .split("")
+      .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return colors[index % colors.length];
   };
 
@@ -107,18 +123,22 @@ const MyCompany: React.FC = () => {
           </Button>
         </div>
 
-        {(!Array.isArray(companies) || companies.length === 0) ? (
+        {!Array.isArray(companies) || companies.length === 0 ? (
           <EmptyCompanyState />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {companies.map((el: any, index: number) => (
+            {companies.map((el: ICompany, index: number) => (
               <Card
                 key={Date.now() + index}
                 className="group relative rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
               >
                 <CardHeader className="p-6">
                   <div className="flex items-center space-x-4">
-                    <div className={`flex items-center justify-center w-16 h-16 rounded-full ${getRandomColor(el.name)} text-white text-xl font-bold transition-transform duration-300 group-hover:scale-110`}>
+                    <div
+                      className={`flex items-center justify-center w-16 h-16 rounded-full ${getRandomColor(
+                        el.name
+                      )} text-white text-xl font-bold transition-transform duration-300 group-hover:scale-110`}
+                    >
                       {getInitials(el.name)}
                     </div>
                     <CardTitle className="text-xl font-semibold capitalize text-orange-700">
@@ -126,30 +146,36 @@ const MyCompany: React.FC = () => {
                     </CardTitle>
                   </div>
                 </CardHeader>
-                
+
                 <CardContent className="p-6 space-y-4">
                   <div className="grid grid-cols-1 gap-3">
                     <div className="flex items-center space-x-3 text-gray-600">
                       <Briefcase className="w-5 h-5" />
-                      <span className="text-sm">Industry: {el.industry || "N/A"}</span>
+                      <span className="text-sm">
+                        Industry: {el.industry || "N/A"}
+                      </span>
                     </div>
-                    
+
                     <div className="flex items-center space-x-3 text-gray-600">
                       <Users className="w-5 h-5" />
-                      <span className="text-sm">Employees: {el.employees || "Unknown"}</span>
+                      <span className="text-sm">
+                        Employees: {el.size || "N/A"}
+                      </span>
                     </div>
-                    
+
                     <div className="flex items-center space-x-3 text-gray-600">
                       <Calendar className="w-5 h-5" />
-                      <span className="text-sm">Founded: {el.foundedYear || "N/A"}</span>
+                      <span className="text-sm">
+                        Status: {el.status ?? CompanyStatus.PENDING}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
-                
+
                 <CardFooter className="px-6 pb-6 flex justify-end">
                   <Button
                     variant="secondary"
-                    onClick={() => tokenMutation.mutate({ id: el._id, el })}
+                    onClick={() => handleTokenGeneration(el)}
                     className="bg-orange-700 hover:bg-orange-800 text-white flex items-center transition-all duration-300 transform hover:scale-105"
                   >
                     <Settings2 size={20} className="mr-2" />

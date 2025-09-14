@@ -40,23 +40,22 @@ import { Calendar } from "@/components/ui/calendar";
 import { Spinner } from "@/components/common/spinner/Loader";
 import LoaderSubmitButton from "@/components/common/spinner/LoaderSubmitButton";
 import { useToast } from "@/hooks/use-toast";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 
 export const CompanySettings: React.FC = () => {
-  const selectedCompany = useSelectedCompany();
-  const { toast } = useToast()
+  const selectedCompany = useCurrentCompany();
+  const { toast } = useToast();
+  
   const companyFormSchema = z.object({
     name: z.string().min(1, "Company name is required"),
     website: z.string().url("Please enter a valid URL"),
     foundedDate: z.date({
       required_error: "Add founded date",
     }),
-
     headquarters: z.object({
       placename: z.string(),
       coordinates: z.tuple([z.number(), z.number()]),
     }),
-
     location: z.array(
       z.object({
         placename: z.string(),
@@ -66,35 +65,45 @@ export const CompanySettings: React.FC = () => {
     techStack: z.array(z.string()),
   });
 
+  type CompanyFormValues = z.infer<typeof companyFormSchema>;
+
   const company = useQuery({
     queryKey: ["company"],
-    queryFn: () => CompanyApi.getCompany(selectedCompany._id),
+    queryFn: () => CompanyApi.getCompanyById(selectedCompany.id),
   });
 
   const form = useForm<CompanyFormValues>({
     resolver: zodResolver(companyFormSchema),
     defaultValues: {
-      name: company.data ? company.data.name : "",
-      headquarters: company.data ? company.data.headqaurters : "",
-      foundedDate: company.data ? company.data.foundedDate : "",
-      website: company.data ? company.data.website : "",
-      location: company.data ? company.data.locations : [],
-      techStack: company.data ? company.data.techStack : [],
+      name: "",
+      headquarters: { placename: "", coordinates: [0, 0] },
+      foundedDate: undefined,
+      website: "",
+      location: [],
+      techStack: [],
     },
   });
 
   useEffect(() => {
-    console.log(company.data);
+    console.log("**************************",company.data);
     if (company.data) {
+      // Extract the actual data from the response structure
+      const companyData = company.data;
+      
       form.reset({
-        name: company.data.name,
-        headquarters: company.data.headquarters,
-        foundedDate: company.data.foundedDate
-          ? new Date(company.data.foundedDate)
-          : undefined,
-        website: company.data.website,
-        location: company.data.location || [],
-        techStack: company.data.techStack || [],
+        name: companyData.name || "",
+        headquarters: {
+          placename: companyData.headquarters?.placename || "",
+          coordinates: companyData.headquarters?.coordinates || [0, 0],
+        },
+        foundedDate: companyData.foundedDate ? new Date(companyData.foundedDate) : undefined,
+        website: companyData.website || "",
+        // Map locations array to match the expected format
+        location: (companyData.locations || []).map((loc: any) => ({
+          placename: loc.placename,
+          coordinates: loc.coordinates,
+        })),
+        techStack: companyData.techStack || [],
       });
     }
   }, [company.data, form]);
@@ -104,8 +113,6 @@ export const CompanySettings: React.FC = () => {
     name: "location",
   });
 
-  type CompanyFormValues = z.infer<typeof companyFormSchema>;
-
   const companyProfileMutation = useMutation({
     mutationFn: CompanyApi.updateCompanyProfile,
     onSuccess: () => {
@@ -113,22 +120,26 @@ export const CompanySettings: React.FC = () => {
       toast({
         description: (
           <div className="flex items-center gap-2">
-             <CircleCheck className="text-green-800" size={20}/>
-             <h1>Saved.</h1>
+            <CircleCheck className="text-green-800" size={20} />
+            <h1>Saved.</h1>
           </div>
-        )
-      })
+        ),
+      });
     },
     onError: (error: unknown) => {
       console.log(error);
+      toast({
+        variant: "destructive",
+        description: "Failed to save changes. Please try again.",
+      });
     },
   });
 
   const onSubmit = (data: CompanyFormValues) => {
-    companyProfileMutation.mutate({ data, id: selectedCompany._id });
+    companyProfileMutation.mutate({ data, id: selectedCompany.id });
   };
 
-  const { isDirty } = form.formState
+  const { isDirty } = form.formState;
 
   return (
     <main className="flex flex-col justify-center items-center p-8 bg-white max-md:px-5">
@@ -248,28 +259,27 @@ export const CompanySettings: React.FC = () => {
                       name="headquarters"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Headquaters</FormLabel>
+                          <FormLabel>Headquarters</FormLabel>
                           <FormControl>
                             <div>
                               <div className="">
                                 <LocationSearch
                                   placeholder={
                                     field.value?.placename ||
-                                    "Select headquaters"
+                                    "Select headquarters"
                                   }
-                                  onSelectLocation={(
-                                    location: MapboxResult
-                                  ) => {
+                                  onSelectLocation={(location: MapboxResult) => {
                                     form.setValue("headquarters", {
                                       placename: location?.place_name,
                                       coordinates: location.coordinates,
                                     });
-                                    const exists = form
-                                      .getValues("location")
-                                      .find(({ placename }) => {
-                                        if (placename == location?.place_name)
-                                          return true;
-                                      });
+                                    
+                                    // Check if headquarters location already exists in locations array
+                                    const currentLocations = form.getValues("location");
+                                    const exists = currentLocations.find(
+                                      ({ placename }) => placename === location?.place_name
+                                    );
+                                    
                                     console.log("exists", exists);
                                     if (!exists) {
                                       append({
@@ -297,34 +307,42 @@ export const CompanySettings: React.FC = () => {
                             <div>
                               <div className="">
                                 <LocationSearch
-                                  onSelectLocation={(
-                                    location: MapboxResult
-                                  ) => {
-                                    append({
-                                      placename: location?.place_name,
-                                      coordinates: location?.coordinates,
-                                    });
+                                  placeholder="Add location"
+                                  onSelectLocation={(location: MapboxResult) => {
+                                    // Check if location already exists
+                                    const currentLocations = form.getValues("location");
+                                    const exists = currentLocations.find(
+                                      ({ placename }) => placename === location?.place_name
+                                    );
+                                    
+                                    if (!exists) {
+                                      append({
+                                        placename: location?.place_name,
+                                        coordinates: location?.coordinates,
+                                      });
+                                    }
                                   }}
                                 />
                               </div>
                               <div className="flex flex-wrap gap-2 mt-2">
                                 {field?.value?.map((location, index) => (
                                   <Badge
-                                    key={location?.placename}
+                                    key={`${location?.placename}-${index}`}
                                     variant="secondary"
-                                    className="text-indigo-600 inline-flex items-center gap-2"
+                                    className="text-orange-600 bg-orange-50 border-orange-200 inline-flex items-center gap-2"
                                   >
                                     {location?.placename?.split(",")[0]}
                                     <X
-                                      size={20}
+                                      size={16}
+                                      className="cursor-pointer hover:text-red-600"
                                       onClick={() => {
-                                        if (
-                                          location.placename ==
-                                          form.getValues(
-                                            "headquarters.placename"
-                                          )
-                                        ) {
-                                          form.resetField("headquarters");
+                                        // If removing headquarters location, reset headquarters field
+                                        const headquartersPlacename = form.getValues("headquarters.placename");
+                                        if (location.placename === headquartersPlacename) {
+                                          form.setValue("headquarters", {
+                                            placename: "",
+                                            coordinates: [0, 0],
+                                          });
                                         }
                                         remove(index);
                                       }}
@@ -346,15 +364,25 @@ export const CompanySettings: React.FC = () => {
                         <FormItem>
                           <FormLabel>Tech Stack</FormLabel>
                           <FormControl>
-                            <div className="flex items-center justify-between p-2 border rounded-md">
-                              <div className="flex flex-wrap gap-2">
-                                {field?.value?.map((tech) => (
+                            <div className="flex items-center justify-between p-2 border rounded-md min-h-[40px]">
+                              <div className="flex flex-wrap gap-2 flex-1">
+                                {field?.value?.map((tech, index) => (
                                   <Badge
-                                    key={tech}
+                                    key={`${tech}-${index}`}
                                     variant="secondary"
-                                    className="text-indigo-600"
+                                    className="text-orange-600 bg-orange-50 border-orange-200 inline-flex items-center gap-1"
                                   >
                                     {tech}
+                                    <X
+                                      size={14}
+                                      className="cursor-pointer hover:text-red-600"
+                                      onClick={() => {
+                                        const newTechStack = field.value.filter(
+                                          (_, i) => i !== index
+                                        );
+                                        form.setValue("techStack", newTechStack);
+                                      }}
+                                    />
                                   </Badge>
                                 ))}
                               </div>
@@ -371,34 +399,31 @@ export const CompanySettings: React.FC = () => {
                                     </Button>
                                   </FormControl>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-[600px] p-0 right-0 mr-[10rem] mb-10">
+                                <PopoverContent className="w-[400px] p-0">
                                   <Command>
                                     <CommandInput placeholder="Search Tech Stack" />
                                     <CommandList>
                                       <CommandEmpty>
-                                        No language found.
+                                        No technology found.
                                       </CommandEmpty>
                                       <CommandGroup>
-                                        {techStack?.map((techStack) => (
+                                        {techStack?.map((tech) => (
                                           <CommandItem
-                                            value={techStack}
-                                            key={techStack}
+                                            value={tech}
+                                            key={tech}
                                             onSelect={() => {
-                                              const selectedArray = field.value;
-                                              const isExists =
-                                                selectedArray.includes(
-                                                  techStack
-                                                );
-                                              console.log(isExists);
+                                              const selectedArray = field.value || [];
+                                              const isExists = selectedArray.includes(tech);
+                                              
                                               if (!isExists) {
                                                 form.setValue("techStack", [
                                                   ...selectedArray,
-                                                  techStack,
+                                                  tech,
                                                 ]);
                                               }
                                             }}
                                           >
-                                            {techStack}
+                                            {tech}
                                           </CommandItem>
                                         ))}
                                       </CommandGroup>
@@ -418,21 +443,18 @@ export const CompanySettings: React.FC = () => {
 
               <div className="border-t border-zinc-200" />
               <div className="flex justify-end">
-                { 
-                  !isDirty ? (
-                     <Button 
-                     disabled={true}
-                     className="bg-blue-800 text-end hover:bg-blue-950 opacity-50 cursor-not-allowed">
-                      Save Changes
-                     </Button>
-                  ) : (
-                    <LoaderSubmitButton 
-                
-                state={companyProfileMutation?.isLoading}>
-                  Save Changes
-                </LoaderSubmitButton>
-                  )
-                }
+                {!isDirty ? (
+                  <Button
+                    disabled={true}
+                    className="bg-orange-600 text-end hover:bg-orange-700 opacity-50 cursor-not-allowed"
+                  >
+                    Save Changes
+                  </Button>
+                ) : (
+                  <LoaderSubmitButton state={companyProfileMutation?.isLoading}>
+                    Save Changes
+                  </LoaderSubmitButton>
+                )}
               </div>
             </form>
           </Form>

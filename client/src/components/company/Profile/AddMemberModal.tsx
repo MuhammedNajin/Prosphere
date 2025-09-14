@@ -17,39 +17,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CompanyApi } from "@/api";
 import { useMutation } from "react-query";
 import { Spinner } from "@/components/common/spinner/Loader";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
-
-interface PlatformUser {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  avatar: string;
-  department: string;
-  username?: string;  
-   
-}
-
-const platformUsers: PlatformUser[] = [
-  {
-    _id: "p1",
-    firstName: "Emma",
-    lastName: "Singh",
-    email: "emma.singh@platform.com",
-    avatar: "/api/placeholder/32/32",
-    department: "Engineering",
-    username: "Emma Singh"
-  },
-  {
-    _id: "p2",
-    firstName: "Alex",
-    lastName: "Johnson",
-    email: "alex.johnson@platform.com",
-    avatar: "/api/placeholder/32/32",
-    department: "Product",
-    username: "Alex Johnson"
-  },
-];
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
+import { IUser } from "@/types/user";
 
 /**
  * Creates a debounced version of a function that delays execution until after wait milliseconds
@@ -69,16 +38,16 @@ function debounce<T extends (...args: any[]) => any>(
   };
 }
 interface AddMemberProps {
-   onSuccess: (user: PlatformUser) => void;
+  onSuccess: (user: IUser) => void;
 }
 
 const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchResults, setSearchResults] = useState<PlatformUser[]>(platformUsers);
+  const [searchResults, setSearchResults] = useState<IUser[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<PlatformUser | null>(null);
- const isSelected = useSelectedCompany()
+  const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
+  const company = useCurrentCompany();
   const debouncedSearch = useCallback(
     debounce(async (query: string) => {
       setIsSearching(true);
@@ -86,7 +55,7 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
         const response = await CompanyApi.searchUsers(query);
         setSearchResults(response);
       } catch (error) {
-        console.error('Error searching users:', error);
+        console.error("Error searching users:", error);
       } finally {
         setIsSearching(false);
       }
@@ -98,43 +67,41 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
     if (searchTerm) {
       debouncedSearch(searchTerm);
     } else {
-      setSearchResults(platformUsers);
     }
   }, [searchTerm, debouncedSearch]);
 
-  const handlePlatformUserSelect = (user: PlatformUser) => {
+  const handlePlatformUserSelect = (user: IUser) => {
     setSelectedUser(user);
   };
 
-
   const addMemberMutation = useMutation({
-     mutationFn: CompanyApi.addMember,
-     onSuccess: (data) => {
-       console.log("success", data);
-       onSuccess(data.data)
-       setIsOpen(false);
-
-     },
-     onError: (err) => {
-       console.log("errror from addMemberMutation", err);
-       
-     }
-  })
+    mutationFn: CompanyApi.addEmployeeToCompany,
+    onSuccess: (data) => {
+      console.log("success", data);
+      onSuccess(data.data);
+      setIsOpen(false);
+    },
+    onError: (err) => {
+      console.log("errror from addMemberMutation", err);
+    },
+  });
 
   const handleAddMember = async () => {
     if (selectedUser) {
       try {
-        console.log('Adding selected user:', selectedUser);
-        addMemberMutation.mutate(selectedUser._id);
+        console.log("Adding selected user:", selectedUser);
+        addMemberMutation.mutate({
+          companyId: company.id, // or however you get the current company ID
+          userId: selectedUser.id,
+        });
       } catch (error) {
-        console.error('Error adding member:', error);
+        console.error("Error adding member:", error);
       }
     }
   };
 
   const resetModal = () => {
     setSearchTerm("");
-    setSearchResults(platformUsers);
     setSelectedUser(null);
   };
 
@@ -148,14 +115,14 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
         setIsOpen(open);
       }}
     >
-      {isSelected && (
-      <DialogTrigger asChild>
-        <Button className="bg-blue-600 hover:bg-blue-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Member
-        </Button>
-      </DialogTrigger>
-    )}
+      {company && (
+        <DialogTrigger asChild>
+          <Button className="bg-orange-600 hover:bg-orange-700">
+            <Plus className="h-4 w-4 mr-2" />
+            Add New Member
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold flex items-center gap-2">
@@ -190,10 +157,10 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
               <div className="space-y-2 max-h-[300px] overflow-y-auto">
                 {searchResults.map((user) => (
                   <Card
-                    key={user?._id}
+                    key={user.id}
                     className={`cursor-pointer transition-colors ${
-                      selectedUser?._id === user._id
-                        ? "bg-blue-50 border-blue-200"
+                      selectedUser?.id === user.id
+                        ? "bg-orange-50 border-orange-200"
                         : "hover:bg-gray-50"
                     }`}
                     onClick={() => handlePlatformUserSelect(user)}
@@ -201,19 +168,17 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
                     <CardContent className="p-4">
                       <div className="flex items-center gap-3">
                         <Avatar>
-                          <AvatarImage src={user.avatar} />
+                          <AvatarImage src={user.profileImageKey} />
                           <AvatarFallback>
                             <img src="/profileIcon.png" alt="Profile" />
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <h4 className="font-medium">
-                            {user?.username}
-                          </h4>
+                          <h4 className="font-medium">{user?.username}</h4>
                           <p className="text-sm text-gray-500">{user?.email}</p>
                         </div>
-                        {selectedUser?._id === user._id && (
-                          <Check className="h-5 w-5 text-blue-600" />
+                        {selectedUser?.id === user.id && (
+                          <Check className="h-5 w-5 text-orange-600" />
                         )}
                       </div>
                     </CardContent>
@@ -234,20 +199,19 @@ const AddMemberModal: React.FC<AddMemberProps> = ({ onSuccess }) => {
 
         <DialogFooter>
           <div className="flex justify-end gap-3 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setIsOpen(false)}>
               Cancel
             </Button>
             <Button
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-orange-600 hover:bg-orange-700"
               disabled={!selectedUser}
               onClick={handleAddMember}
             >
-              { 
-                 addMemberMutation.isLoading ? <Spinner size={20} color="#ffffff"/> : "Save"
-              }
+              {addMemberMutation.isLoading ? (
+                <Spinner size={20} color="#ffffff" />
+              ) : (
+                "Save"
+              )}
             </Button>
           </div>
         </DialogFooter>

@@ -1,14 +1,19 @@
+import { useCurrentCompany } from '@/hooks/useSelectedCompany';
 import { ApplicantProp } from '@/types/company';
 import { MessageSquareText } from 'lucide-react';
-import React from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface ActionButtonProps {
    applicant: ApplicantProp['applicantId']
 }
 const ActionButtons: React.FC<ActionButtonProps> = ({ applicant }) => {
-  const { id } = useParams()
+  const { id } = useCurrentCompany()
   const navigate = useNavigate();
+
+  useEffect(() => { 
+    console.log("applicant in action button", applicant);
+  }, [applicant]);
   return (
     <div className="flex gap-2 mt-5 w-full">
       <button className="flex-1 flex items-center justify-center px-4 py-2.5 text-base font-bold text-orange-700 border border-orange-700 rounded-md hover:bg-orange-700 hover:text-white hover:shadow-lg">

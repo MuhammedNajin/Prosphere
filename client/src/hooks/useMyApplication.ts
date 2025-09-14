@@ -1,16 +1,16 @@
 import { useQuery } from "react-query";
-import { useGetUser } from "./useGetUser";
 import { ApplicationApi } from "@/api/application.api";
 import { useEffect, useState } from "react";
+import { useCurrentUser } from "./useSelectors";
 
 export function useMyApplications() {
-    const user = useGetUser();
+    const user = useCurrentUser();
    const [response, setResponse] = useState<any>();
     
     const { data, isLoading, error } = useQuery({
-        queryKey: ['myApplication', user?._id],
+        queryKey: ['myApplication', user?.id],
         queryFn: () => ApplicationApi.getMyApplicatons('All', ''),
-        enabled: !!user?._id,
+        enabled: !!user?.id,
         staleTime: 5 * 60 * 1000,
         cacheTime: 30 * 60 * 1000,
         refetchOnWindowFocus: false,

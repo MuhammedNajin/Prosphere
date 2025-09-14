@@ -4,7 +4,6 @@ import ChatArea from "./ChatArea";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "react-query";
 import { ChatApi } from "@/api/Chat.api";
-import { useGetUser } from "@/hooks/useGetUser";
 import { convertToIST } from "@/lib/utilities/ConverttoIst";
 import { SocketContext } from "@/context/socketContext";
 import {
@@ -18,8 +17,9 @@ import {
 } from "@/types/chat";
 import { generateObjectId } from "@/lib/utilities/generateDocumentId";
 import { ChevronLeft, Menu } from "lucide-react";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
-import { ProfileApi } from "@/api/Profile.api";
+import {useCurrentCompany } from "@/hooks/useSelectedCompany";
+import { UserApi } from "@/api/user.api";
+import { useCurrentUser } from "@/hooks/useSelectors";
 
 const Chat: React.FC<ChatRole> = ({ context }) => {
   const [typing, setTyping] = useState(false);
@@ -31,10 +31,10 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
   const [urls, setUrls] = useState<AvatarUrls>({});
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
 
-  const user = useGetUser();
+  const user = useCurrentUser();
   const navigate = useNavigate();
   const client = useQueryClient();
-  const company = useSelectedCompany();
+  const company = useCurrentCompany();
   const [searchParams] = useSearchParams();
   const queryKey = context === ROLE.COMPANY ? "companyConv" : "userConv";
 
@@ -75,7 +75,8 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
     queryKey: [queryKey],
     queryFn: () => {
       if (!user) throw new Error("User not found");
-      return ChatApi.getConversation(user._id, context, company?._id);
+      console.log("fetching conversations for user", user, context, company);
+      return ChatApi.getConversation(user.id!, context, company?.id);
     },
     enabled: !!user,
   });
@@ -103,7 +104,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
         .filter((avatar): avatar is string => typeof avatar === "string");
       async function getUrls(urls: string[]) {
         try {
-          const data = await ProfileApi.getFiles(urls);
+          const { data } = await UserApi.getFiles(urls);
 
           const mappedUrls = data.reduce(
             (acc: Record<string, string>, url: string, index: number) => {
@@ -130,10 +131,10 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
     console.log("context", context);
 
     const applicant = state?.applicant;
-    console.log("applicant", applicant);
+    console.log("applicant", applicant, applicant?.id, );
     if (applicant && data) {
       const exist = data?.find(
-        (conv: Conversation) => conv.participants[0]?._id === applicant?._id
+        (conv: Conversation) => conv.participants[0]?.id === applicant?.id
       );
       console.log("exist", exist);
 
@@ -146,7 +147,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
           updatedAt: new Date().toISOString(),
           context,
           company: {
-            id: company?._id || "",
+            id: company?.id || "",
             name: company?.name || "",
             owner: company?.owner || "",
           },
@@ -158,7 +159,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
           id: newConversation.id,
           name: newConversation?.participants[0]?.username,
           avatar: newConversation?.participants[0]?.avatar,
-          receiverId: newConversation?.participants[0]?._id,
+          receiverId: newConversation?.participants[0]?.id,
           context: newConversation.context,
           company: newConversation.company,
           newConv: true,
@@ -173,7 +174,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
     if (!chatSocket) return;
 
     if (user) {
-      chatSocket.emit("user_online", user._id);
+      chatSocket.emit("user_online", user.id);
     }
 
     chatSocket.on("online_users", (users: string[]) => {
@@ -222,7 +223,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
     return () => {
       chatSocket.off("direct_message");
       if (user) {
-        chatSocket.emit("user_offline", user._id);
+        chatSocket.emit("user_offline", user.id);
       }
       chatSocket.off("online_users");
     };
@@ -253,7 +254,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
         id: conv?.id,
         name: conv?.participants[0]?.username,
         avatar: conv?.participants[0]?.avatar,
-        receiverId: conv?.participants[0]?._id,
+        receiverId: conv?.participants[0]?.id,
         context: conv?.context,
         company: conv?.company,
         lastSeen: conv?.participants[0]?.lastSeen,
@@ -307,7 +308,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
                   id: conv.id,
                   name: conv?.participants[0]?.username,
                   avatar: urls[conv?.participants[0]?.avatar],
-                  receiverId: conv?.participants[0]?._id,
+                  receiverId: conv?.participants[0]?.id,
                   context: conv.context,
                   company: conv.company,
                   lastSeen: conv?.participants[0]?.lastSeen,
@@ -341,7 +342,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
                     : "border-gray-200 group-hover:border-orange-300"
                 } transition-all duration-200`}
                 />
-                {onlineUsers.has(conv?.participants[0]?._id) && (
+                {onlineUsers.has(conv?.participants[0]?.id) && (
                   <div className="absolute bottom-0 right-0 w-3 h-3 md:w-3.5 md:h-3.5 bg-green-500 rounded-full border-2 border-white" />
                 )}
               </div>
@@ -357,7 +358,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
                 }`}
                   >
                     {conv?.context === ROLE.COMPANY &&
-                    conv.company.owner !== user?._id
+                    conv.company.owner != user?.id
                       ? conv.company?.name
                       : conv.participants[0]?.username}
                   </span>
@@ -371,7 +372,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
                     className={`text-xs md:text-sm truncate max-w-[180px] 
                 ${
                   conv.lastMessage?.status !== MESSAGE_STATUS.READ &&
-                  user?._id !== conv.lastMessage?.sender
+                  user?.id !== conv.lastMessage?.sender
                     ? "font-semibold text-black"
                     : "font-normal text-gray-600"
                 }`}
@@ -380,7 +381,7 @@ const Chat: React.FC<ChatRole> = ({ context }) => {
                   </p>
 
                   {conv?.lastMessage?.status !== MESSAGE_STATUS.READ &&
-                    user?._id !== conv?.lastMessage?.sender &&
+                    user?.id !== conv?.lastMessage?.sender &&
                     conv?.unreadCount > 0 && (
                       <div
                         className="flex items-center justify-center bg-orange-600 text-white rounded-full 

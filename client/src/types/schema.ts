@@ -12,23 +12,28 @@ export const signUpFormSchema = z.object({
       .min(8, { message: "Password must be at least 8 characters" })
       .regex(/^(?=.*[A-Z])(?=.*\d)/, {
         message: "Password must contain 1 uppercase letter and 1 number",
-      }),
-    otpType: z.boolean().optional(),
-    gender: z.string(),
-    location: z.object(
-      {
-        placename: z.string(),
-        coordinates: z.array(z.any()),
-      },
-      { invalid_type_error: "Location is required" }
-    ),
-    jobRole: z.string().min(1, { message: "Job role is required" }),
+      })
   });
+
+
+  export const ForgetPasswordSchema = z
+    .object({
+      password: z
+        .string()
+        .min(8, "Password must be at least 8 characters long")
+        .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+        .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+        .regex(/[0-9]/, "Password must contain at least one number"),
+      confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords do not match",
+      path: ["confirmPassword"],
+    });
 
 
   export const resetPasswordSchema = z
   .object({
-    id: z.string().optional(),
     oldPassword: z.string().min(8, "Old password must be at least 8 characters."),
     newPassword: z.string().min(8, "New password must be at least 8 characters."),
   })
@@ -181,8 +186,23 @@ export const jobFormSchema = z
       ),
   });
 
+  export const locationSchema = z.object({
+    city: z.string().optional(),
+    state: z.string().optional(),
+    country: z.string().optional(),
+    postalCode: z.string().optional(),
+    placename: z.string().optional(),
+    coordinates: z
+      .object({
+        lat: z.number(),
+        lng: z.number(),
+      })
+      .optional(),
+  });
+  
+
   export const profileAboutFormSchema = z.object({
-    about: z.string().min(10, "About Me should be at least 10 characters long"),
+    description: z.string().min(10, "About Me should be at least 10 characters long"),
   });
 
   export const educationFormSchema = z

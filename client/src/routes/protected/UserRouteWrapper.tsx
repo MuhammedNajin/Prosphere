@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
-import { RootState } from "@/redux/store";
+import { useCurrentUser } from "@/hooks/useSelectors";
+import { UserRole } from "@/types/user";
 
 interface UserRouteWrapperProps {
   children: React.ReactNode;
@@ -17,31 +17,47 @@ interface UserRouteWrapperProps {
 
 const UserRouteWrapper: React.FC<UserRouteWrapperProps> = (props) => {
   const { children } = props;
-  const { user } = useSelector((state: RootState) => state.auth);
-  const [showSessionModal, setShowSessionModal] = useState(true);
+  const user = useCurrentUser();
+  const [showSessionModal, setShowSessionModal] = useState(false);
 
   const handleLoginRedirect = () => {
-    window.location.href = "/in";
-    setShowSessionModal(false);
+    window.location.href = "/signin";
   };
 
   useEffect(() => {
-    console.log(
-      "user", user, showSessionModal
-    )
+    console.log("user", user, showSessionModal);
     
-    return () => {
+    // Only show modal when user data is loaded and user is not authorized
+    if (user !== null && user?.role !== UserRole.User) {
+      setShowSessionModal(true);
+    } else if (user?.role === UserRole.User) {
       setShowSessionModal(false);
-      console.log("unMounting....", showSessionModal)
     }
-  }, []);
+    
+    // Cleanup function - don't set state here as component might be unmounting
+    return () => {
+      console.log("unMounting....", showSessionModal);
+    };
+  }, [user]); // Add user as dependency
 
   const SessionTimeoutModal = () => (
-    <Dialog open={showSessionModal} onOpenChange={(open) => {
-      handleLoginRedirect()
-      setShowSessionModal(!open)
-    }}>
-      <DialogContent className="sm:max-w-md bg-white rounded-lg p-6">
+    <Dialog 
+      open={showSessionModal} 
+      onOpenChange={(open) => {
+        // Prevent closing the modal by clicking outside or ESC
+        // Only allow closing through the login button
+        if (!open) {
+          console.log("Attempted to close modal - redirecting to login");
+          handleLoginRedirect();
+        }
+      }}
+    >
+      <DialogContent 
+        className="sm:max-w-md bg-white rounded-lg p-6"
+        // Prevent closing on escape key or clicking outside
+        onEscapeKeyDown={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader className="space-y-6">
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
             <AlertCircle className="h-10 w-10 text-red-500" />
@@ -73,18 +89,34 @@ const UserRouteWrapper: React.FC<UserRouteWrapperProps> = (props) => {
     </Dialog>
   );
 
-  if (!user) {
+  console.log("user role", user?.role);
+
+  // Show loading state while user data is being fetched
+  if (user === undefined) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+      </div>
+    );
+  }
+
+  // Show modal for unauthorized users
+  if (user === null || user?.role !== UserRole.User) {
     console.log("not authorized");
     
     return (
       <>
         <SessionTimeoutModal />
-        {children}
+        {/* Optionally hide children when showing modal */}
+        <div className="opacity-50 pointer-events-none">
+          {children}
+        </div>
       </>
     );
   }
-  console.log("authorized")
-  return <>{ children }</>;
+
+  console.log("authorized");
+  return <>{children}</>;
 };
 
 export default UserRouteWrapper;

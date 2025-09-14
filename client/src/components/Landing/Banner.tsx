@@ -1,11 +1,11 @@
-import { RootState } from "@/redux/store";
-import { useSelector } from "react-redux";
+import { useCurrentUser } from "@/hooks/useSelectors";
 import { useNavigate } from "react-router-dom";
 
 const StartPosting = () => {
 
   const navigate = useNavigate();
-  const { user } = useSelector((state: RootState) => state.auth);
+  const user = useCurrentUser();
+  
   const url = user ? "/" : '/signup'
   return (
     <div className="bg-orange-600 relative overflow-hidden">

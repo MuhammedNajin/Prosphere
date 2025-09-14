@@ -1,22 +1,22 @@
 import { Search, Loader2, ClipboardList } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { format } from "date-fns";
-import { useGetUser } from "@/hooks/useGetUser";
 import { useInfiniteQuery } from "react-query";
 import { ApplicationApi } from "@/api/application.api";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "../common/spinner/Loader";
 import EmptyApplications from "./EmptyApplication";
-import { ProfileApi } from "@/api/Profile.api";
+import { UserApi } from "@/api/user.api";
 import { getStageColor } from "@/lib/utilities/getApplicationStatusColor";
 import { ApplicationStatus } from "@/types/application";
+import { useCurrentUser } from "@/hooks/useSelectors";
 
 const MyApplication = () => {
   const [filter, setFilter] = useState<ApplicationStatus | "All">('All');
   const [search, setSearch] = useState("");
   const [urls, setUrls] = useState<Record<string, string>>({});
-  const user = useGetUser();
+  const user = useCurrentUser();
   type TabsCount = Record<string, number>;
 
 
@@ -35,7 +35,7 @@ const MyApplication = () => {
       if (!lastPage) return undefined;
       return lastPage.hasMore ? pages.length + 1 : undefined;
     },
-    enabled: !!user?._id,
+    enabled: !!user?.id,
     staleTime: 5 * 60 * 1000,
     cacheTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
@@ -50,7 +50,7 @@ const MyApplication = () => {
     const uniqueKeys = [...new Set(logoKeys.filter(Boolean))];
     
     try {
-      const data = await ProfileApi.getFiles(uniqueKeys);
+      const { data } = await UserApi.getFiles(uniqueKeys);
       const newUrls: Record<string, string> = {};
       
       data.forEach((url: string, index: number) => {
@@ -159,7 +159,7 @@ const MyApplication = () => {
                 <tbody>
                   {applications.map((app, index) => (
                     <tr
-                      key={app._id}
+                      key={app.id}
                       className={`${
                         index % 2 === 0 ? "bg-white" : "bg-slate-50"
                       } capitalize text-base`}

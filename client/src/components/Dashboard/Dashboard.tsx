@@ -1,7 +1,6 @@
 import React from 'react';
 import RecentApplicationsHistory from './RecentApplicationsHistory';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/redux/store';
+import { useCurrentUser } from '@/hooks/useSelectors';
 
 const getTimeBasedGreeting = (): string => {
   const hour = new Date().getHours();
@@ -18,12 +17,13 @@ const getTimeBasedGreeting = (): string => {
 };
 
 const Dashboard: React.FC = () => {
-  const { user } = useSelector((state: RootState) => state.auth);
+
+  const user = useCurrentUser() 
 
   return (
     <main className="flex flex-col bg-white">
-      <header className="flex flex-wrap gap-10 justify-between items-center p-8 w-full bg-white max-md:px-5 max-md:max-w-full">
-        <div className="flex flex-col self-stretch my-auto min-w-[240px] max-md:max-w-full">
+      <header className="flex flex-wrap gap-19 justify-between items-center p-8 w-full bg-white max-md:px-5 max-md:max-w-full">
+        <div className="md:ml-28 flex flex-col self-stretch my-auto min-w-[240px] max-md:max-w-full">
           <h1 className="text-2xl font-semibold leading-tight text-slate-800">
             {getTimeBasedGreeting()}, {user?.username}
           </h1>

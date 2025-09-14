@@ -32,7 +32,8 @@ import { signInThunk } from "@/redux/action/actions";
 import { AppDispatch } from "@/redux/store";
 import { SignInFormData } from "@/types/formData";
 import { signInSchema } from "@/types/schema";
-import { googleAuth } from "@/redux/reducers/authSlice";
+import { googleAuth } from "@/redux/reducers/userSlice";
+import { AxiosError, HttpStatusCode } from "axios";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -72,23 +73,43 @@ const SignIn = () => {
   const handleGoogleAuth = async (credentialResponse: CredentialResponse) => {
     try {
       const token = credentialResponse.credential;
-      const { status, user } = await ApiService.googleAuth(token);
-      
-      if (status === "new") {
-        navigate("/google/auth/flow", { state: user });
-      } else if (status === "exist") {
-        dispatch(googleAuth(user));
-        navigate("/in");
+      if (!token) {
+        toast.error("Google authentication failed");
+        return;
       }
-    } catch (error) {
-      toast.error("Google Login Failed");
+
+      const { payload } = await ApiService.googleAuth(token);
+
+      console.log("response from google signin", payload);
+      
+      // Handle profile complete user (existing user)
+      if (payload.profile_complete) {
+        dispatch(googleAuth(payload));
+        toast.success("Successfully signed in with Google");
+        navigate("/in");
+      } 
+      // Handle new user (profile incomplete)
+      else {
+        toast.success("Complete your profile to continue");
+        navigate("/google/auth/flow", { state: { email: payload.email } });
+      }
+      
+    } catch (error: any) {
+      console.error("Google auth error:", error);
+      
+      if (error instanceof AxiosError) {
+        const errorMessage = error.response?.data?.message || "Google Login Failed";
+        toast.error(errorMessage);
+      } else {
+        toast.error("Google Login Failed");
+      }
     }
   };
 
   const handleForgotPassword = async (data: { email: string }) => {
     setIsSendingReset(true);
     try {
-      console.log("reset pass",  data);
+      console.log("reset pass", data);
 
       const response = await ApiService.fogetPassword(data.email);
       console.log("forget pass responce", response)
@@ -96,7 +117,13 @@ const SignIn = () => {
       setShowForgotPassword(false);
       forgotPasswordForm.reset();
     } catch (error) {
-      toast.error("Failed to send reset email");
+      console.log("error from reset pass", error);
+      if(error instanceof AxiosError && error.status === HttpStatusCode.BadRequest) {
+        toast.error("Reset request already in progress. Please check your email.");
+      } else {
+          toast.error("Failed to send reset email");
+      }
+      
     } finally {
       setIsSendingReset(false);
     }
@@ -150,6 +177,8 @@ const SignIn = () => {
                   size="large"
                   text="signin_with"
                   onError={() => toast.error("Google Login Failed")}
+                  useOneTap={false}
+                  ux_mode="popup"
                 />
               </div>
               <button

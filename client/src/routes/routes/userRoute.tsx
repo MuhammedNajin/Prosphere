@@ -1,4 +1,4 @@
-import CompanyOverview from "@/components/company/Profile/About";
+import CompanyOverview from "@/components/company/Profile/CompanyOverview";
 import Home from "@/components/company/Profile/Home";
 import Dashboard from "@/components/Dashboard/Dashboard";
 import UserLayout from "@/layout/UserLayout";

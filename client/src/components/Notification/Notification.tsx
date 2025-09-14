@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/hooks/use-toast';
 import { NotificationApi } from '@/api/Notification.api';
-import { useGetUser } from '@/hooks/useGetUser';
 import NotificationItem from './NotificationItem';
 import { FILTER_TABS, FilterType, NotificationAttrs } from '@/types/notification';
 import { NotificationSkeleton } from '../Skeleton/Notification.skeleton';
@@ -19,21 +18,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { useCurrentUser } from '@/hooks/useSelectors';
 
 const NotificationsFeed: React.FC = () => {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [selectedNotifications, setSelectedNotifications] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const user = useGetUser();
+  const user = useCurrentUser();
   
   const { data, isLoading, isError, error, refetch } = useQuery<NotificationAttrs[], Error>({
     queryKey: ['notifications', activeFilter],
     queryFn: () => {
-      if (!user?._id) throw new Error('User not found');
-      return NotificationApi.getNotification(user._id, activeFilter);
+      if (!user?.id) throw new Error('User not found');
+      return NotificationApi.getNotification(user.id, activeFilter);
     },
-    enabled: !!user?._id,
+    enabled: !!user?.id,
     refetchInterval: 30000,
   });
 

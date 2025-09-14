@@ -3,8 +3,6 @@ import axiosInstance from "./config";
 import { ResetFormData, signupFormData } from "@/types/formData";
 import { googleSignUpFlow, IOtp } from "@/types/user";
 
-
-
 class ApiService {
   private static axios: AxiosInstance = axiosInstance;
 
@@ -21,14 +19,14 @@ class ApiService {
       console.log(response);
 
       if (response.status === 200) {
-        return response.data;
+        return response.data.data;
       }
     } catch (error) {
       console.log(error);
       if (error instanceof AxiosError) {
         if (error.response) {
           const { errors } = error?.response.data;
-          return rejectWithValue(errors[0].message);
+          return rejectWithValue(errors.message);
         }
       }
     }
@@ -39,11 +37,11 @@ class ApiService {
     { rejectWithValue }: { rejectWithValue: (value: any) => void }
   ) => {
     try {
-      const response = await this.axios.post("/api/v1/auth/login", data);
+      const response = await this.axios.post("/api/v1/auth/signin", data);
       console.log("response", response);
       if (response.status === 200) {
         console.log(response);
-        return response.data;
+        return response.data?.data;
       }
     } catch (error) {
       console.log("error in the api", error);
@@ -53,7 +51,7 @@ class ApiService {
       ) {
         if (error.response) {
           const { errors } = error?.response.data;
-          return rejectWithValue(errors[0].message);
+          return rejectWithValue(errors.message);
         }
       }
       return rejectWithValue("Too many requests");
@@ -74,10 +72,7 @@ class ApiService {
         }
       );
       console.log("google res", response);
-
-      if (response.status === 201) {
-        return response.data;
-      }
+        return response.data.data;
     } catch (error) {
       console.log(error);
       throw error
@@ -108,22 +103,26 @@ class ApiService {
         return response.data;
       }
     } catch (error) {
-      console.log(error);
+       throw error
     }
   };
 
   static resetPassword = async ({
     password,
     token,
+    email
   }: {
     password: string;
     token: string;
+    email: string;
   }) => {
     try {
       const response = await this.axios.post(
-        `/api/v1/auth/reset-password/${token}`,
+        `/api/v1/auth/reset-password`,
         {
-          password,
+          newPassword: password,
+          email,
+          token
         }
       );
       console.log(response);
@@ -134,21 +133,17 @@ class ApiService {
   };
 
   static googleSignUpFlow = async ({
+  phone,
+  username,
+  email,
+}: googleSignUpFlow) => {
+  const response = await this.axios.put("/api/v1/auth/google/flow", {
     phone,
-    jobRole,
+    username,
     email,
-  }: googleSignUpFlow) => {
-    try {
-      const response = await this.axios.put("/api/v1/auth/google-signup-flow", {
-        phone,
-        jobRole,
-        email,
-      });
-      return response.data;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  });
+  return response.data?.data;
+};
 
   static logout = async () => {
     try {
@@ -159,7 +154,7 @@ class ApiService {
 
   static changePassword = async (data: ResetFormData) => {
 
-      return await this.axios.post("/api/v1/auth/reset-password", data);
+      return await this.axios.post("/api/v1/auth/change-password", data);
   
   };
 

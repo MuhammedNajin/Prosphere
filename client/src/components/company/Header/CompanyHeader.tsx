@@ -1,5 +1,5 @@
 import React from "react";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 import { ShieldCheck } from "lucide-react";
 import CompanyDropdown from "./Dropdown";
 
@@ -8,7 +8,7 @@ interface CompanyHeaderProps {
 }
 
 const Header: React.FC<CompanyHeaderProps> = ({ onClose }) => {
-  const company = useSelectedCompany();
+  const company = useCurrentCompany();
   return (
     <header className="flex overflow-hidden fixed w-full md:max-w-[80%] z-50 flex-wrap gap-10 justify-between items-center px-6 py-4 bg-white  max-md:px-5 border-b shadow-sm border-solid">
        <div className="flex gap-4">

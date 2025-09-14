@@ -14,7 +14,7 @@ import {
 import { CompanyStatus } from "@/types/company";
 import { useParams } from "react-router-dom";
 
-type AdminActionStatus = CompanyStatus.Verified | CompanyStatus.Rejected;
+type AdminActionStatus = CompanyStatus.VERIFIED | CompanyStatus.REJECTED;
 
 interface VerificationStatusConfirmationProps {
   status: AdminActionStatus;
@@ -31,7 +31,7 @@ export const VerificationStatusConfirmation: React.FC<
       <AlertDialogTrigger asChild>
         <button
           className={`${
-            status === CompanyStatus.Verified
+            status === CompanyStatus.VERIFIED
               ? "text-emerald-600 font-medium"
               : "text-red-500 font-medium"
           }`}
@@ -45,7 +45,7 @@ export const VerificationStatusConfirmation: React.FC<
           <AlertDialogDescription>
             <div className="mt-4">
               <div className="flex gap-4 mt-2">
-                {status === CompanyStatus.Verified ? (
+                {status === CompanyStatus.VERIFIED ? (
                   <div>
                     <p className="text-sm text-gray-500">
                       Mark the item as Verify and ready for next step.

@@ -33,7 +33,7 @@ export interface MessageAttrs {
      lastSeen: Date;
      newConv?: boolean;
      participant: {
-        _id: string;
+        id: string;
         username: string;
         avatar: string;
         context: ROLE;
@@ -52,7 +52,7 @@ export interface MessageAttrs {
       mimeType?: string;
     };
     receiverDetails: {
-      _id: string;
+      id: string;
       username: string;
       avatar: string;
       context: ROLE;
@@ -71,7 +71,7 @@ export interface MessageAttrs {
   }
 
   export interface Participants {
-    _id: string;
+    id: string;
     username: string;
     avatar: string;
     context: ROLE;

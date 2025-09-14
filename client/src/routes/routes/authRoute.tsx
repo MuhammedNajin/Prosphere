@@ -36,7 +36,7 @@ export const authRoute = {
     },
 
     {
-      path: "/reset-password/:token",
+      path: "/reset-password",
       element: <ResetPasswordPage />,
     },
 

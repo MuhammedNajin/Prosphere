@@ -1,5 +1,5 @@
 import { lazy } from 'react'
-import CompanyOverview from "@/components/company/Profile/About"
+import CompanyOverview from "@/components/company/Profile/CompanyOverview"
 import Home from "@/components/company/Profile/Home"
 import { CompanySettings } from "@/components/company/Settings/ProfileSettings"
 import { ApplicantLayout } from "@/layout/ApplicationLayout"

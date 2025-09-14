@@ -1,8 +1,15 @@
-import { RootState } from "@/redux/store";
-import {  SubscriptionData } from "@/types/subscription";
-import { useSelector } from "react-redux";
+import { PaymentApi } from "@/api/Payment.api";
+import { SubscriptionData } from "@/types/subscription";
+import { useQuery } from "react-query";
 
-export function useSubscription(): SubscriptionData | null {
-    const { selectedCompanySubscription } = useSelector((state: RootState) => state.company);
-    return selectedCompanySubscription; 
-}
+export const useSubscription = (companyId: string) => {
+  return useQuery<SubscriptionData | null>({
+    queryKey: ["subscription", companyId],
+    queryFn: async () => {
+      if (!companyId) return null;
+      return await PaymentApi.getCurrentPlan(companyId);
+    },
+    staleTime: 1000 * 60 * 5,
+    refetchOnWindowFocus: false,
+  });
+};

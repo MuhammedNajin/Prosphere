@@ -17,6 +17,8 @@ export enum ModalContent {
   ContactInfo = "Contact Info",
   AddResume = "Add Resume",
   EditResume = "Edit Resume",
+  EditHeadline = 'Edit Headline',
+  EditLocation = 'Edit Location'
 }
 
 export enum IMAGEKEY {

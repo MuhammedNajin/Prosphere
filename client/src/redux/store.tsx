@@ -2,17 +2,17 @@ import { configureStore } from "@reduxjs/toolkit";
 import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; 
 import { combineReducers } from 'redux';
-import { authReducer } from './reducers/authSlice';
+import { userReducer } from './reducers/userSlice';
 import { companyReducer } from './reducers/companySlice'
 
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['auth', 'company'], 
+  whitelist: ['user', 'company'], // Updated to match new reducer name
 };
 
 const rootReducer = combineReducers({
-  auth: authReducer,
+  user: userReducer, // Changed from 'auth: authReducer'
   company: companyReducer,
 });
 

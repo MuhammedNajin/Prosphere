@@ -1,134 +1,206 @@
-import { Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Dropdown from "./DropDown";
-import { useGetUser } from "@/hooks/useGetUser";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
-import { useContext, useEffect, useState } from "react";
-import { SocketContext } from "@/context/socketContext";
-import { NotificationAttrs } from "@/types/notification";
 import { cn } from "@/lib/utils";
-import { ToastAction } from "@/components/ui/toast";
-import SearchWithSuggestions from "./Search";
-import { useQuery } from "react-query";
-import { NotificationApi } from "@/api/Notification.api";
+import { Home, MessageCircle, Briefcase, Users, Building, Bell, Menu, X } from "lucide-react";
+import { useState, useEffect } from "react";
+import Dropdown from "./DropDown";
+import { useNavigate } from "react-router-dom";
 
-const Header = () => {
-  const [count, setCount] = useState(0);
-  const [hasNewNotification, setHasNewNotification] = useState(false);
-  const user = useGetUser();
-  const isLoggedIn = user ?? null;
-  const navigate = useNavigate();
-  const { toast } = useToast();
+const navItems = [
+  { icon: Home, label: "Dashboard", path: "/" },
+  { icon: MessageCircle, label: "Messages", path: "/chat" },
+  { icon: Briefcase, label: "Jobs", path: "/jobs" },
+  { icon: Users, label: "My Application", path: "/myapplication" },
+  { icon: Building, label: "My Companies", path: "/mycompany" },
+];
 
-  const { notificationSocket } = useContext(SocketContext);
-
-  const { data } = useQuery({
-     queryKey: ['unread-notification'],
-     queryFn: () => NotificationApi.getNotificationCount(user?._id!)
-  })
-
+const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeTab, setActiveTab] = useState("/");
+  const navigate = useNavigate()
+  // Handle scroll effect
   useEffect(() => {
-    if (data) {
-      setCount(data);
-      if (data > 0) setHasNewNotification(true);
-    }
-  }, [data]);
-   
-  useEffect(() => {
-    notificationSocket?.on("notification:sent", (data: NotificationAttrs) => {
-      setCount((prev) => prev + 1);
-      setHasNewNotification(true);
-      
-      toast({
-        title: data.title,
-        description: data.message,
-        className: cn(
-          "top-0 right-0 flex fixed md:max-w-2xl md:top-4 md:right-4"
-        ),
-        action: (
-          <ToastAction
-            onClick={() => navigate("/notification")}
-            altText="View notification"
-          >
-            View
-          </ToastAction>
-        ),
-      });
-    });
-    
-    return () => {
-      notificationSocket?.off("notification:sent");
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 0);
     };
-  }, [notificationSocket?.connected, navigate]);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
-  const handleNotificationClick = () => {
-    setHasNewNotification(false);
-    navigate("/notification");
+  // Close mobile menu on escape key
+  useEffect(() => {
+    const handleEscape = (e: any) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, []);
+
+  const handleNavClick = (path: string) => {
+    setActiveTab(path);
+    setIsOpen(false);
+    navigate(path);
   };
 
   return (
-    <header className="flex fixed w-full md:max-w-[80%] z-50 flex-wrap gap-4 justify-between items-center px-6 py-4 bg-white max-md:px-5 border-b shadow-sm border-solid">
-      <div className="flex-1 max-w-xl px-4">
-        <SearchWithSuggestions />
-      </div>
-
-      <div className="flex items-center gap-4">
-        {isLoggedIn ? (
-          <div className="flex gap-x-4 items-center">
-            <button 
-              className={cn(
-                "relative flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300",
-                "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-orange-200"
-              )}
-              onClick={handleNotificationClick}
-              aria-label={`${count} unread notifications`}
-            >
-              <Bell 
-                size={22} 
-                className={cn(
-                  "text-gray-700 transition-all duration-300",
-                  hasNewNotification && "text-orange-600"
-                )} 
-              />
-              
-              {count > 0 && (
-                <span className={cn(
-                  "absolute -top-1 -right-1 flex items-center justify-center",
-                  "min-w-5 h-5 px-1 text-xs font-bold text-white rounded-full",
-                  "bg-orange-600 shadow-sm",
-                  hasNewNotification && "animate-pulse"
-                )}>
-                  {count > 99 ? '99+' : count}
-                </span>
-              )}
-              
-              {hasNewNotification && (
-                <span className="absolute inset-0 rounded-full animate-ping-slow bg-orange-400 opacity-30"></span>
-              )}
-            </button>
-            <Dropdown />
-          </div>
-        ) : (
-          <div className="flex gap-3">
-            <Button
-              onClick={() => navigate("/signin")}
-              variant="ghost"
-              className="rounded-full px-6 border border-orange-600 text-orange-600 hover:bg-orange-50 hover:text-orange-700 font-medium transition-all duration-200"
-            >
-              Sign In
-            </Button>
-            <Button 
-             onClick={() => navigate("/signUp")}
-             className="rounded-full px-6 bg-orange-600 text-white hover:bg-orange-700 font-medium shadow-sm hover:shadow-md transition-all duration-200">
-              Sign Up
-            </Button>
-          </div>
+    <>
+      <nav 
+        className={cn(
+          "fixed top-0 left-0 w-full bg-white/95 backdrop-blur-md border-b transition-all duration-300 z-50",
+          scrolled 
+            ? "shadow-lg border-gray-200/50" 
+            : "shadow-sm border-gray-100"
         )}
-      </div>
-    </header>
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-20">
+            {/* Enhanced Logo */}
+            <div className="flex items-center gap-3 font-bold text-xl cursor-pointer">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg blur opacity-30"></div>
+                <div className="relative bg-gradient-to-r from-orange-500 to-red-500 p-2.5 rounded-lg">
+                  <Briefcase className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <span className="bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                JobPortal
+              </span>
+            </div>
+
+            {/* Enhanced Desktop Navigation - Vertical Icon + Text Layout */}
+            <ul className="hidden md:flex items-center gap-2">
+              {navItems.map(({ icon: Icon, label, path }) => (
+                <li key={label}>
+                  <button
+                    onClick={() => handleNavClick(path)}
+                    className={cn(
+                      "group relative flex flex-col items-center justify-center px-4 py-3 rounded-xl text-xs font-medium transition-all duration-300",
+                      "hover:scale-105 active:scale-95 min-w-[80px]",
+                      activeTab === path
+                        ? "text-white bg-gradient-to-br from-orange-500 to-red-500 shadow-lg shadow-orange-500/25"
+                        : "text-gray-600 hover:text-orange-600 hover:bg-orange-50/80"
+                    )}
+                  >
+                    <Icon className={cn(
+                      "h-5 w-5 mb-1 transition-all duration-300 group-hover:scale-110",
+                      activeTab === path ? "drop-shadow-sm" : ""
+                    )} />
+                    <span className="leading-tight text-center">{label}</span>
+                    
+                    {/* Active indicator dot */}
+                    {activeTab === path && (
+                      <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-sm" />
+                    )}
+                    
+                    {/* Hover indicator */}
+                    <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-orange-500 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            {/* Enhanced Actions */}
+            <div className="flex items-center gap-4">
+              {/* Enhanced Notification Bell */}
+              <div className="relative group">
+                <button className="relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200 hover:bg-orange-50 hover:scale-110 active:scale-95">
+                  <Bell className="h-5 w-5 text-gray-700 group-hover:text-orange-600 transition-colors" />
+                  <span className="absolute -top-1 -right-1 w-5 h-5 text-xs flex items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full font-medium shadow-lg animate-pulse">
+                    3
+                  </span>
+                </button>
+              </div>
+
+              <Dropdown />
+
+              {/* Enhanced Mobile Menu Button */}
+              <button
+                className="md:hidden relative p-2.5 rounded-lg hover:bg-orange-50 transition-all duration-200 hover:scale-110 active:scale-95"
+                onClick={() => setIsOpen(!isOpen)}
+                aria-label="Toggle menu"
+                aria-expanded={isOpen}
+              >
+                <div className="relative w-6 h-6">
+                  <Menu 
+                    className={cn(
+                      "absolute inset-0 h-6 w-6 text-gray-700 transition-all duration-300",
+                      isOpen ? "rotate-180 opacity-0" : "rotate-0 opacity-100"
+                    )} 
+                  />
+                  <X 
+                    className={cn(
+                      "absolute inset-0 h-6 w-6 text-gray-700 transition-all duration-300",
+                      isOpen ? "rotate-0 opacity-100" : "-rotate-180 opacity-0"
+                    )} 
+                  />
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Mobile Navigation - Vertical Layout */}
+        <div 
+          className={cn(
+            "md:hidden overflow-hidden transition-all duration-300 ease-out",
+            isOpen 
+              ? "max-h-[500px] opacity-100" 
+              : "max-h-0 opacity-0"
+          )}
+        >
+          <div className="bg-white/95 backdrop-blur-md border-t border-gray-100">
+            <div className="px-4 py-4">
+              <div className="grid grid-cols-3 gap-3">
+                {navItems.map(({ icon: Icon, label, path }, index) => (
+                  <div 
+                    key={label}
+                    className={cn(
+                      "transform transition-all duration-300 ease-out",
+                      isOpen 
+                        ? "translate-y-0 opacity-100" 
+                        : "translate-y-4 opacity-0"
+                    )}
+                    style={{ 
+                      transitionDelay: isOpen ? `${index * 80}ms` : "0ms" 
+                    }}
+                  >
+                    <button
+                      onClick={() => handleNavClick(path)}
+                      className={cn(
+                        "group w-full flex flex-col items-center justify-center p-4 rounded-xl text-xs font-medium transition-all duration-200",
+                        "hover:scale-105 active:scale-95",
+                        activeTab === path
+                          ? "text-white bg-gradient-to-br from-orange-500 to-red-500 shadow-lg"
+                          : "text-gray-700 hover:text-orange-600 hover:bg-orange-50/80"
+                      )}
+                    >
+                      <Icon className="h-6 w-6 mb-2 transition-transform group-hover:scale-110" />
+                      <span className="leading-tight text-center">{label}</span>
+                      
+                      {/* Active indicator for mobile */}
+                      {activeTab === path && (
+                        <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-sm" />
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Menu Overlay */}
+      {isOpen && (
+        <div 
+          className="md:hidden fixed inset-0 bg-black/20 backdrop-blur-sm z-40 transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+    </>
   );
 };
 
-
-export default Header;
+export default Navbar;

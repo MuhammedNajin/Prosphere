@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "react-query";
 import { ApplicationApi } from "@/api/application.api";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, } from "react-router-dom";
 import { CompanyApi } from "@/api";
 import { Applicant, ViewType } from "@/types/application";
 import { format } from "date-fns";
@@ -22,6 +22,7 @@ import ApplicationSkeleton from "../Skeleton/CompanySideApplicationSkeleton";
 import StatusFilter from "../common/JobApplicationFilter/ApplicationFilter";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import ApplicationCards from "./Application/ApplicationCardView";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 
 
 interface ApplicationResponse {
@@ -54,14 +55,14 @@ const Application: React.FC = () => {
   const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPageOption>(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const { id } = useParams();
+  const company = useCurrentCompany();
   const navigate = useNavigate();
 
   const { data, isLoading, refetch } = useQuery<ApplicationResponse>(
-    ["applications", id, filter, itemsPerPage, currentPage, search],
+    ["applications", company?.id, filter, itemsPerPage, currentPage, search],
     async () => {
       const response = await ApplicationApi.getAllApplication({
-        companyId: id!,
+        companyId: company?.id!,
         filter,
         search,
         page: currentPage,
@@ -89,7 +90,7 @@ const Application: React.FC = () => {
 
       async function getUrls(urls: string[]) {
         if (urls.length === 0) return;
-        const data = await CompanyApi.getFiles(urls);
+        const data = await CompanyApi.getCompanyFilesBatch(urls);
         const urlMap = urls.reduce(
           (acc, url, index) => ({
             ...acc,

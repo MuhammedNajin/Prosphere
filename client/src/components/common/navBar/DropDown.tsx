@@ -11,21 +11,21 @@ import { ChevronDown, LogOut, Settings, UserRound } from 'lucide-react';
 import { useDispatch } from 'react-redux';
 import { logoutThuck } from '@/redux/action/actions';
 import { useNavigate } from 'react-router-dom';
-import { useGetUser } from '@/hooks/useGetUser';
 import { AppDispatch } from '@/redux/store';
 import { useQuery } from 'react-query';
-import { ProfileApi } from '@/api/Profile.api';
+import { UserApi } from '@/api/user.api';
+import { useCurrentUser } from '@/hooks/useSelectors';
 
 const Dropdown = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const loggedUser = useGetUser();
+  const loggedUser = useCurrentUser()
   
   const { data: avatarUrl, isLoading } = useQuery({
     queryKey: ["avatar", loggedUser?.avatar],
     queryFn: () => {
       if (!loggedUser?.avatar) return null;
-      return ProfileApi.getUploadedFile(loggedUser.avatar);
+      return UserApi.getUploadedFile(loggedUser.avatar);
     },
     enabled: !!loggedUser?.avatar,
   });
@@ -39,7 +39,7 @@ const Dropdown = () => {
   };
 
   // Determine the image source based on API result or fallback
-  const imageSource = avatarUrl || '/profleIcon.png';
+  const imageSource = avatarUrl?.url || '/profleIcon.png';
   const username = loggedUser?.username || 'Maria Anderson';
 
   return (

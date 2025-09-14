@@ -1,4 +1,4 @@
-import { CompanyApi } from "@/api";
+import { CompanyApi } from "@/api/Company.api";
 import {
   Briefcase,
   Mail,
@@ -7,24 +7,25 @@ import {
 } from "lucide-react";
 import React from "react";
 import { useQuery } from "react-query";
-import { useLocation, useNavigate, useOutletContext, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useOutletContext } from "react-router-dom";
 import JobUpdates from "../Dashboard/JobCard";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Company, User } from "@/types/company";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 
 const Home: React.FC = () => {
   const { companyProfile } = useOutletContext<{ companyProfile: Company}>();
 
   const navigate = useNavigate()
-  const { id } = useParams()
+  const company = useCurrentCompany()
   const location = useLocation();
   const fromJob = location.state?.fromJob || false;
 
   const { data } = useQuery({
     queryKey: ['people'],
-     queryFn: () => fromJob ? CompanyApi.getEmployeesPublicProfile(id) : CompanyApi.getEmployees(),
+     queryFn: () => fromJob ? CompanyApi.getCompanyEmployees(company.id) : CompanyApi.getCompanyEmployees(company.id),
 
   })
 
@@ -159,7 +160,7 @@ const Home: React.FC = () => {
         {
            data && data?.team?.length > 3 && (
             <button
-            onClick={() => navigate(`/company/profile/${id}/team`)}
+            onClick={() => navigate(`/company/profile/${company.id}/team`)}
             className="w-full mt-4 py-2 text-orange-600 font-semibold hover:bg-gray-100 rounded">
              View all members →
            </button>

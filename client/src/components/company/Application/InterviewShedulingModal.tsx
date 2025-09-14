@@ -30,6 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQuery } from 'react-query';
 import { CompanyApi } from '@/api';
 import { User } from '@/types/company';
+import { useCurrentCompany } from '@/hooks/useSelectedCompany';
 
 // Validation schema
 const formSchema = z.object({
@@ -51,7 +52,7 @@ type FormValues = z.infer<typeof formSchema>;
 
 const InterviewSchedulerModal = () => {
   const [open, setOpen] = useState(false);
-  
+  const company = useCurrentCompany()
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -68,7 +69,7 @@ const InterviewSchedulerModal = () => {
 
   const { data: employeesData = { team: [] }, isLoading, isError } = useQuery({
     queryKey: ['employees'],
-    queryFn: () => CompanyApi.getEmployees(),
+    queryFn: () => CompanyApi.getCompanyEmployees(company.id),
     enabled: open, 
     staleTime: 5 * 60 * 1000,
   });

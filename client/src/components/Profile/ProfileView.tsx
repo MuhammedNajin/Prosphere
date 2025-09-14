@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ProfileApi } from "@/api/Profile.api";
+import { UserApi } from "@/api/user.api";
 import { CiCalculator1, CiLocationOn } from "react-icons/ci";
 import { useQuery } from "react-query";
 import ProfileSkeleton from "../Skeleton/UserProfile.skeleton";
@@ -10,8 +10,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Education, Experience, Skill } from "@/types/profile";
 
 const PublicProfile = () => {
-  const [avatarUrl, setAvatarUrl] = useState("");
-  const [coverImage, setCoverImage] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState<{ url: string }>();
+  const [coverImage, setCoverImage] = useState<{ url: string }>();
   const [showAllExperience, setShowAllExperience] = useState(false);
   const [showAllEducation, setShowAllEducation] = useState(false);
   const navigate = useNavigate()
@@ -19,19 +19,19 @@ const PublicProfile = () => {
 
   const { data, isLoading } = useQuery(
     ["public-profile", id],
-    () => ProfileApi.getProfile(id!),
+    () => UserApi.getUserById(id!),
     {}
   );
 
   useEffect(() => {
     if (data && data.coverImageKey) {
-      ProfileApi.getUploadedFile(data.coverImageKey).then((url) => {
+      UserApi.getUploadedFile(data.coverImageKey).then((url) => {
         setCoverImage(url);
       });
     }
 
     if (data && data.profileImageKey) {
-      ProfileApi.getUploadedFile(data.profileImageKey).then((url) => {
+      UserApi.getUploadedFile(data.profileImageKey).then((url) => {
         setAvatarUrl(url);
       });
     }

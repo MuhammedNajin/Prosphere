@@ -1,6 +1,4 @@
-import React from 'react'
-import { ProfileApi } from "@/api/Profile.api";
-import { useSelector } from "react-redux";
+import { UserApi } from "@/api/user.api";
 import { Textarea } from '@/components/ui/textarea'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -15,30 +13,31 @@ import {
 import LoaderSubmitButton from '../common/spinner/LoaderSubmitButton';
 import { useMutation, useQueryClient } from 'react-query';
 import { useToast } from '@/hooks/use-toast';
-import { RootState } from '@/redux/store';
 import { profileAboutFormSchema } from '@/types/schema';
 import { AboutFormData } from '@/types/formData';
+import { useCurrentUser } from '@/hooks/useSelectors';
 
 interface AboutFormProps {
-    about?: string
-    onClose: React.Dispatch<React.SetStateAction<boolean>>
+    description?: string
+    onClose: (shouldRefetch?: boolean) => void
+
 }
 
 
 
-function AboutForm({ about, onClose } : AboutFormProps) {
-    const { user } = useSelector((state: RootState) => state.auth);
+function AboutForm({ description, onClose } : AboutFormProps) {
+    const user = useCurrentUser()
    const { toast } = useToast()
    const client = useQueryClient();  
     const form = useForm({
         resolver: zodResolver(profileAboutFormSchema),
         defaultValues: {
-          about: about || "",
+          description: description || "",
         },
     });
 
     const aboutMutation = useMutation({
-      mutationFn: ProfileApi.updateProfile,
+      mutationFn: UserApi.updateAbout,
       onSuccess: () => {
             client.invalidateQueries('profile')
             onClose(false)
@@ -53,10 +52,11 @@ function AboutForm({ about, onClose } : AboutFormProps) {
       }
     })
     
-    async function onSubmit(data: AboutFormData) {
-        if (!user?.email) return;
-        console.log("data", data);
-        aboutMutation.mutate({ data, email: user.email });
+    async function onSubmit(aboutFormData: AboutFormData) {
+        console.log("clicke", aboutFormData, user)
+        if (!user?.id) return;
+        console.log("onsubmit from about", aboutFormData);
+        aboutMutation.mutate(aboutFormData.description);
     }
 
     return (
@@ -64,7 +64,7 @@ function AboutForm({ about, onClose } : AboutFormProps) {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                 <FormField
                     control={form.control}
-                    name="about"
+                    name="description"
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>

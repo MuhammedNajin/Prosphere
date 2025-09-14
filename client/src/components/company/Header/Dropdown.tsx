@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,30 +6,33 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { ChevronDown, LogOut, Plus, Settings } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { setSelectedCompany } from '@/redux/reducers/companySlice';
-import { useDispatch } from 'react-redux';
-import { useSubscriptionValidity } from '@/hooks/useSubscriptionValidity';
-import { subscriptionContext } from '@/context/SubscriptionContext';
-import { useGetUser } from '@/hooks/useGetUser';
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ChevronDown, LogOut, Plus, Settings } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { setCurrentCompany } from "@/redux/reducers/companySlice";
+import { useDispatch } from "react-redux";
+import { useSubscriptionValidity } from "@/hooks/useSubscriptionValidity";
+import { subscriptionContext } from "@/context/SubscriptionContext";
+import { useCurrentUser } from "@/hooks/useSelectors";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 
 interface CompanyDropdownProps {
-   onClose: React.Dispatch<React.SetStateAction<boolean>>
+  onClose: React.Dispatch<React.SetStateAction<boolean>>;
 }
-const CompanyDropdown:React.FC<CompanyDropdownProps> = ({ onClose }) => {
+const CompanyDropdown: React.FC<CompanyDropdownProps> = ({ onClose }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { job } = useSubscriptionValidity();
+  const company = useCurrentCompany();
   const context = useContext(subscriptionContext);
-  if (!context) throw new Error('Subscription context must be used within a SubscriptionContext.Provider');
+  const { check: checkSubscription } = useSubscriptionValidity();
+  if (!context)
+    throw new Error(
+      "Subscription context must be used within a SubscriptionContext.Provider"
+    );
   const { setSubscription } = context;
-  const user = useGetUser()
-  useEffect(() => {
-     console.log("job", job);
-  }, [])
+  const user = useCurrentUser();
+  useEffect(() => {}, [company]);
 
   return (
     <DropdownMenu>
@@ -39,35 +42,42 @@ const CompanyDropdown:React.FC<CompanyDropdownProps> = ({ onClose }) => {
           <AvatarFallback>MA</AvatarFallback>
         </Avatar>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium hidden sm:inline">{user?.username}</span>
+          <span className="text-sm font-medium hidden sm:inline">
+            {user?.username}
+          </span>
           <ChevronDown className="h-4 w-4 text-gray-500" />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
-         onClick={() => {
-          if(job) {
-            onClose(true)
-          } else 
-             setSubscription({ state: true, currentFeature: 'job posting'})
-         }}
-         className="cursor-pointer">
-        <Plus size={20} />
-        <span className="self-stretch my-auto">Post a job</span>
+        <DropdownMenuItem
+          onClick={async () => {
+            if (!company?.id) {
+              setSubscription({ state: true, currentFeature: "job posting" });
+              return;
+            }
+            const { job } = await checkSubscription(company.id);
+            if (job) onClose(true);
+            else
+              setSubscription({ state: true, currentFeature: "job posting" });
+          }}
+        >
+          <Plus size={20} />
+          <span className="self-stretch my-auto">Post a job</span>
         </DropdownMenuItem>
         <DropdownMenuItem className="cursor-pointer">
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
-         onClick={() =>{
-          dispatch(setSelectedCompany(null));
-          navigate('/mycompany')
-         } }
-        className="cursor-pointer text-orange-700">
+        <DropdownMenuItem
+          onClick={() => {
+            dispatch(setCurrentCompany(null));
+            navigate("/mycompany");
+          }}
+          className="cursor-pointer text-orange-700"
+        >
           <LogOut className="mr-2 h-4 w-4" />
           <span>Switch to User View</span>
         </DropdownMenuItem>

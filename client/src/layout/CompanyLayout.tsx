@@ -10,13 +10,13 @@ import CreateJobModal from "@/components/job/CreateJobModal";
 import Header from "@/components/company/Header/CompanyHeader";
 import SubscriptionWrapper from "@/context/SubscriptionContext";
 import { SocketContext } from "@/context/socketContext";
-import { useSelectedCompany } from "@/hooks/useSelectedCompany";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 
 const CompanyLayout: React.FC = () => {
   const [sideBar, ] = useState(false);
   const [isOpen, setClose] = useState(false);
   const { chatSocket } = useContext(SocketContext);
-  const company = useSelectedCompany()
+  const company = useCurrentCompany()
   useEffect(() => {
     if(company?._id) {
       console.log("heloo from company layout", company?._id)

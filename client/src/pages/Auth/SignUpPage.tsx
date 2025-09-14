@@ -1,4 +1,4 @@
-import SignUp from '@/components/Auth/Auths.component'
+import SignUp from '@/components/Auth/Signup.component'
 import React from 'react'
 
 const SignUpPage: React.FC = () => {

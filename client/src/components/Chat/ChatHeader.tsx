@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MoreVertical, Phone, Search } from 'lucide-react';
 import { ROLE, SelectedConversation } from "@/types/chat";
-import { useGetUser } from "@/hooks/useGetUser";
 
 import { formatDateTime } from '@/lib/utilities/calculateDuration';
+import { useCurrentUser } from '@/hooks/useSelectors';
 
 interface ChatHeaderProps {
   conversation: SelectedConversation;
@@ -12,12 +12,16 @@ interface ChatHeaderProps {
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, typing, online }) => {
-  const user = useGetUser();
+  const user = useCurrentUser();
   const [showActions, setShowActions] = useState(false);
 
   const getStatusColor = () => {
     return online ? 'bg-green-500' : 'bg-gray-400';
   };
+
+ useEffect(() => {
+    console.log("Conversation in header", conversation);
+ })
 
   return (
     <div className="h-14 md:h-16 flex items-center justify-between px-4 border-b border-gray-200 bg-white shadow-sm relative">
@@ -35,7 +39,7 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, typing, online })
         <div className="ml-3 flex-1 min-w-0">
           <div className="flex items-center space-x-2">
             <h2 className="font-semibold text-sm md:text-base text-gray-900 truncate">
-              {conversation.context === ROLE.COMPANY && conversation.company.owner !== user?._id 
+              {conversation.context === ROLE.COMPANY && conversation.company.owner !== user?.id 
                 ? `${conversation.company?.name} (${conversation.name})` 
                 : conversation.name}
             </h2>
