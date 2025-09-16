@@ -1,5 +1,5 @@
 import { ApiService } from "@/api/Auth.api";
-import { AdminApi } from "@/api/admin.api";
+import { AdminApi } from "@/api/Admin.api";
 import { SignInFormData } from "@/types/formData";
 import { adminLogin, googleSignUpFlow, IOtp, IUser, SignInResponse } from "@/types/user";
 import { createAsyncThunk } from "@reduxjs/toolkit";

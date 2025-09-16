@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AdminApi } from "@/api/admin.api";
+import { AdminApi } from "@/api/Admin.api";
 import { useQuery } from "react-query";
 import { PlanData } from "@/types/subscription";
 import TableActionsPopover from "./SubscriptionActions";

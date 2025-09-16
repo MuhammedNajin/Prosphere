@@ -9,7 +9,7 @@ import { format } from "date-fns";
 import { SocketContext } from "@/context/socketContext";
 import { AppDispatch } from "@/redux/store";
 import { IUser } from "@/types/user";
-import { AdminApi } from "@/api/admin.api";
+import { AdminApi } from "@/api/Admin.api";
 
 interface UserTableProps {
   searchTerm: string;

@@ -18,7 +18,7 @@ import {
 } from "recharts";
 import { NumberTicker } from "@/components/ui/number-ticker";
 import { useQuery } from "react-query";
-import { AdminApi } from "@/api/admin.api";
+import { AdminApi } from "@/api/Admin.api";
 import { useMemo } from "react";
 import { Job } from "@/types/job";
 import { format } from "date-fns";
