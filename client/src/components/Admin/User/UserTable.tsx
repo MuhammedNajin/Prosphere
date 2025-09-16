@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState, useCallback } from "react";
-import { AdminApi } from "../../../api";
 import { useQuery, useQueryClient } from "react-query";
 import ConfirmModal from "../../common/confirmModal";
 import { AxiosError } from "axios";
@@ -10,6 +9,7 @@ import { format } from "date-fns";
 import { SocketContext } from "@/context/socketContext";
 import { AppDispatch } from "@/redux/store";
 import { IUser } from "@/types/user";
+import { AdminApi } from "@/api/admin.api";
 
 interface UserTableProps {
   searchTerm: string;

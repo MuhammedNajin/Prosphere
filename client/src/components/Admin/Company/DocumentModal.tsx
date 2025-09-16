@@ -1,4 +1,4 @@
-import { AdminApi } from "@/api";
+import { AdminApi } from "@/api/admin.api";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

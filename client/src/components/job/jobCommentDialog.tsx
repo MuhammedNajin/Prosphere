@@ -7,12 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { ThumbsUp, Reply, Send, Smile } from "lucide-react";
 import { format } from "date-fns";
 import { useMutation, useQuery } from "react-query";
-import { JobApi } from "@/api";
+import { JobApi } from "@/api/Job.api";
 import { FormControl, FormField, FormItem, Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import LoaderSubmitButton from "@/components/common/spinner/LoaderSubmitButton";
 
-// Types and Interfaces
 interface User {
   _id: string;
   username: string;

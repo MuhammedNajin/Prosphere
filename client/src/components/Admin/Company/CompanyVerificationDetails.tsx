@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { AdminApi } from "@/api";
+import { AdminApi } from "@/api/admin.api";
 import { useParams } from "react-router-dom";
 import { format } from "date-fns";
 import DocumentReviewModal from "./DocumentModal";
@@ -63,7 +63,11 @@ const CompanyVerificationDetails = () => {
     return statusColors[status];
   };
 
-  const CompanyVerificationStatusMutation = useMutation({
+  const CompanyVerificationStatusMutation = useMutation<
+    any,
+    Error,
+    { id: string; status: string } // variables type
+  >({
     mutationFn: AdminApi.changeCompanyVerificationStatus,
     onSuccess: (data, variables) => {
       const { status } = variables;
