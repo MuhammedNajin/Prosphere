@@ -17,7 +17,7 @@ interface User {
   username: string;
 }
 
-interface CommentType {
+export interface CommentType {
   _id: string;
   comment: string;
   userId: User;

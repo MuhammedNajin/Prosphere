@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { AdminApi } from "@/api/admin.api";
+
 import { useParams } from "react-router-dom";
 import { format } from "date-fns";
 import DocumentReviewModal from "./DocumentModal";
@@ -35,6 +35,7 @@ import {
 import { VerificationStatusConfirmation } from "./VerificationStatusConfirmation";
 import { useToast } from "@/hooks/use-toast";
 import SuccessMessage from "@/components/common/Message/SuccessMessage";
+import { AdminApi } from "@/api";
 const CompanyVerificationDetails = () => {
   const [progress] = useState(65);
   const { id } = useParams();
