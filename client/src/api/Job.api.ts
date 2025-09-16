@@ -4,6 +4,7 @@ import { AxiosInstance } from "axios";
 import { JobFormData } from "@/types/formData";
 import { CommentFormData } from "@/components/job/JobCommentDialog";
 
+
 class JobApi {
   private static axios: AxiosInstance = axiosInstance;
 
