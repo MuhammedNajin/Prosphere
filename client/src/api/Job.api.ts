@@ -2,7 +2,7 @@ import { GetjobByCompanyArgs, UpdateJobProps } from "@/types/job";
 import axiosInstance from "./config";
 import { AxiosInstance } from "axios";
 import { JobFormData } from "@/types/formData";
-import { CommentFormData } from "@/components/job/JobCommentDialog";
+import { CommentFormData } from "@/components/job/CommentDialog";
 
 
 class JobApi {
