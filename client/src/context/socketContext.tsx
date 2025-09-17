@@ -1,6 +1,6 @@
 import { useCurrentUser } from "@/hooks/useSelectors";
-import { logoutThuck } from "@/redux/action/actions";
-import store from "@/redux/store";
+// import { logoutThuck } from "@/redux/action/actions";
+// import store from "@/redux/store";
 import React, { createContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
@@ -23,7 +23,7 @@ const SOCKET_CONFIG = {
     reconnectionAttempts: 5,
   },
   urls: {
-    auth: import.meta.env.VITE_API_AUTH,
+    // auth: import.meta.env.VITE_API_AUTH,
     chat: import.meta.env.VITE_API_CHAT,
     notification: import.meta.env.VITE_API_NOTIFICATION,
   }
@@ -49,32 +49,32 @@ const SocketWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     
     if (user) {
      
-      instances.auth = io(SOCKET_CONFIG.urls.auth, {
-        ...SOCKET_CONFIG.base,
-        path: '/auth-socket/socket.io',
-      });
+      // instances.auth = io(SOCKET_CONFIG.urls.auth, {
+      //   ...SOCKET_CONFIG.base,
+      //   path: '/auth-socket/socket.io',
+      // });
 
-      instances.auth.on('connect', () => {
-        console.log('Connected to auth Socket.IO server', user);
-        instances.auth?.emit('join_room', user?.id);
-      });
+      // instances.auth.on('connect', () => {
+      //   console.log('Connected to auth Socket.IO server', user);
+      //   instances.auth?.emit('join_room', user?.id);
+      // });
 
-      instances.auth.on('block:user', (roomId: string) => {
-        console.log('User blocked - roomId:', roomId);
-        store.dispatch(logoutThuck())
-          .then(() => {
-            window.location.href = '/signin';
-          })
-          .catch((error) => {
-            console.error('Logout failed:', error);
-          });
-      });
+      // instances.auth.on('block:user', (roomId: string) => {
+      //   console.log('User blocked - roomId:', roomId);
+      //   store.dispatch(logoutThuck())
+      //     .then(() => {
+      //       window.location.href = '/signin';
+      //     })
+      //     .catch((error) => {
+      //       console.error('Logout failed:', error);
+      //     });
+      // });
 
-      instances.auth.on('connect_error', (error) => {
-        console.error('AUTH Connection error:', error);
-      });
+      // instances.auth.on('connect_error', (error) => {
+      //   console.error('AUTH Connection error:', error);
+      // });
 
-      setAuthSocket(instances.auth);
+      // setAuthSocket(instances.auth);
 
       instances.chat = io(SOCKET_CONFIG.urls.chat, {
         ...SOCKET_CONFIG.base,

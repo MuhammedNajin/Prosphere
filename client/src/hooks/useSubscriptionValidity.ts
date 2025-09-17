@@ -9,11 +9,11 @@ export const useSubscriptionValidity = () => {
     try {
       const response: Plan | null = await PaymentApi.getCurrentPlan(companyId);
       if (!response) return { job: false };
-      const jobsAllowed = Number(response.jobsAllowed ?? 0);
-      const jobsUsed = Number(response.jobsUsed ?? 0);
+      // const jobsAllowed = Number(response.jobsAllowed ?? 0);
+      // const jobsUsed = Number(response.jobsUsed ?? 0);
       const endDate = response.endDate ? new Date(response.endDate) : null;
       const now = new Date();
-      return { job: jobsAllowed > jobsUsed && endDate !== null && endDate > now };
+      return { job: endDate !== null && endDate > now };
     } catch (err) {
       console.error("useSubscriptionValidity.check error:", err);
       return { job: false };
