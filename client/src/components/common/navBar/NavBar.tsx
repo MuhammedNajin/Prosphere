@@ -29,6 +29,10 @@ const Navbar = () => {
      enabled: !!user?.id,
   })
 
+  useEffect(() => {
+    console.log(data, "notification count")
+  })
+
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -118,9 +122,9 @@ const Navbar = () => {
               <div className="relative group">
                 <button onClick={() => navigate('/notification')} className="relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200 hover:bg-orange-50 hover:scale-110 active:scale-95">
                   <Bell className="h-5 w-5 text-gray-700 group-hover:text-orange-600 transition-colors" />
-                  {data?.count > 0 && (
+                  {data > 0 && (
                     <span className="absolute -top-1 -right-1 w-5 h-5 text-xs flex items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full font-medium shadow-lg animate-pulse">
-                      {data.count > 99 ? '99+' : data.count}
+                      {data> 99 ? '99+' : data}
                     </span>
                   )}
                 </button>
