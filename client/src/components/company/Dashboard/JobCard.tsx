@@ -37,12 +37,14 @@ const JobUpdates: React.FC = () => {
         to: endOfMonth(new Date()),
         filter: '',
         page: 1,
+        companyId: id
        }) 
        : JobApi.getjobByCompany({
         from: startOfMonth(new Date()),
         to: endOfMonth(new Date()),
         filter: '',
         page: 1,
+        companyId: id
        })
     },
     {
