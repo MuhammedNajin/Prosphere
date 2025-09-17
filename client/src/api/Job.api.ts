@@ -4,7 +4,6 @@ import { AxiosInstance } from "axios";
 import { JobFormData } from "@/types/formData";
 import { CommentFormData } from "@/components/job/CommentDialog";
 
-
 class JobApi {
   private static axios: AxiosInstance = axiosInstance;
 
@@ -51,7 +50,7 @@ class JobApi {
       salary: { to: maxSalary, from: minSalary, status: true },
     });
   };
-  
+
   static getJobs = async ({
     page = 1,
     pageSize = 2,
@@ -83,7 +82,9 @@ class JobApi {
         }),
       });
 
-      const response = await this.axios.get(`/api/v1/job/public?${queryParams}`);
+      const response = await this.axios.get(
+        `/api/v1/job/public?${queryParams}`
+      );
       console.log("response.data", response.data);
       if (response.status === 200) {
         return {
@@ -120,11 +121,15 @@ class JobApi {
     }
   };
 
-  static likeJobs = async ({ data }: { data: {
-    jobId: string,
-    userId: string,
-    index: number,
-  }}) => {
+  static likeJobs = async ({
+    data,
+  }: {
+    data: {
+      jobId: string;
+      userId: string;
+      index: number;
+    };
+  }) => {
     return this.axios.post("/api/v1/job/like", data);
   };
 
@@ -143,17 +148,20 @@ class JobApi {
     from,
     to,
     page,
-    pageSize = 2
+    pageSize = 2,
+    companyId,
   }: GetjobByCompanyArgs) => {
     try {
+      const queryParams = new URLSearchParams();
+      queryParams.append("to", to.toISOString());
+      queryParams.append("from", from.toISOString());
+      queryParams.append("filter", filter);
+      queryParams.append("page", String(page));
+      queryParams.append("pageSize", String(pageSize));
 
-      const queryParams = new URLSearchParams({
-        to: to.toISOString(),
-        from: from.toISOString(),
-        filter,
-        page: String(page),
-        pageSize: String(pageSize),
-      });
+      if (companyId) {
+        queryParams.append("companyId", companyId);
+      }
 
       const response = await this.axios.get(
         `/api/v1/job/company/all?${queryParams}`
@@ -164,7 +172,7 @@ class JobApi {
         totalPages: Math.ceil((response.data.total || 0) / pageSize),
         hasMore: page < Math.ceil((response.data.total || 0) / pageSize),
         total: response.data.total || 0,
-      }
+      };
     } catch (error) {
       console.log(error);
       throw error;
@@ -177,29 +185,26 @@ class JobApi {
     to,
     page,
     pageSize = 2,
-    companyId
+    companyId,
   }: GetjobByCompanyArgs) => {
     try {
-
       const queryParams = new URLSearchParams({
         to: to.toISOString(),
         from: from.toISOString(),
         filter,
         page: String(page),
         pageSize: String(pageSize),
-        companyId: companyId ? companyId : ""
+        companyId: companyId ? companyId : "",
       });
 
-      const response = await this.axios.get(
-        `/api/v1/job/all?${queryParams}`
-      );
+      const response = await this.axios.get(`/api/v1/job/all?${queryParams}`);
       return {
         jobs: response.data.jobs || [],
         currentPage: page,
         totalPages: Math.ceil((response.data.total || 0) / pageSize),
         hasMore: page < Math.ceil((response.data.total || 0) / pageSize),
         total: response.data.total || 0,
-      }
+      };
     } catch (error) {
       console.log(error);
       throw error;
@@ -217,14 +222,17 @@ class JobApi {
   };
 
   static getJobApplications = async (
-    jobId: string, 
-    page: number = 1, 
+    jobId: string,
+    page: number = 1,
     limit: number = 10
   ) => {
     try {
-      const response = await this.axios.get(`/api/v1/jobs/${jobId}/applications`, {
-        params: { page, limit },
-      });
+      const response = await this.axios.get(
+        `/api/v1/jobs/${jobId}/applications`,
+        {
+          params: { page, limit },
+        }
+      );
       return response.data;
     } catch (error) {
       console.error("Error fetching job applications:", error);

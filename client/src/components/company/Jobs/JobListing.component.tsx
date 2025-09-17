@@ -44,6 +44,7 @@ import { JobApi } from "@/api";
 import Pagination from "@/components/common/Pagination/Pagination";
 import { ItemsPerPageOption } from "@/types/job";
 import { Job } from "@/types/job";
+import { useCurrentCompany } from "@/hooks/useSelectedCompany";
 
 interface JobResponse {
   jobs: Job[];
@@ -65,7 +66,7 @@ const CompanyManagement: React.FC = () => {
   const [employmentFilter, setEmploymentFilter] = useState("");
   const [itemsPerPage, setItemsPerPage] = useState<ItemsPerPageOption>(10);
   const [currentPage, setCurrentPage] = useState(1);
-
+  const company = useCurrentCompany()
   const { data, refetch } = useQuery<JobResponse>(
     ["company:jobs", dateRange, employmentFilter, itemsPerPage, currentPage],
     async () => {
@@ -75,6 +76,7 @@ const CompanyManagement: React.FC = () => {
         filter: employmentFilter,
         page: currentPage,
         pageSize: itemsPerPage,
+        companyId: company?.id
       });
       return response;
     }
