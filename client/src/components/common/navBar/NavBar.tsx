@@ -3,6 +3,9 @@ import { Home, MessageCircle, Briefcase, Users, Building, Bell, Menu, X } from "
 import { useState, useEffect } from "react";
 import Dropdown from "./DropDown";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "react-query";
+import { NotificationApi } from "@/api/Notification.api";
+import { useCurrentUser } from "@/hooks/useSelectors";
 
 const navItems = [
   { icon: Home, label: "Dashboard", path: "/" },
@@ -17,6 +20,15 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState("/");
   const navigate = useNavigate()
+  const user = useCurrentUser()
+
+  // Fixed the useQuery implementation
+  const { data } = useQuery({
+     queryKey: ['notificationcount', user?.id],
+     queryFn: () => NotificationApi.getNotificationCount(user?.id!),
+     enabled: !!user?.id,
+  })
+
   // Handle scroll effect
   useEffect(() => {
     const handleScroll = () => {
@@ -102,13 +114,15 @@ const Navbar = () => {
 
             {/* Enhanced Actions */}
             <div className="flex items-center gap-4">
-              {/* Enhanced Notification Bell */}
+              {/* Enhanced Notification Bell - Now uses dynamic count from API */}
               <div className="relative group">
-                <button className="relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200 hover:bg-orange-50 hover:scale-110 active:scale-95">
+                <button onClick={() => navigate('/notification')} className="relative flex items-center justify-center w-11 h-11 rounded-full transition-all duration-200 hover:bg-orange-50 hover:scale-110 active:scale-95">
                   <Bell className="h-5 w-5 text-gray-700 group-hover:text-orange-600 transition-colors" />
-                  <span className="absolute -top-1 -right-1 w-5 h-5 text-xs flex items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full font-medium shadow-lg animate-pulse">
-                    3
-                  </span>
+                  {data?.count > 0 && (
+                    <span className="absolute -top-1 -right-1 w-5 h-5 text-xs flex items-center justify-center bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-full font-medium shadow-lg animate-pulse">
+                      {data.count > 99 ? '99+' : data.count}
+                    </span>
+                  )}
                 </button>
               </div>
 
