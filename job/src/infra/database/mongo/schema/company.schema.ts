@@ -31,7 +31,7 @@ const companySchema = new mongoose.Schema(
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: [true, "Owner name is required"],
+      required: [true, "Owner id is required"],
     },
 
     location: [

@@ -2,7 +2,7 @@ import {
   IgetApplicationUseCase,
   IisAppliedUseCase,
 } from "@/application/interface/applicationUsecase_interface.ts";
-import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
+import { ResponseUtil, HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { application, NextFunction, Request, Response } from "express";
 
 export class IsAppliedController {
@@ -10,7 +10,7 @@ export class IsAppliedController {
 
   public handler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = JSON.parse(req.headers["x-user-data"] as string);
+      const { userId: id } = JSON.parse(req.headers["x-user-data"] as string);
       const { jobId } = req.params;
       console.log(id, jobId)
       const application = await this.isAppliedUseCase.execute(id, jobId);
@@ -18,11 +18,11 @@ export class IsAppliedController {
 
       if (!application) {
         return res
-          .status(StatusCode.OK)
+          .status(HttpStatusCode.OK)
           .json(ResponseUtil.success({ status: false }));
       }
 
-      res.status(StatusCode.OK).json(ResponseUtil.success({ status: true }));
+      res.status(HttpStatusCode.OK).json(ResponseUtil.success({ status: true }));
     } catch (error) {
       console.log("controller", error);
       next(error);

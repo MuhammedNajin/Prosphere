@@ -2,6 +2,7 @@ import {
     IgetAllApplicationUseCase,
     IgetApplicationUseCase
   } from "@/application/interface/applicationUsecase_interface.ts";
+import { HttpStatusCode } from "@muhammednajinnprosphere/common";
   import { application, NextFunction, Request, Response } from "express";
   
   export class  GetApplicationController {
@@ -17,7 +18,7 @@ import {
 
         const applications = await this.getApplicationUseCase.execute(id);
   
-        res.status(200).json({
+        res.status(HttpStatusCode.OK).json({
           status: true,
           applications,
           message: "Job Application details"

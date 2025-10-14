@@ -34,6 +34,8 @@ export class ApplicationRoutes {
           next()
         })
 
+       
+
         router
         .route('/')
          .post(validateRequestBody(CreateApplicationSchema), ApplicationController.createApplication(createApplicationUseCase, isAppliedUseCase, this.notificationProducer));

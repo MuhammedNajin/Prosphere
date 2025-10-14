@@ -92,11 +92,11 @@ export class CompanyRoutes {
     );
 
     router.get(
-      "/jobs/:id",
+      "/applications/:id",
       CompanyController.getApplicatioByJobId(getApplicationByJobIdUseCase)
     );
-    router.get("/stats", CompanyController.getJobMetrix(getJobMetrixUseCase));
-    router.get("/view", CompanyController.getJobSeen(getJobSeenUseCase));
+    router.get("/statistics", CompanyController.getJobMetrix(getJobMetrixUseCase));
+    router.get("/view-statistics", CompanyController.getJobSeen(getJobSeenUseCase));
     return router;
   }
 }

@@ -1,5 +1,5 @@
 import { IGetApplicationByJobIdUseCase } from "@/application/interface/companyUsecase_interface.ts";
-import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
+import { ResponseUtil, HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { NextFunction, Request, Response } from "express";
 
 export class GetApplicationByJobIdController {
@@ -14,7 +14,7 @@ export class GetApplicationByJobIdController {
       // Validate pagination parameters
       if (page < 1 || pageSize < 1) {
         return res
-          .status(StatusCode.BAD_REQUEST)
+          .status(HttpStatusCode.BAD_REQUEST)
           .json(ResponseUtil.error("Invalid pagination parameters"));
       }
 
@@ -24,7 +24,7 @@ export class GetApplicationByJobIdController {
         pageSize
       );
 
-      res.status(StatusCode.OK).json({
+      res.status(HttpStatusCode.OK).json({
         data: result.applications,
 
         total: result.total,

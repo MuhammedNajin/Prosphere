@@ -27,9 +27,9 @@ export class TrailLimitMiddleware {
         try {
         winstonLogger.info('reached tail limit middleware', { headers: req.headers });
 
-         const { id } = JSON.parse(req.headers['x-company-data'] as string);
+         const { companyId } = JSON.parse(req.headers['x-company-data'] as string);
          const url = req.url;
-        const subscription = await this.subscriptionCheckUseCase.execute(id);
+        const subscription = await this.subscriptionCheckUseCase.execute(companyId);
         winstonLogger.info('Checking trail limit', { subscription });
 
         if(!subscription) {

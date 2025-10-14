@@ -20,20 +20,20 @@ class MessageBrokerConnection {
       [KAFKA_BROKER],
       KAFKA_GROUP
     );
-    const userCreateConsumer = await this.kafkaClient.getCosumer(
+    const userCreateConsumer = await this.kafkaClient.createConsumer(
       "user-created-group"
     );
-    const companyCreateConsumer = await this.kafkaClient.getCosumer(
+    const companyCreateConsumer = await this.kafkaClient.createConsumer(
       "company-created-group"
     );
-    const avatarUpdateConsumer = await this.kafkaClient.getCosumer(
+    const avatarUpdateConsumer = await this.kafkaClient.createConsumer(
       "avatar-update-group"
     );
-    const companyUpdateConsumer = await this.kafkaClient.getCosumer(
+    const companyUpdateConsumer = await this.kafkaClient.createConsumer(
       "company-update-group"
     )
 
-    const subscriptionConsumer = await this.kafkaClient.getCosumer(
+    const subscriptionConsumer = await this.kafkaClient.createConsumer(
       "subscription-job-group"
     )
 

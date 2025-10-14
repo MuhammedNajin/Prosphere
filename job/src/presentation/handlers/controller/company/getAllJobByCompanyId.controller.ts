@@ -1,6 +1,6 @@
 import { IgetAllJobByCompanyIdUseCase } from "@/application/interface/companyUsecase_interface.ts";
 import { winstonLogger } from "@/presentation/middleware/winstonLogger";
-import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
+import { ResponseUtil, HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { NextFunction, Request, Response } from "express";
 
 export class GetAllJobByCompanyIdController {
@@ -10,7 +10,7 @@ export class GetAllJobByCompanyIdController {
 
   public handler = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      winstonLogger.info("req.query", req.query);
+      winstonLogger.info("req.query", req.query, req.headers);
 
       const to = req.query.to as string;
       const from = req.query.from as string;
@@ -19,17 +19,11 @@ export class GetAllJobByCompanyIdController {
       const page = req.query.page as string;
       const pageSize = req.query.pageSize as string;
 
-       let id = null;
-      if(req.headers["x-company-data"]) {
-        id = JSON.parse(req.headers["x-company-data"] as string).id
-      } else { 
-        id = req.query.companyId as string
-      }
-
-      console.log("iddddd", id, req.headers["x-company-data"]);
+       const { companyId } = req.query;
+      console.log("iddddd", companyId);
       
 
-      const jobs = await this.getAllJobByCompanyIdUseCase.execute(id, {
+      const jobs = await this.getAllJobByCompanyIdUseCase.execute(companyId, {
         filter,
         from,
         to,
@@ -38,7 +32,7 @@ export class GetAllJobByCompanyIdController {
       });
 
       res
-       .status(StatusCode.OK)
+       .status(HttpStatusCode.OK)
        .json(jobs);
     } catch (error) {
       console.log(error);

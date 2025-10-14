@@ -2,23 +2,27 @@ import * as grpc from '@grpc/grpc-js';
 import * as protoLoader from '@grpc/proto-loader';
 import path from 'path';
 
+interface UpdateJobsUsedResponse {
+    success: boolean;
+    message: string;
+}
 
+interface GetCurrentSubscriptionResponse {
+    subscription?: any;
+}
 
 export class GrpcPaymentClient {
     private static instance: GrpcPaymentClient;
     private paymentClient: any;
-    private readonly maxRetries = 3;
-    private readonly retryDelay = 1000;
 
     constructor() { 
         this.initializeClient();
         console.log(process.env.PROTO_URL);
-        
     }
 
     private initializeClient() {
         try {
-            const PROTO_PATH = path.resolve('node_modules/@muhammednajinnprosphere/common/src/protoFiles/payment.proto');
+            const PROTO_PATH = path.join(process.cwd(), process.env.PROTO_URL!);
             const packageDefinition = protoLoader.loadSync(PROTO_PATH, {
                 keepCase: true,
                 longs: String,
@@ -46,52 +50,53 @@ export class GrpcPaymentClient {
         }
     }
 
-    public async isSubscribed(companyId: string) {
+    public async updateJobsUsed(companyId: string): Promise<UpdateJobsUsedResponse> {
         try {
-            console.log("companyId", companyId);
+            console.log("Updating jobs used for companyId:", companyId);
             const requestMessage = {
-                 companyId
-            }
-            return await new Promise((resolve, reject) => {
-                this.paymentClient.isSubscribed(requestMessage, (error: any, response: any) => {
-                    if (error) {
-                        console.error(`gRPC error (attempt ):`, error);
-                        reject(error);
-                        return;
-                    }
-                    resolve(response);
-                })
-            })
-        } catch (error) {
-            console.log(error);
-            throw error
-        }
-    }
-
-
-    public async updateFeaturesLimit(id: string, usage_stats: string) {
-        try {
-            const requestMessage = {
-                id,
-                usage_stats
+                companyId
             }
             
-            return await new Promise((resolve, reject) => {
-                this.paymentClient.updateFeaturesLimit(requestMessage, (error: any, response: any) => {
+            return await new Promise<UpdateJobsUsedResponse>((resolve, reject) => {
+                this.paymentClient.updateJobsUsed(requestMessage, (error: any, response: UpdateJobsUsedResponse) => {
                     if (error) {
-                        console.error(`gRPC error (attempt ):`, error);
+                        console.error(`gRPC error updating jobs used:`, error);
                         reject(error);
                         return;
                     }
+                    console.log("Response from updateJobsUsed:", response);
                     resolve(response);
                 })
             })
         } catch (error) {
-            console.log(error);
+            console.log("Error in updateJobsUsed client method:", error);
             throw error;   
         }
     }
 
+    public async getCurrentSubscription(companyId: string): Promise<GetCurrentSubscriptionResponse> {
+        try {
+            console.log("Getting current subscription for companyId:", companyId);
+            const requestMessage = {
+                companyId
+            }
+            
+            return await new Promise<GetCurrentSubscriptionResponse>((resolve, reject) => {
+                this.paymentClient.getCurrentSubscription(requestMessage, (error: any, response: GetCurrentSubscriptionResponse) => {
+                    if (error) {
+                        console.error(`gRPC error getting current subscription:`, error);
+                        reject(error);
+                        return;
+                    }
+                    console.log("Response from getCurrentSubscription:", response);
+                    resolve(response);
+                })
+            })
+        } catch (error) {
+            console.log("Error in getCurrentSubscription client method:", error);
+            throw error;   
+        }
+    }
     
     public static getInstance(): GrpcPaymentClient {
         if (!GrpcPaymentClient.instance) {
@@ -100,3 +105,5 @@ export class GrpcPaymentClient {
         return GrpcPaymentClient.instance;
     }
 }
+
+export default GrpcPaymentClient.getInstance();

@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+package payment;
+
+// Service definition
+service PaymentService {
+    rpc updateJobsUsed(UpdateJobsUsedRequest) returns (UpdateJobsUsedResponse);
+    rpc getCurrentSubscription(GetCurrentSubscriptionRequest) returns (GetCurrentSubscriptionResponse);
+}
+
+// Request messages
+message UpdateJobsUsedRequest {
+    string companyId = 1;
+}
+
+message GetCurrentSubscriptionRequest {
+    string companyId = 1;
+}
+
+// Response messages
+message UpdateJobsUsedResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+message GetCurrentSubscriptionResponse {
+    optional Subscription subscription = 1;
+}
+
+// Subscription message
+message Subscription {
+    int32 id = 1;
+    string companyId = 2;
+    PlanSnapshot planSnapshot = 3;
+    string startDate = 4;
+    string endDate = 5;
+    SubscriptionStatus status = 6;
+    double amountPaid = 7;
+    bool isTrial = 8;
+    optional string trialEndsAt = 9;
+    optional string cancelledAt = 10;
+    optional string cancellationReason = 11;
+    string createdAt = 12;
+    string updatedAt = 13;
+}
+
+// Plan snapshot message
+message PlanSnapshot {
+    int32 id = 1;
+    string name = 2;
+    double price = 3;
+    int32 durationInDays = 4;
+    repeated string features = 5;
+}
+
+// Enums
+enum SubscriptionStatus {
+    SUBSCRIPTION_STATUS_UNSPECIFIED = 0;
+    SUBSCRIPTION_STATUS_ACTIVE = 1;
+    SUBSCRIPTION_STATUS_CANCELLED = 2;
+    SUBSCRIPTION_STATUS_EXPIRED = 3;
+    SUBSCRIPTION_STATUS_PENDING = 4;
+}

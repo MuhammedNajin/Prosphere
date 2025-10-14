@@ -4,7 +4,7 @@ import {
 } from "@/application/interface/applicationUsecase_interface.ts";
 import { Dependency } from "@/infra/config/dependencies";
 import { winstonLogger } from "@/presentation/middleware/winstonLogger";
-import { StatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
+import { HttpStatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
 import { application, NextFunction, Request, Response } from "express";
 
 export class CreateApplicationController {
@@ -32,7 +32,7 @@ export class CreateApplicationController {
       if (applicationExixts) {
         console.log("application already exists", applicationExixts)
         return res
-          .status(StatusCode?.CONFLICT)
+          .status(HttpStatusCode.CONFLICT)
           .json(
             ResponseUtil.error("Only one application per candidate is allowed")
           );
@@ -52,7 +52,7 @@ export class CreateApplicationController {
       });
 
       res
-        .status(StatusCode.CREATED)
+        .status(HttpStatusCode.CREATED)
         .json(
           ResponseUtil.success(application, "Application created successfully")
         );

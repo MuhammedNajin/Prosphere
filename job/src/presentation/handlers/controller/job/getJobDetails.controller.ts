@@ -1,6 +1,7 @@
 import {
     IgetJobDetailsUseCase
   } from "@/application/interface/jobUsecase_interface";
+import { HttpStatusCode } from "@muhammednajinnprosphere/common";
   import { NextFunction, Request, Response } from "express";
 
   
@@ -14,7 +15,7 @@ import {
         
         const job = await this.getJobDetailsUseCase.execute(id);
         console.log("jod", job)
-        res.status(200).json({
+        res.status(HttpStatusCode.OK).json({
           job
         });
       } catch (error) {

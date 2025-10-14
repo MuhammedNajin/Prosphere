@@ -1,6 +1,6 @@
 import { IAddCommentUseCase } from "@/application/interface/jobUsecase_interface"; 
 import { NextFunction, Request, Response } from "express";
-import { StatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
+import { HttpStatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
 
 export class AddCommentController {
   constructor(private addCommentUseCase: IAddCommentUseCase) {}
@@ -14,7 +14,7 @@ export class AddCommentController {
       const commentDoc = await this.addCommentUseCase.execute({ userId: id, jobId, comment });
 
       res
-        .status(StatusCode.CREATED)
+        .status(HttpStatusCode.CREATED)
         .json(ResponseUtil.success(commentDoc, "Comment added successfully"));
 
     } catch (error) {

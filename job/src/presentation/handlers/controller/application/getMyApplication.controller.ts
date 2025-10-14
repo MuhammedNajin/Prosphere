@@ -1,7 +1,7 @@
 import {
     IgetMyApplicationUseCase
   } from "@/application/interface/applicationUsecase_interface.ts";
-import { StatusCode } from "@muhammednajinnprosphere/common";
+import { HttpStatusCode } from "@muhammednajinnprosphere/common";
   import { application, NextFunction, Request, Response } from "express";
   
   export class  GetMyApplicationController {
@@ -17,11 +17,11 @@ import { StatusCode } from "@muhammednajinnprosphere/common";
         const search = req.query.search as string;
         
         
-        const { id: userId } = JSON.parse(req.headers['x-user-data'] as string);
+        const { userId } = JSON.parse(req.headers['x-user-data'] as string);
 
         const applications = await this.getMyApplicationUseCase.execute({filter , page, search, userId, pageSize});
   
-        res.status(StatusCode.OK).json( applications );
+        res.status(HttpStatusCode.OK).json( applications );
 
       } catch (error) {
         console.log("controller", error);

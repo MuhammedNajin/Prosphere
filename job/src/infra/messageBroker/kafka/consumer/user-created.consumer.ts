@@ -13,29 +13,21 @@ export class UserCreatedConsumer extends KafkaConsumer<UserCreatedEvent> {
     async onConsume(data: UserCreatedEvent['data'], msg: KafkaMessage): Promise<void> {
         console.log("heloo from consumer", data);
        try {
-        const {
-            _id,
-            email,
-            jobRole,
-            phone,
-            username,
-           } = data;
            console.log("userCreated event", data);
            const {
               userUseCases: { userCreationUseCase },
            } = this.dependencies;
-          
-           const profile = await userCreationUseCase.execute({
-             _id,
-             email,
-             jobRole,
-             phone,
-             username,
-           })
+            const dto = {
+               _id: data.id,
+               ...data
+            }
+
+            console.log("dto", dto);
+           const profile = await userCreationUseCase.execute(dto)
 
            console.log("onMessage", profile);
        } catch (error) {
-         console.log(error);
+         console.log('error$$$$$((())))))', error);
        }
        
     }

@@ -1,5 +1,6 @@
 import { JobDoc } from '@/infra/database/mongo/schema/job.schema';
-import { Application, Job, User } from '@infra/database/mongo'
+import { UserModel } from '@/infra/database/mongo/schema/user.shema';
+import { Application, Job } from '@infra/database/mongo'
 
 interface EmploymentTypeCount {
     type: string;
@@ -95,7 +96,7 @@ export class GetJobStatsRepository {
             Job.countDocuments({
                 expiry: { $gte: new Date() }
             }),
-            User.countDocuments(),
+            UserModel.countDocuments(),
             Application.countDocuments(),
             Job.aggregate([dateMatchStage, monthGroupStage, projectStage, sortStage]),
             Application.aggregate([dateMatchStage, monthGroupStage, projectStage, sortStage]),

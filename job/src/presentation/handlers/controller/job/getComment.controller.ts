@@ -1,6 +1,6 @@
 import { IGetCommentUseCase } from "@/application/interface/jobUsecase_interface"; 
 import { NextFunction, Request, Response } from "express";
-import { StatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
+import { HttpStatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
 
 export class GetCommentController {
   constructor(private getCommentsUseCase: IGetCommentUseCase) {}
@@ -13,7 +13,7 @@ export class GetCommentController {
       const comments = await this.getCommentsUseCase.execute(jobId as string);
 
       res
-        .status(StatusCode.OK)
+        .status(HttpStatusCode.OK)
         .json(ResponseUtil.success(comments, "Comments retrieved successfully"));
 
     } catch (error) {

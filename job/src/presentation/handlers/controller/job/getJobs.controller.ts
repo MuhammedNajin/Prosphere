@@ -1,7 +1,7 @@
 import {
   IgetJobsUseCase,
 } from "@/application/interface/jobUsecase_interface";
-import { StatusCode } from "@muhammednajinnprosphere/common";
+import { HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { NextFunction, Request, Response } from "express";
 
 export class GetJobsController {
@@ -62,7 +62,7 @@ export class GetJobsController {
         location,
       });
 
-      res.status(StatusCode.OK).json({
+      res.status(HttpStatusCode.OK).json({
         ...result,
         hasMore: result.currentPage < result.totalPages
       });

@@ -31,7 +31,7 @@ export class AppRoutes {
         router.use('/job/application', applicationRoutes);
         
         const adminRoutes = new AdminRoutes(adminUseCase).router
-        router.use('/job/admin/', adminRoutes)
+        router.use('/admin/job', adminRoutes)
 
         const jobRoutes = new JobRoutes(jobUseCase, companyUseCases).router;
         router.use('/job', jobRoutes)

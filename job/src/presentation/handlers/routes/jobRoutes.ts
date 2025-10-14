@@ -6,6 +6,7 @@ import { Job } from "@/infra/database/mongo";
 import { GrpcPaymentClient } from "@/infra/rpc/grpc/grpcPaymentClient";
 import { Dependency } from "@/infra/config/dependencies";
 import CompanyUseCases from "@/application/interface/companyUsecase_interface.ts";
+import { GetApplicationByJobIdController } from "../controller/company/getApplicationsByJobId.controller";
 export class JobRoutes {
   constructor(private jobUseCase: JobUseCase, private companyUseCases: CompanyUseCases) {}
 
@@ -31,6 +32,9 @@ export class JobRoutes {
       console.log("job route hellos i am herer", req.url, req.method);
       next();
     });
+     
+    
+    
 
     router.get(
       "/all",

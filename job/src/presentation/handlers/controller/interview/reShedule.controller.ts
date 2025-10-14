@@ -1,6 +1,6 @@
 import { IgetAllJobByCompanyIdUseCase } from "@/application/interface/companyUsecase_interface.ts";
 import { winstonLogger } from "@/presentation/middleware/winstonLogger";
-import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
+import { ResponseUtil, HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { NextFunction, Request, Response } from "express";
 
 export class GetAllJobByCompanyIdController {
@@ -28,7 +28,7 @@ export class GetAllJobByCompanyIdController {
       });
 
       res
-       .status(StatusCode.OK)
+       .status(HttpStatusCode.OK)
        .json(jobs);
     } catch (error) {
       console.log(error);

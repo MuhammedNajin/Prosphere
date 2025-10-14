@@ -1,70 +1,45 @@
-import mongoose, { Model, Document } from "mongoose";
+import { IUser } from "@domain/interface/IUser";
+import { UserRole } from "@muhammednajinnprosphere/common";
+import mongoose, { Document, Model, Schema } from "mongoose";
 
-export interface UserAttrs {
-  _id: string,  
-  username: string;
-  email: string;
-  phone?: string;
-  jobRole?: string;
+export interface IUserDoc extends IUser, Document {
+  id: string;
 }
 
-
-
-export interface UserDoc extends Document {
-  _id: string,
-  username: string;
-  email: string;
-  phone: string;
-  jobRole: string;
-  profilePhoto: string;
-  about: string;
-  profileImageKey: string;
+export interface IUserModel extends Model<IUserDoc> {
+  build(attrs: Partial<IUser>): IUserDoc;
+  generateId(): string;
 }
 
-export interface ProfileModel extends Model<UserDoc> {
-  build(attrs: UserAttrs): UserDoc;
-}
-
-const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: [true, "username is required"],
+const userSchema = new Schema<IUserDoc, IUserModel>(
+  {
+    username: { type: String, required: true, trim: true },
+    email: { type: String, required: true, unique: true, trim: true, lowercase: true },
+    phone: { type: String, required: true, sparse: true, unique: true, trim: true },
+    role: { type: String, enum: Object.values(UserRole), default: UserRole.USER, required: true },
+    isVerified: { type: Boolean, default: false },
+    headline: { type: String, trim: true },
+    profileImageKey: { type: String },
+    coverImageKey: { type: String },
   },
-
-  email: {
-    type: String,
-    required: [true, "email is required"],
-    unique: [true, " email should be uniqe"],
-  },
-
-  phone: {
-    type: String,
-  },
-
-  jobRole: {
-    type: String,
-  },
-
-  about: {
-    type: String,
-  },
-
-  coverImageKey: {
-    type: String,
-  },
-
-  avatar: {
-    type: String,
-  },
-});
-
-userSchema.statics.build = (attrs: UserAttrs) => {
-  return new User(attrs);
-};
-
-const User = mongoose.model<UserDoc, ProfileModel>(
-  "User",
-  userSchema
+  {
+    timestamps: true,
+    toJSON: {
+      transform(_, ret) {
+        ret.id = ret._id;
+        delete ret._id;
+        delete ret.__v;
+      },
+    },
+  }
 );
 
-export default User;
+userSchema.statics.build = function (attrs: Partial<IUser>) {
+  return new this(attrs);
+};
+
+userSchema.statics.generateId = function () {
+  return new mongoose.Types.ObjectId().toHexString();
+};
+
+export const UserModel = mongoose.model<IUserDoc, IUserModel>("User", userSchema);

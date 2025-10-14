@@ -15,8 +15,7 @@ export class CompanyCreatedConsumer extends KafkaConsumer<CompanyCreatedEvent> {
         console.log("heloo from company created", msg, data);
        try {
         const {
-            _id, 
-            location,
+            locations,
             name,
             owner
            } = data;
@@ -26,10 +25,10 @@ export class CompanyCreatedConsumer extends KafkaConsumer<CompanyCreatedEvent> {
            } = this.dependencies;
           
            const company = await companyCreationUseCase.execute({
-            location,
+            location: locations,
             name,
             owner,
-            _id,
+            _id: data.id,
            })
 
            await subscriptionRepository.createSubscription({ companyId: company._id });

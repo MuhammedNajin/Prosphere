@@ -1,9 +1,9 @@
 import { IUpdateFreeTrailUseCase } from "@/application/interface/companyUsecase_interface.ts";
 import { IJobPostUseCase } from "@/application/interface/jobUsecase_interface";
 import { Dependency } from "@/infra/config/dependencies";
-import { StatusCode } from "@muhammednajinnprosphere/common";
+import { HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { NextFunction, Request, Response } from "express";
-
+import grpcPaymentClient from "@/infra/rpc/grpc/grpcPaymentClient";
 export class JobPostController {
 
   private KEY = "usageLimit.jobPostLimit";
@@ -32,19 +32,11 @@ export class JobPostController {
         type: "job",
       });
 
+      console.log("company id", job.companyId._id.toString());
+      await grpcPaymentClient.updateJobsUsed( job.companyId._id.toString() as string );
+     
 
-      console.log("isTrail variable ", req.isTrail);
-
-     if(req.isTrail) {
-      await this.updateFreeTrailUseCase.execute(job?.companyId?._id, this.KEY)
-
-      await this.updateTrailProducer.produce({
-        companyId: job?.companyId._id,
-        key: this.KEY,
-      });
-     }
-
-      res.status(StatusCode.CREATED).json({
+      res.status(HttpStatusCode.CREATED).json({
         success: true,
         message: "Job posted successfully",
         job,

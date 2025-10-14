@@ -1,6 +1,7 @@
 import {
     IChangeApplicationStatusUseCase
   } from "@/application/interface/applicationUsecase_interface.ts";
+import { HttpStatusCode } from "@muhammednajinnprosphere/common";
   import { application, NextFunction, Request, Response } from "express";
   
   export class ChangeApplicationStatusController {
@@ -28,7 +29,7 @@ import {
         const application = await this.changeApplicationStatusUseCase.execute(id, status, statusDescription);
         
         
-        res.status(200).json({
+        res.status(HttpStatusCode.OK).json({
           success: true,
           application,
           message: "Status updated successfully"

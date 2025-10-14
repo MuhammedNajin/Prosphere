@@ -1,7 +1,7 @@
 import {IGetJobMetrixUseCase
 } from "@/application/interface/companyUsecase_interface.ts";
 import { TIME_FRAME } from "@/shared/types/enums";
-import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
+import { ResponseUtil, HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { NextFunction, Request, Response } from "express";
 
 export class GetJobSeenController {
@@ -19,7 +19,7 @@ export class GetJobSeenController {
        const jobs = await this.getJobSeenUseCase.execute(companyId as string, timeFrame as TIME_FRAME, dateRange);
 
       res
-       .status(StatusCode.OK)
+       .status(HttpStatusCode.OK)
        .json(ResponseUtil.success(jobs));
 
     } catch (error) {

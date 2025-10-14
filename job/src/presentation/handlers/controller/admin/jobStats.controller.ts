@@ -1,7 +1,5 @@
 import { IJobStatsUseCase } from "@/application/interface/adminUsecase_interface.ts";
-import { IGetJobMetrixUseCase } from "@/application/interface/companyUsecase_interface.ts";
-import { TIME_FRAME } from "@/shared/types/enums";
-import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
+import { ResponseUtil, HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { NextFunction, Request, Response } from "express";
 
 export class JobStatsController {
@@ -14,7 +12,7 @@ export class JobStatsController {
       const jobStats = await this.jobStatsUseCase.execute();
 
       res
-       .status(StatusCode.OK)
+       .status(HttpStatusCode.OK)
        .json(ResponseUtil.success(jobStats));
        
     } catch (error) {

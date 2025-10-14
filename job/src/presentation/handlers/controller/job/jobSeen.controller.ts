@@ -1,6 +1,6 @@
 import { IJobsSeenUseCase, IupdateJobsUseCase } from "@/application/interface/jobUsecase_interface";
 import { NextFunction, Request, Response } from "express";
-import { StatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
+import { HttpStatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
 
 
 export class JobSeenController {
@@ -14,7 +14,7 @@ export class JobSeenController {
        await this.jobSeenUseCase.execute(id, userId);
 
       res
-        .sendStatus(StatusCode.CREATED)
+        .sendStatus(HttpStatusCode.CREATED)
       
     } catch (error) {
       console.log(error);

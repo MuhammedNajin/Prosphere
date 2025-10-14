@@ -1,6 +1,6 @@
 import { IupdateJobsUseCase } from "@/application/interface/jobUsecase_interface";
 import { NextFunction, Request, Response } from "express";
-import { StatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
+import { HttpStatusCode, ResponseUtil } from "@muhammednajinnprosphere/common";
 
 
 export class UpdateJobController {
@@ -13,7 +13,7 @@ export class UpdateJobController {
       const job = await this.updateJobUseCase.execute(req.body, id);
 
       res
-        .status(StatusCode.CREATED)
+        .status(HttpStatusCode.CREATED)
         .json(ResponseUtil.success(job, "Job Updated successfully"));
     } catch (error) {
       console.log(error);

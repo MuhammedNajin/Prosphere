@@ -1,5 +1,5 @@
 import { IgetAllApplicationUseCase } from "@/application/interface/applicationUsecase_interface.ts";
-import { StatusCode } from "@muhammednajinnprosphere/common";
+import { HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { application, NextFunction, Request, Response } from "express";
 
 export class GetAllApplicationController {
@@ -26,7 +26,7 @@ export class GetAllApplicationController {
 
       console.log("applications", applications);
 
-      res.status(StatusCode.OK).json(applications);
+      res.status(HttpStatusCode.OK).json(applications);
     } catch (error) {
       next(error);
     }

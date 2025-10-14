@@ -1,4 +1,5 @@
 import { ILikeJobUseCase } from "@/application/interface/jobUsecase_interface"; 
+import { HttpStatusCode } from "@muhammednajinnprosphere/common";
 import { NextFunction, Request, Response } from "express";
 
 export class JobLikeController {
@@ -16,7 +17,7 @@ export class JobLikeController {
 
       const job = await this.likeJobUseCase.execute(jobId, userId);
 
-      res.status(200).json({
+      res.status(HttpStatusCode.OK).json({
         success: true,
         message: job ? "Job liked/unliked successfully" : "Job not found",
         job,

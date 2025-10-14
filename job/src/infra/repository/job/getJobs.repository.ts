@@ -13,16 +13,19 @@ export class GetJobsRepository {
         try {
             const query: FilterQuery<typeof Job> = {};
 
+            // Search condition
             if (search) {
                 query.$or = [
                     { jobTitle: { $regex: search, $options: 'i' } },
                 ];
             }
 
+            // Location condition
             if (location) {
                 query.officeLocation = { $regex: location, $options: 'i' };
             }
 
+            // Salary condition
             if (filter.salary?.min || filter.salary?.max) {
                 if (filter.salary.min) {
                     query['salary.from'] = { $gte: parseInt(filter.salary.min) }
@@ -32,39 +35,52 @@ export class GetJobsRepository {
                 }
             }
             
+            // Experience condition
             if (filter.experience) {
                 query.experience = { $gte: filter.experience };
             }
 
-            // Handle employment filter for both string and array inputs
-            console.log("filter", filter)
+            // ============================
+            // OR conditions for employment & jobLocation
+            // ============================
+            const orConditions: any[] = [];
+
             if (filter.employment) {
                 const employmentTypes = Array.isArray(filter.employment) 
                     ? filter.employment 
-                    : filter.employment?.split(',');
-
-                    console.log("employment filter ",  employmentTypes);
-                    
+                    : filter.employment.split(',');
 
                 if (employmentTypes.length > 0) {
-                    query.employment = { 
-                        $in: employmentTypes
-                    };
+                    orConditions.push({
+                        employment: { $in: employmentTypes }
+                    });
                 }
             }
 
-            if (filter.jobLocation?.length) {
+            if (filter.jobLocation) {
                 const locations = Array.isArray(filter.jobLocation) 
                     ? filter.jobLocation 
-                    : [filter.jobLocation];
-                
-                query.jobLocation = { 
-                    $in: locations.map(loc => 
-                        new RegExp(loc, 'i')
-                    )
-                };
+                    : filter.jobLocation.split(',');
+
+                if (locations.length > 0) {
+                    orConditions.push({
+                        jobLocation: { 
+                            $in: locations.map(loc => new RegExp(loc, 'i'))
+                        }
+                    });
+                }
             }
 
+            if (orConditions.length > 0) {
+                // if query already has $or from search, merge them
+                if (query.$or) {
+                    query.$or = [...query.$or, ...orConditions];
+                } else {
+                    query.$or = orConditions;
+                }
+            }
+
+            // Pagination
             const skip = (page - 1) * pageSize;
             
             const [jobs, total] = await Promise.all([
@@ -75,10 +91,6 @@ export class GetJobsRepository {
                     .sort({ createdAt: -1 }),
                 Job.countDocuments(query)
             ]);
-
-
-         
-            
 
             return {
                 jobs,
