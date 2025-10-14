@@ -1,276 +1,270 @@
 import { Request, Response } from "express";
 import { inject, injectable } from "inversify";
+import {
+  BadRequestError,
+  HttpStatusCode,
+} from "@muhammednajinnprosphere/common";
+
+import { UseCases } from "@/di/symbols";
 import { SignupUseCase } from "@/application/usecase/auth/signup.usecase";
-import { SigninUseCase } from "@application/usecase/auth/signin.usecase";
+import { SigninUseCase } from "@/application/usecase/auth/signin.usecase";
 import { VerifyOtpUseCase } from "@/application/usecase/auth/verify-otp.usecase";
 import { ForgetPasswordUseCase } from "@/application/usecase/auth/forget-pass.usecase";
 import { ResetPasswordUseCase } from "@/application/usecase/auth/resetPassUsecase";
 import { GoogleAuthUseCase } from "@/application/usecase/auth/google-auth.usecase";
 import { GoogleAuthFlowUseCase } from "@/application/usecase/auth/google-auth-flow.usecase";
 import { ChangePasswordUseCase } from "@/application/usecase/auth/change-password.usecase";
-import { BadRequestError, HttpStatusCode, ResponseMapper, ResponseWrapper } from "@muhammednajinnprosphere/common";
-import { TOKEN_TYPE } from "@/shared/types/enums";
-import { NodeEnv } from "@/shared/constance";
-import { IAuth } from "@/domain/interface/IAuth";
-import { SigninResponse } from "../IResponse";
 import { RefreshTokenUseCase } from "@/application/usecase/auth/refresh-token.usecase";
-import { UseCases } from "@/di/symbols";
+import { ResendOtpUseCase } from "@/application/usecase/auth/resend-otp.usecase";
+import {
+  getRequestMeta,
+  mapUserResponse,
+  sendResponse,
+  sendAuthResponse,
+  setAuthTokenCookies,
+  clearAuthTokenCookies,
+  getRefreshTokenFromCookie,
+} from "@/shared/utils/request-utils";
+import { LogoutUseCase } from "@/application/usecase/auth/logout.usecase";
 
 @injectable()
 export default class AuthControllers {
-  constructor(
-    @inject(UseCases.SignupUseCase) private readonly signupUseCase: SignupUseCase,
-    @inject(UseCases.SigninUseCase) private readonly loginUseCase: SigninUseCase,
-    @inject(UseCases.VerifyOtpUseCase) private readonly verifyOtpUseCase: VerifyOtpUseCase,
-    @inject(UseCases.ForgetPasswordUseCase) private readonly forgetPasswordUseCase: ForgetPasswordUseCase,
-    @inject(UseCases.ResetPasswordUseCase) private readonly resetPasswordUseCase: ResetPasswordUseCase,
-    @inject(UseCases.GoogleAuthUseCase) private readonly googleAuthUseCase: GoogleAuthUseCase,
-    @inject(UseCases.GoogleAuthFlowUseCase) private readonly googleAuthFlowUseCase: GoogleAuthFlowUseCase,
-    @inject(UseCases.ChangePasswordUseCase) private readonly changePasswordUseCase: ChangePasswordUseCase,
-    @inject(UseCases.RefreshTokenUseCase) private readonly refreshTokenUseCase: RefreshTokenUseCase,
+  private sendResponse = sendResponse;
+  private sendAuthResponse = sendAuthResponse;
+  private mapUserResponse = mapUserResponse;
+  private getRequestMeta = getRequestMeta;
+  private setAuthTokenCookies = setAuthTokenCookies;
+  private clearAuthTokenCookies = clearAuthTokenCookies;
+  private getRefreshTokenFromCookie = getRefreshTokenFromCookie;
 
+  constructor(
+    @inject(UseCases.SignupUseCase)
+    private readonly signupUseCase: SignupUseCase,
+    @inject(UseCases.SigninUseCase)
+    private readonly loginUseCase: SigninUseCase,
+    @inject(UseCases.VerifyOtpUseCase)
+    private readonly verifyOtpUseCase: VerifyOtpUseCase,
+    @inject(UseCases.ForgetPasswordUseCase)
+    private readonly forgetPasswordUseCase: ForgetPasswordUseCase,
+    @inject(UseCases.ResetPasswordUseCase)
+    private readonly resetPasswordUseCase: ResetPasswordUseCase,
+    @inject(UseCases.GoogleAuthUseCase)
+    private readonly googleAuthUseCase: GoogleAuthUseCase,
+    @inject(UseCases.GoogleAuthFlowUseCase)
+    private readonly googleAuthFlowUseCase: GoogleAuthFlowUseCase,
+    @inject(UseCases.ChangePasswordUseCase)
+    private readonly changePasswordUseCase: ChangePasswordUseCase,
+    @inject(UseCases.RefreshTokenUseCase)
+    private readonly refreshTokenUseCase: RefreshTokenUseCase,
+    @inject(UseCases.LogoutUseCase)
+    private readonly logoutUseCase: LogoutUseCase,
+    @inject(UseCases.ResendOtpUseCase)
+    private readonly resendOtpUseCase: ResendOtpUseCase
   ) {}
 
   signin = async (req: Request, res: Response) => {
     const { email, password } = req.body;
-    const { accessToken, refreshToken, user } = await this.loginUseCase.execute({ email, password });
+    const meta = this.getRequestMeta(req);
 
-    const response = new ResponseMapper<IAuth, SigninResponse>({
-       fields: {
-        id: "id",
-        email: "email",
-        username: "username",
-        phone: "phone",
-        role: "role",
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-       }
-    }).toResponse(user);
+    const result = await this.loginUseCase.execute({
+      email,
+      password,
+      ...meta,
+    });
 
-    const resWrap = new ResponseWrapper(res);
+    // Set both tokens as HTTP-only cookies
+    this.setAuthTokenCookies(res, result.accessToken, result.refreshToken);
 
-    resWrap
-      .status(HttpStatusCode.OK)
-      .cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .success(response, "Signin successful");
+    // Send response without tokens in body
+    this.sendAuthResponse(
+      res,
+      HttpStatusCode.OK,
+      { 
+        ...this.mapUserResponse(result.user)
+      },
+      "Signin successful"
+    );
   };
 
   googleAuth = async (req: Request, res: Response) => {
     const token = req.headers["authorization"]?.substring(7);
-    if (!token) {
-      throw new BadRequestError("No authorization token provided");
-    }
-    const result = await this.googleAuthUseCase.execute(token);
+    if (!token) throw new BadRequestError("No authorization token provided");
 
-    const resWrap = new ResponseWrapper(res);
+     const meta = this.getRequestMeta(req);
 
-    if (result.profile_complete && result.user) {
-      const { accessToken, refreshToken, user } = result;
-      
-      const response = new ResponseMapper<IAuth, SigninResponse>({
-        fields: {
-          id: "id",
-          email: "email",
-          username: "username",
-          phone: "phone",
-          role: "role",
-          createdAt: "createdAt",
-          updatedAt: "updatedAt",
-        }
-      }).toResponse(user);
+    const result = await this.googleAuthUseCase.execute({
+      token,
+      ...meta,
+    });
 
-      
-      
-      resWrap
-      .status(HttpStatusCode.OK)
-      .cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .success(response, "Signin successful");
-       
+    if (result.profile_complete && result.user && result.accessToken && result.refreshToken) {
+      this.setAuthTokenCookies(res, result.accessToken, result.refreshToken);
+
+      this.sendAuthResponse(
+        res,
+        HttpStatusCode.OK,
+        {
+          profile_complete: result.profile_complete,
+          ...this.mapUserResponse(result.user),
+        },
+        "Signin successful"
+      );
     } else {
-
-      resWrap
-        .status(HttpStatusCode.OK)
-        .success({ profile_complete: false, user: null }, "New user, please complete your profile.");
+      this.sendResponse(
+        res,
+        HttpStatusCode.OK,
+        { profile_complete: false, ...result.user },
+        "New user, please complete your profile."
+      );
     }
   };
 
   googleAuthFlow = async (req: Request, res: Response) => {
-    const result = await this.googleAuthFlowUseCase.execute(req.body);
-    const { accessToken, refreshToken, user } = result;
-    
-    const response = new ResponseMapper<IAuth, SigninResponse>({
-      fields: {
-        id: "id",
-        email: "email",
-        username: "username",
-        phone: "phone",
-        role: "role",
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-      }
-    }).toResponse(user);
+    const result = await this.googleAuthFlowUseCase.execute({
+      ...req.body,
+      ...this.getRequestMeta(req),
+    });
 
-    const resWrap = new ResponseWrapper(res);
-    
-    resWrap
-      .status(HttpStatusCode.OK)
-      .cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .success(response, "Signin successful");
+    // Set both tokens as HTTP-only cookies
+    this.setAuthTokenCookies(res, result.accessToken, result.refreshToken);
+
+    this.sendAuthResponse(
+      res,
+      HttpStatusCode.OK,
+      { 
+        ...this.mapUserResponse(result.user)
+      },
+      "Signin successful"
+    );
   };
-
 
   refreshToken = async (req: Request, res: Response) => {
-  const refreshToken = req.cookies[TOKEN_TYPE.USER_REFRESH_TOKEN];
+    // Get refresh token from cookie
+    const refreshToken = this.getRefreshTokenFromCookie(req);
 
-  if (!refreshToken) {
-    throw new BadRequestError("Refresh token not found in cookies");
-  }
+    console.log("refresh token >>>>>>>>>>>>>>>!!!!!!!!!!<<<<<<<<<<<<", refreshToken)
+    
+    if (!refreshToken) {
+      throw new BadRequestError("Refresh token not found");
+    }
 
-  const { accessToken, refreshToken: newRefreshToken } = await this.refreshTokenUseCase.execute(refreshToken);
+    const result = await this.refreshTokenUseCase.execute({
+      refreshToken,
+      ...this.getRequestMeta(req),
+    });
 
-  const resWrap = new ResponseWrapper(res);
+    // Set new tokens as HTTP-only cookies (token rotation)
+    this.setAuthTokenCookies(res, result.accessToken, result.refreshToken);
 
-  resWrap
-    .status(HttpStatusCode.OK)
-    .cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, newRefreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-      sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    })
-    .cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-      sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-    })
-    .success({}, "Token refreshed successfully");
-};
-
-
-  signup = async (req: Request, res: Response) => {
-    await this.signupUseCase.execute(req.body);
-
-    const resWrap = new ResponseWrapper(res);
-
-    resWrap
-     .status(HttpStatusCode.CREATED)
-     .success({}, "User registered successfully. Please check your email to verify your account.");
+    this.sendAuthResponse(
+      res,
+      HttpStatusCode.OK,
+      {},
+      "Token refreshed successfully"
+    );
   };
 
-  verifyOtp = async (req: Request, res: Response): Promise<void> => {
-    const { user, accessToken, refreshToken } = await this.verifyOtpUseCase.execute(req.body);
-    
-    const response = new ResponseMapper<IAuth, SigninResponse>({
-      fields: {
-        id: "id",
-        email: "email",
-        username: "username",
-        phone: "phone",
-        role: "role",
-        createdAt: "createdAt",
-        updatedAt: "updatedAt",
-      }
-    }).toResponse(user);
+  verifyOtp = async (req: Request, res: Response) => {
+    const { otp, email } = req.body;
+    const meta = this.getRequestMeta(req);
 
-    const resWrap = new ResponseWrapper(res);
+    const result = await this.verifyOtpUseCase.execute({
+      otpFromUser: otp,
+      email,
+      ...meta,
+    });
 
-    resWrap
-      .status(HttpStatusCode.OK)
-      .cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-      })
-      .success(response, "OTP verified successfully");
+    // Set both tokens as HTTP-only cookies
+    this.setAuthTokenCookies(res, result.accessToken, result.refreshToken);
+
+    this.sendAuthResponse(
+      res,
+      HttpStatusCode.OK,
+      { 
+        ...this.mapUserResponse(result.user)
+      },
+      "OTP verified successfully"
+    );
+  };
+
+  logout = async (req: Request, res: Response) => {
+  
+    const refreshToken = this.getRefreshTokenFromCookie(req);
+    const { logoutAll = false, userId} = req.body;
+  
+    if (!userId) throw new BadRequestError("User not authenticated");
+
+    const result = await this.logoutUseCase.execute({
+      userId,
+      refreshToken,
+      logoutAll,
+    });
+
+    // Clear both token cookies
+    this.clearAuthTokenCookies(res);
+
+    this.sendResponse(res, HttpStatusCode.OK, result, result.message);
+  };
+
+  // Non-auth endpoints remain the same
+  signup = async (req: Request, res: Response) => {
+    await this.signupUseCase.execute(req.body);
+    this.sendResponse(
+      res,
+      HttpStatusCode.CREATED,
+      {},
+      "User registered successfully. Please check your email to verify your account."
+    );
+  };
+
+  resendOtp = async (req: Request, res: Response) => {
+    const { email } = req.body;
+    console.log("Resending OTP for email:", email);
+
+    await this.resendOtpUseCase.execute({ email });
+
+    this.sendResponse(
+      res,
+      HttpStatusCode.OK,
+      {},
+      "OTP has been resent to your email. Please check your inbox."
+    );
   };
 
   forgotPassword = async (req: Request, res: Response) => {
     const { email } = req.body;
+
     await this.forgetPasswordUseCase.execute(email);
-      const resWrap = new ResponseWrapper(res);
-    resWrap
-      .status(HttpStatusCode.OK)
-      .success({}, "Password reset link sent to your email. Please check your inbox.");
+
+    this.sendResponse(
+      res,
+      HttpStatusCode.OK,
+      {},
+      "Password reset link sent to your email. Please check your inbox."
+    );
   };
 
   resetPassword = async (req: Request, res: Response) => {
     await this.resetPasswordUseCase.execute(req.body);
 
-    const resWrap = new ResponseWrapper(res);
-    resWrap
-      .status(HttpStatusCode.OK)
-      .success({}, "Password reset successfully. Please sign in with your new password.");
-  }
-
-  logout = (req: Request, res: Response) => {
-  const resWrap = new ResponseWrapper(res);
-
-  resWrap
-    .cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, '', {
-      httpOnly: true,
-      expires: new Date(0),
-      sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-      secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-    })
-    .cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, '', {
-      httpOnly: true,
-      expires: new Date(0),
-      sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-      secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-    })
-    .status(HttpStatusCode.NO_CONTENT)
-    .success({}, "Successfully logged out.");
-};
-
+    this.sendResponse(
+      res,
+      HttpStatusCode.OK,
+      {},
+      "Password reset successfully. Please sign in with your new password."
+    );
+  };
 
   changePassword = async (req: Request, res: Response) => {
     const { id, newPassword, oldPassword } = req.body;
+
     await this.changePasswordUseCase.execute(oldPassword, newPassword, id);
-    
-    const resWrap = new ResponseWrapper(res);
-    resWrap
-      .status(HttpStatusCode.OK)
-      .success({}, "Password changed successfully");
+
+    this.sendResponse(
+      res,
+      HttpStatusCode.OK,
+      {},
+      "Password changed successfully"
+    );
   };
 }

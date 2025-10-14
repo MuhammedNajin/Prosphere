@@ -8,7 +8,7 @@ import {
   ResponseMapper,
 } from "@muhammednajinnprosphere/common";
 
-import { ROLE, TOKEN_TYPE } from "@/shared/types/enums";
+import {  TOKEN_TYPE } from "@/shared/types/enums";
 import { AdminLoginUseCase } from "@/application/usecase/admin/admin-login.usecase";
 import { RefreshTokenUseCase } from "@/application/usecase/auth/refresh-token.usecase";
 import { BlockUserUseCase } from "@/application/usecase/admin/blockUserUsecase";
@@ -17,9 +17,13 @@ import { IAuth } from "@/domain/interface/IAuth";
 import { AdminGetUsersResponse, SigninResponse } from "../IResponse";
 import { NodeEnv } from "@/shared/constance";
 import { UseCases } from "@/di/symbols";
+import { getRequestMeta } from "@/shared/utils/request-utils";
 
 @injectable()
 export default class AdminControllers {
+  
+private getRequestMeta = getRequestMeta;
+
   constructor(
     @inject(UseCases.BlockUserUseCase)
     private readonly blockUserUseCase: BlockUserUseCase,
@@ -30,6 +34,50 @@ export default class AdminControllers {
     @inject(UseCases.AdminLoginUseCase)
     private readonly adminLoginUseCase: AdminLoginUseCase
   ) {}
+
+  // NEWLY ADDED LOGIN METHOD
+  login = async (req: Request, res: Response) => {
+    const { email, password } = req.body;
+    const meta = this.getRequestMeta(req);
+    
+    const { accessToken, refreshToken, user } =
+      await this.adminLoginUseCase.execute({
+        email,
+        password,
+        ...meta,
+      });
+
+    const userMapper = new ResponseMapper<IAuth, SigninResponse>({
+      fields: {
+        id: "id",
+        email: "email",
+        username: "username",
+        phone: "phone",
+        role: "role",
+        createdAt: "createdAt",
+        updatedAt: "updatedAt",
+      },
+    });
+    const responseData = userMapper.toResponse(user);
+
+    const resWrap = new ResponseWrapper(res);
+
+    resWrap
+      .status(HttpStatusCode.OK)
+      .cookie(TOKEN_TYPE.ACCESS_TOKEN, accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
+        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
+        maxAge: 15 * 60 * 1000, // 15 minutes
+      })
+      .cookie(TOKEN_TYPE.REFRESH_TOKEN, refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
+        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      })
+      .success(responseData, "Admin logged in successfully");
+  };
 
   blockUser = async (req: Request, res: Response) => {
     const { id } = req.params;
@@ -76,58 +124,57 @@ export default class AdminControllers {
 
     const resWrap = new ResponseWrapper(res);
 
-     resWrap
+    resWrap
       .status(HttpStatusCode.OK)
       .success(response, "Users fetched successfully");
   };
 
- logout = (req: Request, res: Response) => {
-  const resWrap = new ResponseWrapper(res);
+  logout = (req: Request, res: Response) => {
+    const resWrap = new ResponseWrapper(res);
 
-  resWrap
-    .cookie(TOKEN_TYPE.ADMIN_ACCESS_TOKEN, '', {
-      httpOnly: true,
-      expires: new Date(0),
-      sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-      secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-    })
-    .cookie(TOKEN_TYPE.ADMIN_REFRESH_TOKEN, '', {
-      httpOnly: true,
-      expires: new Date(0),
-      sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-      secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-    })
-    .status(HttpStatusCode.NO_CONTENT)
-    .success({}, "Successfully logged out.");
-};
+    resWrap
+      .cookie(TOKEN_TYPE.ACCESS_TOKEN, "", {
+        httpOnly: true,
+        expires: new Date(0),
+        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
+        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
+      })
+      .cookie(TOKEN_TYPE.REFRESH_TOKEN, "", {
+        httpOnly: true,
+        expires: new Date(0),
+        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
+        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
+      })
+      .status(HttpStatusCode.NO_CONTENT)
+      .success({}, "Successfully logged out.");
+  };
 
+  refreshToken = async (req: Request, res: Response) => {
+    const refreshToken = req.cookies[TOKEN_TYPE.REFRESH_TOKEN];
 
- refreshToken = async (req: Request, res: Response) => {
-   const refreshToken = req.cookies[TOKEN_TYPE.ADMIN_REFRESH_TOKEN];
- 
-   if (!refreshToken) {
-     throw new BadRequestError("Refresh token not found in cookies");
-   }
- 
-   const { accessToken, refreshToken: newRefreshToken } = await this.refreshTokenUseCase.execute(refreshToken);
- 
-   const resWrap = new ResponseWrapper(res);
- 
-   resWrap
-     .status(HttpStatusCode.OK)
-     .cookie(TOKEN_TYPE.USER_REFRESH_TOKEN, newRefreshToken, {
-       httpOnly: true,
-       secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-       sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-       maxAge: 30 * 24 * 60 * 60 * 1000,
-     })
-     .cookie(TOKEN_TYPE.USER_ACCESS_TOKEN, accessToken, {
-       httpOnly: true,
-       secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
-       sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
-       maxAge: 30 * 24 * 60 * 60 * 1000,
-     })
-     .success({}, "Token refreshed successfully");
- };
- 
+    if (!refreshToken) {
+      throw new BadRequestError("Refresh token not found in cookies");
+    }
+
+    const { accessToken, refreshToken: newRefreshToken } =
+      await this.refreshTokenUseCase.execute(refreshToken);
+
+    const resWrap = new ResponseWrapper(res);
+
+    resWrap
+      .status(HttpStatusCode.OK)
+      .cookie(TOKEN_TYPE.REFRESH_TOKEN, newRefreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
+        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
+        maxAge: 30 * 24 * 60 * 60 * 1000,
+      })
+      .cookie(TOKEN_TYPE.ACCESS_TOKEN, accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === NodeEnv.PRODUCTION,
+        sameSite: process.env.NODE_ENV === NodeEnv.PRODUCTION ? "none" : "lax",
+        maxAge: 15 * 60 * 1000,
+      })
+      .success({}, "Token refreshed successfully");
+  };
 }

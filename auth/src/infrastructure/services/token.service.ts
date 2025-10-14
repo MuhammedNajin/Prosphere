@@ -95,6 +95,7 @@ export class TokenService implements ITokenService {
 
   
   public generateRefreshToken<T extends IJwtUserData>(data: T): string {
+    console.log("generateRefreshToken params log", data)
     const claims = { ...defaultStandardJwtClaims, user: data };
     return jwt.sign(claims as IJWTClaimWithUser, JWT_REFRESH_TOKEN_SECRET, {
       algorithm: "HS256",

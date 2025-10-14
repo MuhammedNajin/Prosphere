@@ -9,10 +9,8 @@ export enum ROLE {
 }
 
 export enum TOKEN_TYPE {
-    USER_ACCESS_TOKEN = 'userAccess',
-    USER_REFRESH_TOKEN = 'userRefresh',
-    ADMIN_ACCESS_TOKEN = 'adminAccess',
-    ADMIN_REFRESH_TOKEN = 'adminRefresh',
+    ACCESS_TOKEN = 'accessToken',
+    REFRESH_TOKEN = 'refreshToken',
     COMPANY_ACCESS_TOKEN = 'companyAccess',
     COMPANY_REFRESH_TOKEN = 'companyRefresh',
 } 

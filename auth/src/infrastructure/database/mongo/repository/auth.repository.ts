@@ -1,9 +1,10 @@
 import { injectable } from "inversify";
 // You will create this new interface
 import { IAuth } from "@domain/interface/IAuth" // Your domain interface for Auth
-import { AuthModel } from "../shemas/authShema";
+import { AuthModel } from "../shemas/auth.schema";
 import { IAuthRepository } from "@/infrastructure/interface/repository/IAuthRepository";
 import mongoose from "mongoose";
+import { UserRole } from "@muhammednajinnprosphere/common";
 
 @injectable()
 export class AuthRepository implements IAuthRepository {
@@ -52,6 +53,10 @@ export class AuthRepository implements IAuthRepository {
     });
   }
 
+  async findByPhone(phone: string): Promise<IAuth | null> {
+     return await this.model.findOne({ phone }).select("+password");
+  }
+
   async updateByEmail(
     email: string,
     attrs: Partial<IAuth>
@@ -59,14 +64,7 @@ export class AuthRepository implements IAuthRepository {
     return await this.model.findOneAndUpdate({ email }, attrs, { new: true });
   }
 
-  /**
-   * Deletes an authentication record by its user ID.
-   */
-  async deleteByUserId(userId: string): Promise<boolean> {
-    const result = await this.model.deleteOne({ user: userId });
-    return result.deletedCount === 1;
-  }
-
+  
   // Base query methods required by IAuthRepository
   async findById(id: string): Promise<IAuth | null> {
     return await this.model.findById(id).select("+password");
@@ -79,7 +77,7 @@ export class AuthRepository implements IAuthRepository {
     const skip = (page - 1) * limit;
     const [total, docs] = await Promise.all([
       this.model.countDocuments(),
-      this.model.find().skip(skip).limit(limit),
+      this.model.find({ role: { $ne: UserRole.ADMIN }}).skip(skip).limit(limit),
     ]);
     return { total, auths: docs as unknown as IAuth[] };
   }

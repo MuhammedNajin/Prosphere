@@ -5,9 +5,8 @@ import { asyncHandler } from "@muhammednajinnprosphere/common";
 import { Controllers } from "@/di/symbols";
 
 const router = express.Router();
-
 const adminController = resolve<AdminControllers>(
-  Controllers.AdminControllers)
+  Controllers.AdminControllers);
 
 router.get("/users", asyncHandler(adminController.getAllUsers));
 router.patch("/block/:id", asyncHandler(adminController.blockUser));

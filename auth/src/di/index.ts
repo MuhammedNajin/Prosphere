@@ -4,6 +4,8 @@ import { bindServices } from './services';
 import container from './container';
 import { bindMessageBroker } from './message-brokers';
 import { bindUseCases } from './usecases';
+import { bindConnections } from './connections';
+import { bindCommon } from './common';
 
 
 export const resolve = <T>(identifier: symbol): T => {
@@ -14,9 +16,11 @@ export const resolve = <T>(identifier: symbol): T => {
 
 export const  initializeDependencies = async () =>{
     console.log('Initializing dependencies...');
+    await bindConnections(container);
     bindRepositories(container);
+    bindServices(container);
+    bindCommon(container)
     bindUseCases(container);
     bindControllers(container);
     bindMessageBroker(container);
-    await bindServices(container);
 }

@@ -38,13 +38,6 @@ const authSchema = new Schema<IAuthDoc, IAuthModel>(
     },
     isVerified: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
-
-    // The crucial link to the User profile model
-    user: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
   },
   {
     timestamps: true,

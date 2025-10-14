@@ -9,7 +9,7 @@ import { AuthProvider, ErrorCode, UserRole } from "@/shared/constance";
 import { IMailService } from "@/infrastructure/interface/service/IMailService";
 import { Repositories, Services } from "@/di/symbols";
 
-export interface SignupInput extends Pick<IAuth, 'email' | 'username' | 'password' | 'phone'> {
+export interface SignupInput extends Pick<IAuth, 'email' | 'username' | 'password' | 'phone'> { 
 }
 @injectable()
 export class SignupUseCase {
@@ -30,10 +30,19 @@ export class SignupUseCase {
     const { email, username, password, phone } = input;
 
     // Check for duplicates
-    const [emailExists, usernameExists] = await Promise.all([
+    const [emailExists, usernameExists, phoneExists] = await Promise.all([
       this.userRepository.findByEmail(email),
       this.userRepository.findByUsername(username),
+      this.userRepository.findByPhone(phone),
     ]);
+
+    if(phoneExists) {
+      throw new BadRequestError(
+        'Phone number is already registered. Please use a different phone number.',
+        ErrorCode.PHONE_ALREADY_EXISTS,
+        'phone'
+      );
+    }
 
     if (emailExists) {
       throw new BadRequestError(
@@ -51,11 +60,11 @@ export class SignupUseCase {
           ) 
     }
 
-    // Hash the password
-    const hashedPassword = await this.hashService.hash(password!);
+    
+    
 
     // Generate OTP
-    const otp = this.otpService.generate(4);
+    const otp = this.otpService.generate(6);
 
     const id: string = this.userRepository.generateId()
     const userData: IAuth = {
@@ -63,7 +72,7 @@ export class SignupUseCase {
       email,
       username,
       phone,
-      password: hashedPassword,
+      password,
       provider: AuthProvider.DEFAULT,
       role: UserRole.USER,
       isVerified: false,

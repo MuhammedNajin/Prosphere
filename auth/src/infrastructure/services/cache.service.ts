@@ -1,7 +1,7 @@
 import { RedisClient } from "@config/redisConnection";
 import { ICacheService } from "@/infrastructure/interface/service/ICacheService";
 import { inject, injectable } from "inversify";
-import { Services } from "@/di/symbols";
+import { Connections } from "@/di/symbols";
 
 /**
  * @class RedisRepository
@@ -13,7 +13,7 @@ import { Services } from "@/di/symbols";
 export class CacheService implements ICacheService {
   private readonly client: RedisClient;
 
-  constructor(@inject(Services.RedisClient) client: RedisClient) {
+  constructor(@inject(Connections.RedisClient) client: RedisClient) {
     this.client = client;
   }
 

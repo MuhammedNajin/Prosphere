@@ -1,11 +1,22 @@
 export const Repositories = {
   UserRepository: Symbol.for("UserRepository"),
+  RefreshTokenRepository: Symbol.for("RefreshTokenRepository")
 };
 
 
 export const GrpcServices = {
   AuthGrpcService: Symbol.for('AuthGrpcService'),
 };
+
+export const Connections = {
+   RedisClient: Symbol.for('RedisClient'),
+   DatabaseConnection: Symbol.for('DatabaseConnection'),
+   KafkaConnection: Symbol.for('KafkaConnection'),
+}
+
+export const Common = {
+   TokenManager: Symbol.for("TokenManger"),
+}
 
 export const Services = {
   TokenService: Symbol.for('TokenService'),
@@ -18,6 +29,7 @@ export const Services = {
 };
 
 export const UseCases = {
+  ResendOtpUseCase: Symbol.for("ResendOtpUseCase"),
   SignupUseCase: Symbol.for("SignupUseCase"),
   SigninUseCase: Symbol.for("SigninUseCase"),
   ResetPasswordUseCase: Symbol.for("ResetPasswordUseCase"),
@@ -31,6 +43,7 @@ export const UseCases = {
   AdminLoginUseCase: Symbol.for("AdminLoginUseCase"),
   BlockUserUseCase: Symbol.for("BlockUserUseCase"),
   GetUsersUseCase: Symbol.for("GetUsersUseCase"),
+  LogoutUseCase: Symbol.for("LogoutUseCase"),
 };
 
 

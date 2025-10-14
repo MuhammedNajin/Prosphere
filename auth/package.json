@@ -16,7 +16,7 @@
     "@aws-sdk/s3-request-presigner": "^3.850.0",
     "@grpc/grpc-js": "^1.13.4",
     "@grpc/proto-loader": "^0.7.15",
-    "@muhammednajinnprosphere/common": "^1.0.166",
+    "@muhammednajinnprosphere/common": "^1.0.170",
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/mongoose": "^5.11.96",

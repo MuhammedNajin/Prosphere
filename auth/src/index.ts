@@ -1,33 +1,27 @@
-import { app } from './app';
+import { createApp } from './app';
 import 'reflect-metadata';
-import { initConfig, cleanupConnections, getConnectionStatus } from '@/config/initConfig';
+import { initConfig } from '@/config/initConfig';
 import 'dotenv/config';
 import { createServer } from 'http';
 import { SocketManager } from './infrastructure/socket';
-import { initializeDependencies } from './di';
 
 (async function start() {
   try {
    console.log("starting auth service...");
-    // await initializeDependencies();
-
-    await initConfig({
-      enableDatabase: true,
-      enableRedis: true,
-      enableKafka: true,
-      timeout: 30000,
-    });
+   
+   
 
     // Bind InversifyJS dependencies after connections are established
     
 
-    const connectionStatus = getConnectionStatus();
+    const connectionStatus = initConfig.getConnectionStatus();
     console.log('📊 Connection Status:', connectionStatus);
-
+    
+    const app = await createApp();
     const httpServer = createServer(app);
     SocketManager.getInstance(httpServer);
 
-    const PORT = process.env.PORT || 7000;
+    const PORT = process.env.PORT || 3002;
     httpServer.listen(PORT, () => {
       console.log(`Auth service is running on port ${PORT}`);
       console.log(`Server started at: ${new Date().toISOString()}`);
@@ -52,7 +46,7 @@ import { initializeDependencies } from './di';
 async function gracefulShutdown() {
   try {
     console.log('Starting graceful shutdown process...');
-    await cleanupConnections();
+    await initConfig.cleanup();
     console.log('Graceful shutdown completed. Exiting process.');
     process.exit(0);
   } catch (error) {

@@ -5,9 +5,15 @@ import { IAuth } from "@/domain/interface/IAuth";
 import { ICacheService } from "@/infrastructure/interface/service/ICacheService";
 import { AuthProvider, ErrorCode } from "@/shared/constance";
 import { ROLE } from "@/shared/types/enums";
-import { Repositories, Services } from "@/di/symbols";
+import { Common, Repositories, Services } from "@/di/symbols";
 import { UnauthorizedError } from "@muhammednajinnprosphere/common";
+import { TokenManager } from "@/shared/services/token-manager";
+import { IAuthRequestWithDevice } from "@/shared/types/auth-token";
 
+
+interface GoogleAuthUseCaseParams extends Omit<IAuthRequestWithDevice, 'email'> {
+   token: string;
+}
 
 @injectable()
 export class GoogleAuthUseCase {
@@ -15,12 +21,13 @@ export class GoogleAuthUseCase {
     @inject(Repositories.UserRepository) private userRepository: IAuthRepository,
     @inject(Services.TokenService) private tokenService: ITokenService,
     @inject(Services.CacheService) private cacheService: ICacheService,
+     @inject(Common.TokenManager) private tokenManager: TokenManager
   ) {}
 
   /**
    * Generates final access and refresh tokens for an existing user.
    */
-  private _createLoginResponse(user: IAuth): GoogleAuthOutput {
+  private async _createLoginResponse(user: IAuth, ipAddress: string, userAgent: string): Promise<GoogleAuthOutput> {
     const tokenPayload = {
       userId: user.id,
       username: user.username,
@@ -28,8 +35,7 @@ export class GoogleAuthUseCase {
       role: ROLE.USER,
     };
 
-    const accessToken = this.tokenService.generateAccessToken(tokenPayload);
-    const refreshToken = this.tokenService.generateRefreshToken(tokenPayload);
+    const { accessToken, refreshToken  } = await this.tokenManager.issueTokens(user, ipAddress, userAgent);
 
     return {
       profile_complete: true,
@@ -47,7 +53,7 @@ export class GoogleAuthUseCase {
    * @returns An object indicating the user's status and providing necessary tokens.
    * @throws Will throw an error if the Google token is invalid.
    */
-  async execute(token: string): Promise<GoogleAuthOutput> {
+  async execute({ ipAddress, token, userAgent}: GoogleAuthUseCaseParams): Promise<GoogleAuthOutput> {
     const payload = await this.tokenService.verifyGoogleAuth(token);
 
     if (!payload || !payload.email) {
@@ -61,7 +67,7 @@ export class GoogleAuthUseCase {
 
     if (existingUser) {
 
-      return this._createLoginResponse(existingUser);
+      return this._createLoginResponse(existingUser, ipAddress, userAgent);
 
     } else {
       const firstName = payload["given_name"];
@@ -77,7 +83,9 @@ export class GoogleAuthUseCase {
 
       return {
         profile_complete: false,
-        user: null,
+        user: {
+          email: userData.email,
+        },
       };
     }
   }
@@ -91,5 +99,7 @@ export type GoogleAuthOutput = {
   refreshToken: string;
 } | {
   profile_complete: false;
-  user: null;
+  user: {
+    email: string;
+  };
 };

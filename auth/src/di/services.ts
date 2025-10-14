@@ -1,5 +1,4 @@
 import { Container } from 'inversify';
-import { redisClient, RedisClient } from '@/config/redisConnection';
 import { TokenService } from '@/infrastructure/services/token.service';
 import { MailService } from '@/infrastructure/services/mail.service';
 import { HashService } from '@/infrastructure/services/hash.service';
@@ -15,9 +14,6 @@ import { ICloudStorageService } from '@/infrastructure/interface/service/ICloudS
 import { Services } from './symbols';
 
 export async function bindServices(container: Container) {
-    // Ensure Redis is connected before binding
-    await redisClient.connect();
-    container.bind<RedisClient>(Services.RedisClient).toConstantValue(redisClient.getClient());
     container.bind<ITokenService>(Services.TokenService).to(TokenService).inSingletonScope();
     container.bind<IMailService>(Services.MailService).to(MailService).inSingletonScope();
     container.bind<IHashService>(Services.HashService).to(HashService).inSingletonScope();

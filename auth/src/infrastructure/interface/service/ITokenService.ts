@@ -8,7 +8,8 @@ export interface IJwtUserData {
   userId: string;
   role: string;
   username: string;
-  email: string
+  email: string;
+  tokenId: string
 }
 
 /**

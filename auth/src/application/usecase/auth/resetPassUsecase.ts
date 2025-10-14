@@ -3,6 +3,7 @@ import { IAuthRepository } from '@/infrastructure/interface/repository/IAuthRepo
 import { ICacheService } from '@/infrastructure/interface/service/ICacheService';
 import { Repositories, Services } from '@/di/symbols';
 import { BadRequestError, NotFoundError } from '@muhammednajinnprosphere/common';
+import { IHashService } from '@/infrastructure/interface/service/IHashService';
 
 
 /**
@@ -18,7 +19,8 @@ interface ResetPasswordUseCaseInput {
 export class ResetPasswordUseCase {
   constructor(
     @inject(Repositories.UserRepository) private userRepository: IAuthRepository,
-    @inject(Services.CacheService) private cacheService: ICacheService
+    @inject(Services.CacheService) private cacheService: ICacheService,
+    @inject(Services.HashService) private hashService: IHashService
   ) {}
 
   /**
@@ -38,6 +40,8 @@ export class ResetPasswordUseCase {
     const cacheKey = `${email}-token`;
     const cacheToken = await this.cacheService.get(cacheKey);
 
+    console.log(`Cache token for ${email}:`, cacheToken);
+
     // 3. Validate the token using BadRequestError with specific error codes
     if (!cacheToken) {
       throw new BadRequestError('The password reset link has expired or is invalid.', 'TOKEN_EXPIRED');
@@ -49,8 +53,10 @@ export class ResetPasswordUseCase {
 
     // 4. Update the user's password in the database
     // Note: It is assumed that the password will be hashed by a repository or a pre-save hook.
+
+    const hashPassword = await this.hashService.hash(newPassword)
     await this.userRepository.updateByEmail(email, {
-      password: newPassword,
+      password: hashPassword,
     });
     
     // 5. Invalidate the token in the cache to prevent reuse

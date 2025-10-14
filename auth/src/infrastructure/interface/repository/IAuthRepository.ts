@@ -7,6 +7,8 @@ import { IBaseCommandRepository, IBaseQueryRepository } from "./IBaseRepository"
 export interface IAuthQueryRepository extends IBaseQueryRepository<IAuth, 'auths'> {
   findByEmail(email: string): Promise<IAuth | null>;
   findByUsername(username: string): Promise<IAuth | null>;
+  findByPhone(phone: string): Promise<IAuth | null>;
+  findById(id: string): Promise<IAuth | null>;
 }
 
 /**
@@ -16,7 +18,6 @@ export interface IAuthQueryRepository extends IBaseQueryRepository<IAuth, 'auths
 export interface IAuthCommandRepository extends IBaseCommandRepository<IAuth> {
   create(attrs: IAuth): Promise<IAuth>; // Override create for specific attrs
   updateByUserId(userId: string, attrs: Partial<IAuth>): Promise<IAuth | null>;
-  deleteByUserId(userId: string): Promise<boolean>;
   updateByEmail(email: string,  attrs: Partial<IAuth>): Promise<IAuth | null>;
 }
 

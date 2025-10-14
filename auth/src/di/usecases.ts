@@ -1,4 +1,3 @@
-// di/usecases.ts
 import { Container } from 'inversify';
 import { SignupUseCase } from '@application/usecase/auth/signup.usecase';
 import { SigninUseCase } from '@application/usecase/auth/signin.usecase';
@@ -13,6 +12,8 @@ import { BlockUserUseCase } from '@application/usecase/admin/blockUserUsecase';
 import { GetUsersUseCase } from '@application/usecase/admin/getUsersUsecase';
 import { RefreshTokenUseCase } from '@application/usecase/auth/refresh-token.usecase';
 import { UseCases } from './symbols';
+import { ResendOtpUseCase } from '@/application/usecase/auth/resend-otp.usecase';
+import { LogoutUseCase } from '@/application/usecase/auth/logout.usecase';
 
 export function bindUseCases(container: Container) {
     container.bind(UseCases.SignupUseCase).to(SignupUseCase).inSingletonScope();
@@ -28,4 +29,6 @@ export function bindUseCases(container: Container) {
     container.bind(UseCases.BlockUserUseCase).to(BlockUserUseCase).inSingletonScope();
     container.bind(UseCases.GetUsersUseCase).to(GetUsersUseCase).inSingletonScope();
     container.bind(UseCases.AdminRefreshTokenUseCase).to(RefreshTokenUseCase).inSingletonScope();
+    container.bind(UseCases.ResendOtpUseCase).to(ResendOtpUseCase).inSingletonScope();
+    container.bind(UseCases.LogoutUseCase).to(LogoutUseCase).inSingletonScope();
 }

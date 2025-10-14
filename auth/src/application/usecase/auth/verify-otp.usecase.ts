@@ -1,90 +1,124 @@
 import { injectable, inject } from "inversify";
-import { ROLE } from "@/shared/types/enums";
-import { UserWithAuthToken } from "@/shared/types/user-with-auth-token";
 import { IAuth } from "@/domain/interface/IAuth";
 import { ICacheService } from "@/infrastructure/interface/service/ICacheService";
-import { ITokenService } from "@/infrastructure/interface/service/ITokenService";
 import { IAuthRepository } from "@/infrastructure/interface/repository/IAuthRepository";
 import { UserCreatedProducer } from "@/infrastructure/MessageBroker/kafka/producer/user-created-producer";
 import { Auth } from "@/domain/entities/auth";
-import { MessageBrokers, Repositories, Services } from "@/di/symbols";
+import { Common, MessageBrokers, Repositories, Services } from "@/di/symbols";
+import { BadRequestError } from "@muhammednajinnprosphere/common";
+import { ErrorCode } from "@/shared/constance";
+import { TokenManager } from "@/shared/services/token-manager";
+import { UserWithAuthToken } from "@/shared/types/user-with-auth-token";
+import { IAuthRequestWithDevice } from "@/shared/types/auth-token";
 
-interface VerifyOtpUseCaseInput {
+export interface IVerifyOtpParams extends IAuthRequestWithDevice {
   otpFromUser: string;
-  email: string;
 }
+
 
 @injectable()
 export class VerifyOtpUseCase {
   constructor(
     @inject(Services.CacheService) private cacheService: ICacheService,
-    @inject(Services.TokenService) private tokenService: ITokenService,
     @inject(Repositories.UserRepository) private userRepository: IAuthRepository,
-    @inject(MessageBrokers.UserCreatedProducer) private userCreatedProducer: UserCreatedProducer
-  ) {}
+    @inject(MessageBrokers.UserCreatedProducer) private userCreatedProducer: UserCreatedProducer,
+    @inject(Common.TokenManager) private tokenManager: TokenManager
+  ) {
 
-  /**
-   * Verifies the OTP for a user, persists the user if OTP is valid, generates tokens, and emits a user created event.
-   *
-   * @param input - Object containing the OTP provided by the user and their email address.
-   * @returns An object containing the newly created user and their authentication tokens.
-   * @throws Error if OTP is expired/invalid or cached user data is missing.
-   */
-  public async execute({ otpFromUser, email }: VerifyOtpUseCaseInput): Promise<UserWithAuthToken> {
+
+  }
+
+  public async execute({ 
+    otpFromUser, 
+    email, 
+    ipAddress = '127.0.0.1', 
+    userAgent 
+  }: IVerifyOtpParams): Promise<UserWithAuthToken> {
+    console.log(`Starting OTP verification for email: ${email}`);
+
     // Get OTP from cache
     const cachedOtp = await this.cacheService.get(`${email}-otp`);
     if (!cachedOtp) {
-      throw new Error("OTP expired or not found");
+      throw new BadRequestError(
+        "OTP expired or not found. Please request a new OTP.",
+        ErrorCode.OTP_EXPIRED,
+        'otp'
+      );
     }
 
     // Get cached user data from cache
     const cachedUserData = await this.cacheService.get(`${email}-userdata`);
     if (!cachedUserData) {
-      throw new Error("Internal error: Cached user data missing");
+      throw new BadRequestError(
+        "Session expired. Please sign up again.",
+        ErrorCode.SESSION_EXPIRED,
+        'session'
+      );
     }
 
     const userData: IAuth = JSON.parse(cachedUserData);
 
+    // Verify OTP first
+    if (cachedOtp !== otpFromUser) {
+      throw new BadRequestError(
+        "Invalid OTP. Please check and try again.",
+        ErrorCode.INVALID_OTP,
+        'otp'
+      );
+    }
+
+    console.log('OTP verification successful');
+
     // Reconstruct domain User entity
     const user = Auth.create({
-          id: userData.id,
-          username: userData.username,
-          email: userData.email,
-          phone: userData.phone,
-          role: userData.role,
-          createdAt: userData.createdAt,
-          updatedAt: userData.updatedAt,
-          password: userData.password,
-          isVerified: userData.isVerified,
-          isBlocked: userData.isBlocked,
-        });
-
-    // Verify OTP
-    if (!user.isOtpValid(cachedOtp, otpFromUser)) {
-      throw new Error("Invalid OTP");
-    }
+      id: userData.id,
+      username: userData.username,
+      email: userData.email,
+      phone: userData.phone,
+      password: userData.password,
+      provider: userData.provider,
+      role: userData.role,
+      isVerified: false,
+      isBlocked: userData.isBlocked || false,
+      createdAt: userData.createdAt,
+      updatedAt: userData.updatedAt,
+    });
 
     user.verify();
 
-    // Remove cached data after verification
     await Promise.all([
       this.cacheService.del(`${email}-otp`),
       this.cacheService.del(`${email}-userdata`)
     ]);
 
-    // Persist user in database
-    const newUser = await this.userRepository.create(user);
+    let newUser: IAuth;
+    try {
+      newUser = await this.userRepository.create(user.toObject());
+      console.log('User successfully created in database:', newUser.id);
+    } catch (dbError) {
+      console.error('Database error during user creation:', dbError);
+      
+      if (dbError instanceof Error) {
+        if (dbError.message.includes('duplicate key') || dbError.message.includes('E11000')) {
+          throw new BadRequestError(
+            "User already exists with this email or username.",
+            ErrorCode.USER_ALREADY_EXISTS,
+            'user'
+          );
+        } else if (dbError.message.includes('validation')) {
+          throw new BadRequestError(
+            "Invalid user data format. Please try again.",
+            ErrorCode.VALIDATION_ERROR,
+            'user'
+          );
+        }
+      }
+      
+      throw new Error("Failed to create user account. Please try again.");
+    }
 
-    // Generate tokens
-    const tokenPayload = {
-      userId: newUser.id,
-      username: newUser.username,
-      email: newUser.email,
-      role: ROLE.USER,
-    };
-
-    const accessToken = this.tokenService.generateAccessToken(tokenPayload);
-    const refreshToken = this.tokenService.generateRefreshToken(tokenPayload);
+    const { accessToken, refreshToken  } = await this.tokenManager.issueTokens(user, ipAddress, userAgent);
+    console.log('Refresh token stored in database');
 
     // Send user created event
     await this.userCreatedProducer.produce({
@@ -101,7 +135,7 @@ export class VerifyOtpUseCase {
     return {
       user: newUser,
       accessToken,
-      refreshToken,
+      refreshToken
     };
   }
 }

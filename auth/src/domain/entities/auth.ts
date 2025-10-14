@@ -80,8 +80,9 @@ export class Auth implements IAuth {
    * Checks if the user can log in.
    */
   public canLogin(): boolean {
-    return this.isVerified && !this.isBlocked;
+    return this.isVerified  && this.role === UserRole.USER
   }
+
 
   /**
    * Blocks the user account.
@@ -89,6 +90,10 @@ export class Auth implements IAuth {
   public block(): void {
     this._isBlocked = true;
     this.touch();
+  }
+
+  public isActive(): boolean {
+    return this._isBlocked;
   }
 
   /**
@@ -106,6 +111,8 @@ export class Auth implements IAuth {
     return this.role === UserRole.ADMIN;
   }
 
+
+
   /**
    * Validates a user-provided OTP.
    */
@@ -117,7 +124,10 @@ export class Auth implements IAuth {
    * Static factory method to create an Auth entity.
    */
   public static create(data: Partial<IAuth>): Auth {
+    console.log("data from domain", data);
     if (!data.email || !data.password || !data.username) {
+
+      
         throw new Error("Username, email, and password are required to create an Auth entity.");
     }
     return new Auth(data);

@@ -3,6 +3,7 @@ import nodemailer, { Transporter } from "nodemailer";
 import fs from "fs";
 import path from "path";
 import { promisify } from "util";
+import { fileURLToPath } from "url";
 import "dotenv/config";
 import { IMailService, SendOtpMailProps, SendPasswordResetLinkProps } from "../interface/service/IMailService";
 import { getEnvs } from "@muhammednajinnprosphere/common";
@@ -28,17 +29,85 @@ const readFileAsync = promisify(fs.readFile);
 @injectable()
 export class MailService implements IMailService {
   constructor() {
-    // Use extracted variables instead of process.env
     if (!COMPANY_NAME || !COMPANY_DOMAIN || !SENDER_MAIL || !PASS) {
       throw new Error("Server configuration error: Missing required environment variables");
     }
   }
 
+  // ========================================
+  // SOLUTION 1: Using import.meta.url (ES Modules)
+  // ========================================
   private async loadTemplate(filePath: string): Promise<string> {
     try {
-      // Use extracted TEMPLATE_PATH variable
-      const templateBasePath = path.resolve(__dirname, "../../../public");
+      // For ES modules, use import.meta.url
+      const currentFilePath = fileURLToPath(import.meta.url);
+      const currentDir = path.dirname(currentFilePath);
+      const templateBasePath = path.resolve(currentDir, "../../../public");
       const fullPath = path.join(templateBasePath, filePath);
+      
+      console.log('Template path resolved to:', fullPath);
+      
+      // Check if file exists first
+      if (!fs.existsSync(fullPath)) {
+        console.error(`Template file does not exist at: ${fullPath}`);
+        
+        // List available files in the directory for debugging
+        const publicDir = path.resolve(currentDir, "../../../public");
+        if (fs.existsSync(publicDir)) {
+          const files = fs.readdirSync(publicDir);
+          console.log('Available files in public directory:', files);
+        } else {
+          console.error(`Public directory does not exist at: ${publicDir}`);
+        }
+        
+        throw new Error(`Template file not found: ${filePath}`);
+      }
+      
+      return await readFileAsync(fullPath, "utf-8");
+    } catch (error) {
+      console.error(`Failed to load template at ${filePath}:`, error);
+      throw new Error(`Could not load email template: ${filePath}`);
+    }
+  }
+
+  // ========================================
+  // SOLUTION 2: Alternative using process.cwd()
+  // ========================================
+  private async loadTemplateAlternative(filePath: string): Promise<string> {
+    try {
+      // Use process.cwd() to get the project root directory
+      const projectRoot = process.cwd();
+      const templateBasePath = path.join(projectRoot, "public");
+      const fullPath = path.join(templateBasePath, filePath);
+      
+      console.log('Alternative template path resolved to:', fullPath);
+      
+      if (!fs.existsSync(fullPath)) {
+        throw new Error(`Template file not found: ${filePath}`);
+      }
+      
+      return await readFileAsync(fullPath, "utf-8");
+    } catch (error) {
+      console.error(`Failed to load template at ${filePath}:`, error);
+      throw new Error(`Could not load email template: ${filePath}`);
+    }
+  }
+
+  // ========================================
+  // SOLUTION 3: Using environment variable for template path
+  // ========================================
+  private async loadTemplateWithEnvPath(filePath: string): Promise<string> {
+    try {
+      // You can set TEMPLATE_PATH in your .env file
+      const templateBasePath = process.env.TEMPLATE_PATH || path.join(process.cwd(), "public");
+      const fullPath = path.join(templateBasePath, filePath);
+      
+      console.log('Env-based template path resolved to:', fullPath);
+      
+      if (!fs.existsSync(fullPath)) {
+        throw new Error(`Template file not found: ${filePath}`);
+      }
+      
       return await readFileAsync(fullPath, "utf-8");
     } catch (error) {
       console.error(`Failed to load template at ${filePath}:`, error);
@@ -47,7 +116,6 @@ export class MailService implements IMailService {
   }
 
   private getTransporter(): Transporter {
-    // Use extracted SMTP variables
     const smtpHost = SMTP_HOST || "smtp.gmail.com";
     const smtpPort = parseInt(SMTP_PORT || "587", 10);
 
@@ -56,8 +124,8 @@ export class MailService implements IMailService {
       port: smtpPort,
       secure: false,
       auth: {
-        user: SENDER_MAIL, // Use extracted variable
-        pass: PASS,        // Use extracted variable
+        user: SENDER_MAIL,
+        pass: PASS,
       },
     });
   }
@@ -66,7 +134,7 @@ export class MailService implements IMailService {
     try {
       const transporter = this.getTransporter();
       await transporter.sendMail({
-        from: SENDER_MAIL, // Use extracted variable
+        from: SENDER_MAIL,
         to,
         subject,
         html,
@@ -84,8 +152,8 @@ export class MailService implements IMailService {
     html = html
       .replace(/{{name}}/g, name)
       .replace(/{{otp}}/g, otp)
-      .replace(/{{CompanyName}}/g, COMPANY_NAME || "") // Use extracted variable
-      .replace(/{{CompanyDomain}}/g, COMPANY_DOMAIN || "") // Use extracted variable
+      .replace(/{{CompanyName}}/g, COMPANY_NAME || "")
+      .replace(/{{CompanyDomain}}/g, COMPANY_DOMAIN || "")
       .replace(/{{type}}/g, subject)
       .replace(/{{subject}}/g, subject);
 
@@ -99,8 +167,8 @@ export class MailService implements IMailService {
     html = html
       .replace(/{{name}}/g, name)
       .replace(/{{resetLink}}/g, resetLink)
-      .replace(/{{CompanyName}}/g, COMPANY_NAME || "") // Use extracted variable
-      .replace(/{{CompanyDomain}}/g, COMPANY_DOMAIN || "") // Use extracted variable
+      .replace(/{{CompanyName}}/g, COMPANY_NAME || "")
+      .replace(/{{CompanyDomain}}/g, COMPANY_DOMAIN || "")
       .replace(/{{subject}}/g, subject);
 
     await this.send(email, subject, html);

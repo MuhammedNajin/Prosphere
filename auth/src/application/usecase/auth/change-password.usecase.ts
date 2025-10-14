@@ -19,7 +19,7 @@ export class ChangePasswordUseCase {
         throw new UserNotFoundError();
       }
 
-  
+      console.log("psswd", oldPassword, user.password);
       const isOldPasswordValid = await this.hashService.compare(oldPassword, user.password);
       if (!isOldPasswordValid) {
         // Use BadRequestError for a validation failure of the input password
