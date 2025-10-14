@@ -1,34 +1,28 @@
-import { validateObjectId } from "@/application/usecaseValidation/validateUseCaseParams";
-import { ICompany } from "../../interface";
+import { Repositories } from "@/di/symbols";
+import { ICompany } from "@/domain/interface/ICompany";
+import { ICompanyRepository } from "@/infrastructure/interface/repositories/ICompanyRepository";
+import { NotFoundError } from "@muhammednajinnprosphere/common";
+import { inject, injectable } from "inversify";
+import { ErrorCode } from "../../../shared/constance";
 
-export const getCompanyByIdUseCase = (dependencies: any) => {
-  const {
-    repository: { companyRepository },
-  } = dependencies;
+@injectable()
+export class GetCompanyByIdUseCase {
+  constructor(
+    @inject(Repositories.CompanyRepository) private companyRepository: ICompanyRepository,
+  ) {}
 
-  if (!companyRepository) {
-    throw new Error("dependency required, missing dependency");
-  }
 
-  const execute = async (id: string) => {
-    try {
-        console.log(id)
-        
-        if(!id || !validateObjectId(id)) {
-            throw new Error("argumen is not provided")
-        }
-        
-        return await companyRepository.getCompanyById(id);
-
-    } catch (error) {
-        console.log(error);
-        throw error;
-    }
+  async execute(id: string): Promise<ICompany> {
    
-  };
-
-  return {
-    execute,
-  };
-
-};
+    const company = await this.companyRepository.findById(id);
+    
+    if (!company) {
+      throw new NotFoundError(
+        `Company with ID '${id}' not found.`,
+         ErrorCode.COMPANY_NOT_FOUND,
+      );
+    }
+    
+    return company;
+  }
+}

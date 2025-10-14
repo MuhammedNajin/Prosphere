@@ -1,23 +1,25 @@
-import { ICompany } from "../../interface";
+import { Repositories } from "@/di/symbols";
+import { ICompany } from "@/domain/interface/ICompany";
+import { ICompanyRepository } from "@/infrastructure/interface/repositories/ICompanyRepository";
+import { BadRequestError, NotFoundError } from "@muhammednajinnprosphere/common";
+import { inject, injectable } from "inversify";
+import { ErrorCode } from "../../../shared/constance";
 
+@injectable()
+export class GetCompanyByNameUseCase {
+  constructor(
+    @inject(Repositories.CompanyRepository) private companyRepository: ICompanyRepository
+  ) {}
 
-
-export const getCompanyUseCase = (dependencies: any) => {
-  const {
-    repository: { companyRepository },
-  } = dependencies;
-
-  if (!companyRepository) {
-    throw new Error("dependency required, missing dependency");
+  async execute(name: string): Promise<ICompany> {
+   
+    const company = await this.companyRepository.findByName(name);
+    if (!company) {
+      throw new NotFoundError(
+        `Company with name '${name}' not found.`,
+         ErrorCode.COMPANY_NOT_FOUND,
+      );
+    }
+    return company;
   }
-
-  const execute = async (name: string) => {
-    const companyDetails = await companyRepository.getCompany(name);
-    return companyDetails;
-  };
-
-  return {
-    execute,
-  };
-
-};
+}

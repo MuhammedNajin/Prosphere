@@ -1,4 +1,4 @@
-import dependecies from "@/infra/config/dependecies";
+import dependecies from "@/infrastructure/config/dependecies";
 import { NextFunction, Request, Response } from "express";
 import { winstonLogger } from "./winstonLogger";
 

@@ -1,36 +1,35 @@
+import { Repositories, Services } from "@/di/symbols";
 
-export const updateCompanyLogoUseCase = (dependencies: any) => {
-    const {
-      repository: { companyRepository },
-      service: { s3Operation },
-    } = dependencies;
-  console.log("companyRepository", dependencies.repository);
-  
-    if (!companyRepository) {
-      throw new Error("dependency required, missing dependency");
-    }
-  
-    const execute = async ({ file, id }) => {
-      console.log(file, id, file.originalname);
-    
-      const bucketKey = `${file.originalname}${Math.random()}`;
-  
-      const data = await s3Operation.uploadImageToBucket(
-        file.buffer,
-        file.mimetype,
-        bucketKey
+import { ICompanyRepository } from "@/infrastructure/interface/repositories/ICompanyRepository";
+import { ICloudStorageService } from "@/infrastructure/interface/services/ICloudStorageService";
+import { ErrorCode } from "@/shared/constance";
+import { NotFoundError } from "@muhammednajinnprosphere/common";
+import { inject, injectable } from "inversify";
+
+interface UpdateCompanyLogoUseCaseParams {
+  id: string;
+  file: Express.Multer.File;
+}
+
+@injectable()
+export class UpdateCompanyLogoUseCase {
+  constructor(
+    @inject(Repositories.CompanyRepository) private companyRepository: ICompanyRepository,
+    @inject(Services.CloudStorageService) private cloudStorageService: ICloudStorageService
+  ) {}
+
+  async execute({ id, file }: UpdateCompanyLogoUseCaseParams): Promise<{ url: string; bucketKey: string }> {
+   
+    const bucketKey = `${file.originalname}${Math.random()}`;
+    const data = await this.cloudStorageService.upload(file.buffer, file.mimetype, bucketKey);
+    const company = await this.companyRepository.update(id, { logo: bucketKey });
+    if (!company) {
+      throw new NotFoundError(
+        `Company with ID '${id}' not found.`,
+        ErrorCode.COMPANY_NOT_FOUND
       );
-  
-      console.log("fileName", bucketKey, "/n", "data", data);
-      await companyRepository.updateCompany(id, { logo: bucketKey });
-      const url = await s3Operation.getImageUrlFromBucket(bucketKey);
-      return { 
-         url,
-         bucketKey,
-      }
-    };
-    return {
-      execute,
-    };
-  };
-  
+    }
+    const url = await this.cloudStorageService.getSignedUrl(bucketKey);
+    return { url, bucketKey };
+  }
+}

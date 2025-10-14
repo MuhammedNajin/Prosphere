@@ -1,61 +1,48 @@
-import { ICompany } from "@/application/interface";
-import { validateObjectId } from "@application/usecaseValidation/validateUseCaseParams";
+import { injectable, inject } from "inversify";
+import { ICompany } from "@/domain/interface/ICompany";
+import { ICompanyRepository } from "@/infrastructure/interface/repositories/ICompanyRepository";
+import { Repositories } from "@/di/symbols";
+import { NotFoundError } from "@muhammednajinnprosphere/common";
+import { Company } from "@/domain/entities/company";
 
+interface UpdataProfileParams {
+  id: string;
+  body: Partial<ICompany>;
+}
 
+@injectable()
+export class UpdateProfileUseCase {
+  constructor(
+    @inject(Repositories.CompanyRepository)
+    private companyRepository: ICompanyRepository
+  ) {}
 
-/**
- * Use case for updating company profile
- * 
- * @param {Dependencies} dependencies - Required dependencies
- * @throws {Error} If dependencies are missing
- */
-
-export const updateProfileUseCase = (dependencies: any) => {
-  const {
-    repository: { companyRepository },
-  } = dependencies;
-
-  if (!companyRepository) {
-    throw new Error("dependency required, missing dependency");
-  }
-
-  /**
-   * Executes the update profile operation
-   * 
-   * @param {ExecuteParams} params - Parameters for the update operation
-   * @returns {Promise<UpdateResult>} Result of the update operation
-   * @throws {Error} If validation fails or update operation fails
-   */
-
-  const execute = async ({
-    id,
-    body
-  }: {
-    id: string;
-    body: Partial<ICompany>;
-  }) => {
-    try {
-
-      // Validate _id
-      if (!id || !validateObjectId(id)) {
-        throw new Error("Invalid company ID");
-      }
-
-      // Validate body
-      if (!body || Object.keys(body).length === 0) {
-        throw new Error("Update payload cannot be empty");
-      }
-
-      // perform updation 
-      return await companyRepository.updateCompany(id, body);
-
-    } catch (error) {
-      console.log(error);
-      throw error;
+  async execute({ id, body }: UpdataProfileParams): Promise<ICompany> {
+    // 1. Fetch company
+    const existing = await this.companyRepository.findById(id);
+    if (!existing) {
+      throw new NotFoundError(`Company with ID '${id}' not found.`);
     }
 
-  };
-  return {
-    execute,
-  };
-};
+    console.log("Existing company data:", existing);
+
+    const company = Company.create({
+      ...existing,
+      owner: existing.owner.id.toString(),
+      id: existing.id.toString(),
+    });
+
+    // 3. Apply updates via domain methods
+    company.updateProfile(body);
+
+    // 4. Persist updated entity
+    const updated = await this.companyRepository.update(id, company.toDTO());
+
+    if (!updated) {
+      throw new NotFoundError(`Failed to update company with ID '${id}'.`);
+    }
+
+    // 5. Return DTO for response
+    return company.toJSON();
+  }
+}
