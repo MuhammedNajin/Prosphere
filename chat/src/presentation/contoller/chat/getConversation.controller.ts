@@ -2,7 +2,6 @@ import { IChatRepository } from "@/domain/IRepository/IChatRepository";
 import { NextFunction, Request, Response } from "express";
 import { GetConversationUseCase } from "@/application/usecase/chatUsecase/getConversation.usecase";
 import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
-import { ROLE } from "@/shared/enums/roleEnums";
 
 export class GetConversationController {
   constructor(private chatRepo: IChatRepository) {}
@@ -17,7 +16,7 @@ export class GetConversationController {
       const { id } = req.params;
       
       
-      console.log(" req ", req.query, req.params)
+      console.log(" get converstion of the user ", req.query, req.params)
 
       let query = { context, companyId, userId: id};
 

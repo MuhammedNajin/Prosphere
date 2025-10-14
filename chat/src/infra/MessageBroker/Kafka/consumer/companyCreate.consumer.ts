@@ -12,7 +12,7 @@ export class CompanyCreatedConsumer extends KafkaConsumer<CompanyCreatedEvent> {
     }
 
     async onConsume(data: CompanyCreatedEvent['data'], msg: KafkaMessage): Promise<void> {
-        console.log("heloo from company created", msg, data);
+        console.log("heloo from company created", data);
        try {
         const {
             _id, 
@@ -20,12 +20,17 @@ export class CompanyCreatedConsumer extends KafkaConsumer<CompanyCreatedEvent> {
             name,
             owner
            } = data;
-        
-           await companyRepository.create(data)                                            
+
+           const dto = {
+             _id: data.id,
+             ...data
+           }
+           
+           await companyRepository.create(dto)                                            
            
        } catch (error) {
          console.log(error);
-         throw error
+         
        }
        
     }

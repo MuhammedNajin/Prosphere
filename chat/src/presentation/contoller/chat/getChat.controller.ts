@@ -14,7 +14,7 @@ export class GetChatController {
 
         const { conversationId } = req.params
         const { userId } = req.query
-        console.log("userId", userId)
+        console.log("one to one message fetching...", userId, conversationId)
           const chat = await new GetChatUseCase(this.chatRepo).execute(conversationId, userId as string)
         res
          .status(StatusCode.OK)

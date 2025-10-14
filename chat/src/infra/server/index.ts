@@ -50,7 +50,7 @@ class Server {
     
     try {
       await mongoose.connect(`${mongoUri}/CHAT-SERVICE`, {
-        autoIndex: true,
+        autoIndex: false,
         serverSelectionTimeoutMS: 5000,
         retryWrites: true
       });
