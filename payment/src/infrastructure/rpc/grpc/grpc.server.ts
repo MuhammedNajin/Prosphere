@@ -1,102 +1,42 @@
-import { ISubscription } from "@/shared/types/subscription.interface";
 import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import path from "path";
 import subscriptionRepository from "@/infrastructure/repository/subscription.repository";
-import companyRepository from "@/infrastructure/repository/company.repository";
-import { UsageMetrics } from "@/shared/types/enums";
-import { Company } from "@/infrastructure/database/sql/entities/company.entitiy";
-interface RequestMessage {
+
+interface UpdateJobsUsedRequest {
   companyId: string;
 }
 
-interface UpdateFearturesLimitRequest {
-  id: string
-  usageStats: UsageMetrics
-}
-
-interface UpdateTrailLimitRequest {
-  companyId: string
-  usageStats: UsageMetrics
-}
-
-// Enums
-enum PlanType {
-  PLAN_TYPE_UNSPECIFIED = 0,
-  PLAN_TYPE_FREE = 1,
-  PLAN_TYPE_BASIC = 2,
-  PLAN_TYPE_PREMIUM = 3,
-  PLAN_TYPE_ENTERPRISE = 4,
-}
-
-enum SubscriptionStatus {
-  SUBSCRIPTION_STATUS_UNSPECIFIED = 0,
-  SUBSCRIPTION_STATUS_ACTIVE = 1,
-  SUBSCRIPTION_STATUS_CANCELLED = 2,
-  SUBSCRIPTION_STATUS_EXPIRED = 3,
-  SUBSCRIPTION_STATUS_PENDING = 4,
-}
-
-// Interfaces
-interface Request {
+interface GetCurrentSubscriptionRequest {
   companyId: string;
 }
 
-interface FeaturesLimit {
-  jobPostLimit: number;
-  resumeAccess: number;
-  videoCallLimit: number;
-  candidateNotes: boolean;
+interface UpdateJobsUsedResponse {
+  success: boolean;
+  message: string;
 }
 
-interface PlanSnapshot {
-  name: string;
-  type: PlanType;
-  price: number;
-  featuresLimit: FeaturesLimit;
-  features: string[];
+interface GetCurrentSubscriptionResponse {
+  subscription?: any;
 }
-
-interface UsageStats {
-  jobPostsUsed: number;
-  resumeDownloads: number;
-  videoCallsUsed: number;
-  featuredJobsUsed: number;
-  lastResetDate: string;
-}
-
-interface Subscription {
-  id: number;
-  planSnapshot: PlanSnapshot;
-  startDate: string;
-  status: SubscriptionStatus;
-  usageStats: UsageStats;
-  isTrial: boolean;
-  trialEndsAt?: string;
-  cancelledAt?: string;
-  createdAt: string;
-  updatedAt: string; 
-}
-
 
 export class GrpcServer {
   private server: grpc.Server;
   private paymentProto: any;
   private static instance: GrpcServer | null = null;
 
-
   private constructor() {
     try {
       console.log("env", process.env.PROTO_URL);
       
-      const PROTO_PATH = path.resolve(process.env.PROTO_URL!);
+      const PROTO_PATH = path.join(process.cwd(), process.env.PROTO_URL!);
       const packageDefinition = protoLoader.loadSync(PROTO_PATH, {});
       this.paymentProto = grpc.loadPackageDefinition(packageDefinition).payment as any;
       this.server = new grpc.Server();
       this.addPaymentServices();
     } catch (error) {
       console.log(error);
-      throw new Error()
+      throw new Error("Failed to initialize gRPC server")
     }
   }
 
@@ -116,81 +56,67 @@ export class GrpcServer {
 
   private getServiceImplementation(): grpc.UntypedServiceImplementation {
     return {
-      isSubscribed: this.isSubscribed.bind(this),
-      updateFeaturesLimit: this.isSubscribed.bind(this),
-      updateTrailLimit: this.updateTrailLimit.bind(this)
+      updateJobsUsed: this.updateJobsUsed.bind(this),
+      getCurrentSubscription: this.getCurrentSubscription.bind(this)
     };
   }
 
-  private async isSubscribed(
-    call: grpc.ServerUnaryCall<RequestMessage, ISubscription>,
-    callback: grpc.sendUnaryData<{ subscription: Subscription | null, company: Company | null }>
-  ): Promise<void> {
-
-    const { companyId } = call.request;
-    console.log("request", call.request);
-    const data = await subscriptionRepository.getbyCompanyId(companyId);
-    let response: { subscription: Subscription | null, company: Company | null }
-    console.log("sunscription", data)
-
-    if(data?.subscription) {
-        response = { subscription: data.subscription, is_trial: false }
-    } else if(data?.company) {
-    
-       response = { company: data.company, is_trial: true };
-    } else {
-       response = {}
-    }
-
-  
-      
-
-    // if(!subscription) {
-    //     response = {
-    //       subscription: null
-    //     };
-    // }
-    
-    
-    console.log("grpc response",JSON.stringify(response));
-    
-    callback(null, response);
-
-  } 
-
   /**
-   * updateFearturesLimit
+   * updateJobsUsed - Increments job usage for a company
    */
-
-  public async updateFearturesLimit(
-    call: grpc.ServerUnaryCall<UpdateFearturesLimitRequest, {}>,
-    callback: grpc.sendUnaryData<{}>
-  ) {
+  public async updateJobsUsed(
+    call: grpc.ServerUnaryCall<UpdateJobsUsedRequest, UpdateJobsUsedResponse>,
+    callback: grpc.sendUnaryData<UpdateJobsUsedResponse>
+  ): Promise<void> {
      try {
-          const { id, usageStats } = call.request;
-          console.log("updateFeaturesLimit", call.request);
-         await subscriptionRepository.updateFeaturesLimit(id, usageStats);
-         callback({});
+          const { companyId } = call.request;
+          console.log("updateJobsUsed request:", call.request);
+          
+          // Increment job usage
+          await subscriptionRepository.incrementJobsUsed(companyId);
+          
+          const response: UpdateJobsUsedResponse = {
+            success: true,
+            message: "Job usage updated successfully"
+          };
+          
+          console.log("updateJobsUsed response:", response);
+          callback(null, response);
      } catch (error) {
-        console.log(error);
-        throw error;
+        console.log("Error updating jobs used:", error);
         
+        const errorResponse: UpdateJobsUsedResponse = {
+          success: false,
+          message: error instanceof Error ? error.message : "Unknown error occurred"
+        };
+        
+        callback(null, errorResponse);
      }
   }
 
-  public async updateTrailLimit(
-    call: grpc.ServerUnaryCall<UpdateTrailLimitRequest, {}>,
-    callback: grpc.sendUnaryData<{}>
-  ) {
+  /**
+   * getCurrentSubscription - Gets current active subscription for a company
+   */
+  public async getCurrentSubscription(
+    call: grpc.ServerUnaryCall<GetCurrentSubscriptionRequest, GetCurrentSubscriptionResponse>,
+    callback: grpc.sendUnaryData<GetCurrentSubscriptionResponse>
+  ): Promise<void> {
      try {
-          const { companyId,  usageStats } = call.request;
-          console.log("updateFeaturesLimit", call.request);
-         await companyRepository.updateTrail(companyId, usageStats);
-         callback({});
+          const { companyId } = call.request;
+          console.log("getCurrentSubscription request:", call.request);
+          
+          // Get current subscription
+          const currentSubscription = await subscriptionRepository.getCurrentSubscription(companyId);
+          
+          const response: GetCurrentSubscriptionResponse = {
+            subscription: currentSubscription
+          };
+          
+          console.log("getCurrentSubscription response:", response);
+          callback(null, response);
      } catch (error) {
-        console.log(error);
-        throw error;
-        
+        console.log("Error getting current subscription:", error);
+        callback(error as grpc.ServiceError, {});
      }
   }
 
@@ -203,7 +129,7 @@ export class GrpcServer {
         if (err) {
           console.error("Failed to bind server:", err.message);
         }
-        console.log(`Profile Service running on port ${port}`);
+        console.log(`Payment Service running on port ${port}`);
       }
     );
   }

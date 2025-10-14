@@ -8,7 +8,6 @@ import { connectDB } from '@infrastructure/database/sql/connection'
 import planRepository from '../repository/plan.repository';
 import paymentRepository from '../repository/payment.repository';
 import subscriptionRepository from '../repository/subscription.repository';
-import companyRepository from '../repository/company.repository';
 import { messageBroker } from '../messageBroker/kafka/connection';
 
 dotenv.config();
@@ -75,7 +74,7 @@ class Server {
       });
     });
 
-    const router = new AppRouter(subscriptionRepository, planRepository, paymentRepository, companyRepository, messageBroker.getMessageProducers()).router;
+    const router = new AppRouter(subscriptionRepository, planRepository, paymentRepository, messageBroker.getMessageProducers()).router;
 
 
     // this.app.use(logger);

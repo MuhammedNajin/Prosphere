@@ -17,7 +17,6 @@ class PaymentRouter {
     private subscriptionRepo: ISubscriptionRepository,
     private planRepo: IPlanRepository,
     private paymentRepo: IPaymentRepository,
-    private companyRepo: ICompanyRepository,
     private messageBroker: MessageBrokerProducers,
   ) {
     this.router = Router();
@@ -26,7 +25,6 @@ class PaymentRouter {
       this.subscriptionRepo,
       this.planRepo,
       this.paymentRepo,
-      this.companyRepo,
       this.messageBroker,
     );
     this.checkOutSessionController = new CheckoutSessionController();

@@ -24,7 +24,7 @@ export class UpdgradeSubscriptionController {
       // if(typeof)
 
       const sessionId = await new CreatePaymentUseCase().execute({
-        name,
+        name, 
         price: paymentDue.toString(),
         id,
         planId,

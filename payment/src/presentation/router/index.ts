@@ -16,7 +16,6 @@ class AppRouter {
         private subscriptionRepo: ISubscriptionRepository,
         private planRepo: IPlanRepository,
         private paymentRepo: IPaymentRepository,
-        private companyRepo: ICompanyRepository,
         private messageBroker: MessageBrokerProducers,
     ) {
         this.router = Router();
@@ -24,7 +23,6 @@ class AppRouter {
             this.subscriptionRepo,
             this.planRepo,
             this.paymentRepo,
-             this.companyRepo,
              this.messageBroker
             ).router
 

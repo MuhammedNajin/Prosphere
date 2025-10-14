@@ -1,11 +1,9 @@
 import express, { Router } from "express";
-import { CreatePaymentController } from "../controller/payment/payment.controller";
 import { IPlanRepository } from "@/domain/IRespository/IPlan.repository";
 import { CreatePlanController } from "../controller/plan/createPlan.controller";
 import { GetPlanController } from "../controller/plan/getPlans.controller";
 import { UpdatePlanController } from "../controller/plan/editPlan.controller";
 import { DeletePlanController } from "../controller/plan/deletePlan.controller";
-
 class PlanRouter {
   public router: Router;
   private createPlanController

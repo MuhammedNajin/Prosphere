@@ -41,15 +41,17 @@ export interface IPlanHistory {
 export interface ISubscription {
     id: number;
     planSnapshot: IPlanSnapshot;
-    company: ICompany;
+    companyId: string;
     startDate: Date;
     endDate: Date;
     status: SubscriptionStatus;
     amountPaid: number;
     isTrial: boolean;
-    trialEndsAt: Date;
-    cancelledAt: Date;
-    cancellationReason: string;
+    trialEndsAt: Date | null;
+    cancelledAt: Date | null;
+    cancellationReason: string | null;
+    jobsAllowed: number;
+    jobsUsed: number;
     createdAt: Date;
     updatedAt: Date;
 }

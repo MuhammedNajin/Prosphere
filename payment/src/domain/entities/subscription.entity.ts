@@ -6,7 +6,7 @@ import { IPlanSnapshot, ISubscription } from "@/shared/types/subscription.interf
 export class Subscription {
     id: number;
     planSnapshot: IPlanSnapshot;
-    company: ICompany;
+    companyId: string;
     startDate: Date;
     endDate: Date;
     status: SubscriptionStatus;
@@ -26,14 +26,14 @@ export class Subscription {
             durationInDays: number;
             features: string[];
         };
-        company: ICompany;
+        companyId: string;
         startDate: Date;
         endDate: Date;
         amountPaid: number;
         isTrial?: boolean;
         trialEndsAt?: Date;
     }) {
-        this.company = data.company;
+        this.companyId = data.companyId;
         this.startDate = data.startDate;
         this.endDate = data.endDate;
         this.amountPaid = data.amountPaid;
@@ -56,7 +56,7 @@ export class Subscription {
         return {
             id: this.id,
             planSnapshot: this.planSnapshot,
-            company: this.company,
+            companyId: this.companyId,
             startDate: this.startDate,
             endDate: this.endDate,
             status: this.status,

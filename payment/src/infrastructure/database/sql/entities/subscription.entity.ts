@@ -1,29 +1,36 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { Company } from './company.entitiy';
-import { PlanType, SubscriptionStatus } from '@/shared/types/enums';
+import { 
+  Entity, 
+  PrimaryGeneratedColumn, 
+  Column, 
+  CreateDateColumn, 
+  UpdateDateColumn 
+} from 'typeorm';
+import { SubscriptionStatus } from '@/shared/types/enums';
 
 interface PlanSnapshot {
-  id: number
+  id: number;
   name: string;
   price: number;
-  durationInDays: number;
+  durationInDays: number; // can be 0 for usage-based trials
   features: string[];
 }
+
 @Entity('subscriptions')
 export class Subscription {
   @PrimaryGeneratedColumn()
   id: number;
 
+  // Copy of plan details at the time of subscription (immutable snapshot)
   @Column('simple-json')
   planSnapshot: PlanSnapshot;
 
-  @ManyToOne(() => Company, (company) => company.id)
-  company: Company;
+  @Column('varchar', { nullable: true })
+  companyId: string;
 
-  @Column('timestamp')
+  @Column('timestamp', { nullable: true })
   startDate: Date;
 
-  @Column('timestamp')
+  @Column('timestamp', { nullable: true })
   endDate: Date;
 
   @Column({
@@ -33,15 +40,25 @@ export class Subscription {
   })
   status: SubscriptionStatus;
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  // For both paid and trial subscriptions
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   amountPaid: number;
 
+  // Usage tracking (jobs)
+  @Column('int', { default: 0 })
+  jobsAllowed: number;
+
+  @Column('int', { default: 0 })
+  jobsUsed: number;
+
+  // Trial specific
   @Column('boolean', { default: false })
   isTrial: boolean;
 
   @Column('timestamp', { nullable: true })
-  trialEndsAt: Date;
+  trialEndsAt: Date; // useful if trial is time-based too
 
+  // Cancellations
   @Column('timestamp', { nullable: true })
   cancelledAt: Date;
 

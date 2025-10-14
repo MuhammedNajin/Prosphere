@@ -1,7 +1,4 @@
 import express, { Router } from "express";
-import { CreatePaymentController } from "../controller/payment/payment.controller";
-import { IPlanRepository } from "@/domain/IRespository/IPlan.repository";
-import { CreatePlanController } from "../controller/plan/createPlan.controller";
 import { GetCurrentSubscriptionController } from "../controller/subscription/getCurrentSubscription.controller";
 import { ISubscriptionRepository } from "@/domain/IRespository/ISubscription.repository";
 import { UpdgradeSubscriptionController } from "../controller/subscription/upgradeSubscription.controller";

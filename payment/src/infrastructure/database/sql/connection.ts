@@ -2,10 +2,7 @@ import { DataSource } from 'typeorm'
 import { Payment } from './entities/payment.entity'
 import { Subscription } from './entities/subscription.entity';
 import { Plan } from './entities/plan.entity';
-import { User } from './entities/user.entity';
 import 'dotenv/config';
-import { Company } from './entities/company.entitiy';
-
 const AppDataSource = new DataSource({
     type: 'postgres',
     host: process.env.DB_HOST as string,
@@ -14,7 +11,7 @@ const AppDataSource = new DataSource({
     password: process.env.DB_PASSWORD as string,
     database: process.env.DB_NAME as string,
     logging: true,
-    entities: [Payment, Subscription, Plan, User, Company],
+    entities: [Payment, Subscription, Plan],
     synchronize: process.env.NODE_ENV !== "production",
 })
 

@@ -7,7 +7,6 @@ import {
 import { NextFunction, Request, Response } from "express";
 import { IPlanRepository } from "@/domain/IRespository/IPlan.repository";
 import { IPaymentRepository } from "@/domain/IRespository/IPayment.repository";
-import { ICompanyRepository } from "@/domain/IRespository/ICompany.repository";
 import { HandleWebhookUseCase } from "@application/usecase/handleWebhook.usecase";
 import { ISubscriptionRepository } from "@/domain/IRespository/ISubscription.repository";
 import { MessageBrokerProducers } from "@/infrastructure/messageBroker/kafka";
@@ -19,7 +18,6 @@ export class WebhookPaymentController {
     private subscriptionRepo: ISubscriptionRepository,
     private planRepo: IPlanRepository,
     private paymentRepo: IPaymentRepository,
-    private companyRepo: ICompanyRepository,
     private messageBroker: MessageBrokerProducers
   ) {
     console.log(" webhook controller message broker", this.messageBroker.subscriptionProducer);
@@ -44,7 +42,7 @@ export class WebhookPaymentController {
       
 
       const event = this.stripe.webhooks.constructEvent(
-        payload,  // Use raw buffer directly
+        payload, 
         signature,
         endpointSecret
       );
@@ -59,22 +57,10 @@ export class WebhookPaymentController {
      const subscription =  await new HandleWebhookUseCase(
         this.subscriptionRepo,
         this.planRepo,
-        this.companyRepo,
         this.paymentRepo
       ).execute(event);
 
-      console.log("subscription", subscription)
-
-      if(subscription) {
-         await this.messageBroker.subscriptionProducer.produce({
-          companyId: companyId,
-          duration: subscription.planSnapshot.durationInDays,
-          endDate: subscription.endDate,
-          startDate: subscription.startDate,
-          subscriptionType,
-          isSubscribed: true
-         })
-      }
+      console.log("subscription", subscription);
 
       res.status(StatusCode.CREATED).json({ success: true });
     } catch (error) {
