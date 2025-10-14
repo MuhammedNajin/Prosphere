@@ -1,18 +1,16 @@
-export const deleteFileUseCase = (dependencies: any) => {
-  const {
-    repository: { profileRepository },
-    service: { s3Operation },
-  } = dependencies;
+import { Repositories, Services } from "@/di/symbols";
+import { IUserRepository } from "@/infrastructure/interface/repository/IUserRepository";
+import { ICloudStorageService } from "@/infrastructure/interface/service/ICloud-storage.service";
+import { inject, injectable } from "inversify";
 
-  if (!profileRepository) {
-    throw new Error("dependency required, missing dependency");
+@injectable()
+export class DeleteFileUseCase {
+  constructor(
+    @inject(Repositories.UserRepository) private userRepository: IUserRepository,
+    @inject(Services.CloudStorageService) private cloudStorageService: ICloudStorageService
+  ) {}
+
+  async execute(key: string): Promise<void> {
+    await this.cloudStorageService.delete(key)
   }
-
-  const execute = async (key: string) => {
-    return await s3Operation.deleteImageFromBucket(key);
-  };
-
-  return {
-    execute,
-  };
-};
+}

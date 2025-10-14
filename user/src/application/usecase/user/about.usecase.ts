@@ -1,19 +1,20 @@
+import { Repositories } from "@/di/symbols";
+import { IUser } from "@/domain/interface/IUser";
+import { IUserRepository } from "@/infrastructure/interface/repository/IUserRepository";
+import { inject, injectable } from "inversify";
 
-export const aboutUseCase = (dependencies: any) => {
-    const {
-      repository: { profileRepository },
-    } = dependencies;
-  
-    if (!profileRepository) {
-      throw new Error("dependency required, missing dependency");
-    }
-  
-    const execute = async ({ description, email }) => {
-      const user = await profileRepository.aboutMe(description, email);
-      return user;
-    }
-    return {
-      execute,
-    };
-  };
-  
+
+export interface AboutUseCaseParam { 
+  description: string; 
+  id: string 
+}
+@injectable()
+export class AboutUseCase {
+  constructor(
+    @inject(Repositories.UserRepository) private userRepository: IUserRepository
+  ) {}
+
+  async execute({ description, id }: AboutUseCaseParam): Promise<IUser | null> {
+    return await this.userRepository.update(id, { about: description });
+  }
+}

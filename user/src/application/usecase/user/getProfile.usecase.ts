@@ -1,21 +1,22 @@
+import { Repositories } from "@/di/symbols";
+import { IUser } from "@/domain/interface/IUser";
+import { IUserRepository } from "@/infrastructure/interface/repository/IUserRepository";
+import { BadRequestError } from "@muhammednajinnprosphere/common";
+import { inject, injectable } from "inversify";
 
+@injectable()
+export class GetProfileUseCase {
+  constructor(
+    @inject(Repositories.UserRepository) private userRepository: IUserRepository
+  ) {}
 
+  async execute(id: string): Promise<IUser | null> {
+    const user = await this.userRepository.findById(id)
 
-export const getProfileUseCase = (dependencies: any) => {
-    const {
-      repository: { profileRepository},
-      service: { s3Operation }
-    } = dependencies;
-  
-    if (!profileRepository) {
-      throw new Error("dependency required, missing dependency");
+    if(!user) {
+       throw new BadRequestError('user not found', "USER_NOT_FOUND");
     }
-  
-    const execute = async (id: string) => {
-      return await profileRepository.getProfile(id);
-    }
-    return {
-      execute,
-    };
-  };
-  
+
+    return user;
+  }
+}

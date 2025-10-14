@@ -1,24 +1,14 @@
+import { Services } from "@/di/symbols";
+import { ICloudStorageService } from "@/infrastructure/interface/service/ICloud-storage.service";
+import { inject, injectable } from "inversify";
 
-export const getUploadedFileUseCase = (dependencies: any) => {
-    const {
-      service: { s3Operation }
-    } = dependencies;
-  
-    if (!s3Operation) {
-      throw new Error("dependency required, missing dependency");
-    }
-  
-    const execute = async (key: string) => {
-      try {
-        return await s3Operation.getImageUrlFromBucket(key);
-      } catch (error) {
-        console.log(error)
-        throw error
-      }
-    }
+@injectable()
+export class GetUploadedFileUseCase {
+  constructor(
+    @inject(Services.CloudStorageService) private cloudStorageService: ICloudStorageService
+  ) {}
 
-    return {
-      execute,
-    };
-  };
-  
+  async execute(key: string): Promise<string> {
+     return this.cloudStorageService.getSignedUrl(key)
+  }
+}

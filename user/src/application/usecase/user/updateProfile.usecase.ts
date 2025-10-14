@@ -1,39 +1,90 @@
-export const updateProfileUseCase = (dependencies: any) => {
-  const {
-    repository: { profileRepository },
-  } = dependencies;
+import { Repositories } from "@/di/symbols";
+import { IUser } from "@/domain/interface/IUser";
+import { IUserRepository, UserArrayFields, ArrayFieldValueUnion } from "@/infrastructure/interface/repository/IUserRepository";
+import { BadRequestError, NotFoundError } from "@muhammednajinnprosphere/common";
+import { inject, injectable } from "inversify";
 
-  if (!profileRepository) {
-    throw new Error("dependency required, missing dependency");
-  }
+export enum UpdateType {
+  REPLACE = 'replace',
+  ARRAY_PUSH = 'array_push',
+  ARRAY_PULL = 'array_pull',
+  ARRAY_SET = 'array_set'
+}
 
-  const execute = async ({
-    email,
-    body,
-    array,
-  }: {
-    email: string;
-    body: Object;
-    array: boolean;
-  }) => {
+export interface UpdateProfileRequest {
+  id: string;
+  updateData: Partial<IUser>;
+  updateType?: UpdateType;
+  arrayField?: string;
+}
 
-    try {
+@injectable()
+export class UpdateProfileUseCase {
+  constructor(
+    @inject(Repositories.UserRepository) private readonly userRepository: IUserRepository
+  ) {}
 
-      if (!body || Object.keys(body).length === 0) {
-        throw new Error("Update payload cannot be empty");
+  async execute(request: UpdateProfileRequest): Promise<IUser> {
+    const { id, updateData, updateType = UpdateType.REPLACE, arrayField } = request;
+
+
+    // Check if user exists
+    const existingUser = await this.userRepository.findById(id);
+    if (!existingUser) {
+      throw new NotFoundError("User not found");
+    }
+
+      let updatedUser: IUser | null;
+
+      switch (updateType) {
+        case UpdateType.REPLACE:
+          updatedUser = await this.userRepository.update(id, updateData);
+          break;
+
+        case UpdateType.ARRAY_PUSH:
+          if (!arrayField) {
+            throw new BadRequestError("Array field is required for array operations");
+          }
+          updatedUser = await this.userRepository.updateArrayField(
+            id, 
+            arrayField as UserArrayFields, 
+            'push', 
+            updateData[arrayField as keyof IUser] as ArrayFieldValueUnion
+          );
+          break;
+
+        case UpdateType.ARRAY_PULL:
+          if (!arrayField) {
+            throw new BadRequestError("Array field is required for array operations");
+          }
+          updatedUser = await this.userRepository.updateArrayField(
+            id, 
+            arrayField as UserArrayFields, 
+            'pull', 
+            updateData[arrayField as keyof IUser] as ArrayFieldValueUnion
+          );
+          break;
+
+        case UpdateType.ARRAY_SET:
+          if (!arrayField) {
+            throw new BadRequestError("Array field is required for array operations");
+          }
+          updatedUser = await this.userRepository.updateArrayField(
+            id, 
+            arrayField as UserArrayFields, 
+            'set', 
+            updateData[arrayField as keyof IUser] as ArrayFieldValueUnion
+          );
+          break;
+
+        default:
+          throw new BadRequestError("Invalid update type");
       }
 
-      return await profileRepository.updateProfile(email, body, {
-        isArray: array,
-      });
+      if (!updatedUser) {
+        throw new NotFoundError("Failed to update user");
+      }
 
-    } catch (error) {
-
-      throw error;
-    }
-    
-  };
-  return {
-    execute,
-  };
-};
+      return updatedUser;
+  }
+}
