@@ -6,11 +6,10 @@ import { setupAuth } from "./auth/auth";
 import { ROUTES } from "./routes/routes";
 import { setupProxies } from "./proxy/proxy";
 import { errorHandler } from '@muhammednajinnprosphere/common';
-import loggerMiddleware, { customLogger } from './logger/morgan';
+import loggerMiddleware from './logger/morgan';
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { createServer } from 'http';
 import { Socket } from 'net';
-import { GrpcPaymentClient } from "./grpc/grpcPaymentClient";
 import ratelimitRouter from './ratelimit';
 
 dotenv.config();
@@ -80,12 +79,6 @@ server.on('upgrade', (req, socket, head) => {
 // Setup Authentication and API Gateway Proxy Routes
 setupAuth(app, ROUTES);
 setupProxies(app, ROUTES);
-
-try {
-  const grpc = new GrpcPaymentClient();
-} catch (error) {
-  customLogger.error('GRPC Client Error:', error);
-}
 
 app.use(errorHandler);
 

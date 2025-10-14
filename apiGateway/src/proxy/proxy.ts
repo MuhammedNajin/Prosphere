@@ -1,10 +1,7 @@
-import { Application, Request, Response } from "express";
-import { createProxyMiddleware, RequestHandler, responseInterceptor } from "http-proxy-middleware";
-import { AuthRouteConfig, ProxyConfig } from "../type/interface";
+import { Application } from "express";
+import { createProxyMiddleware, RequestHandler } from "http-proxy-middleware";
 import { customLogger } from "../logger/morgan";
-import { Trail_Status, URL, UsageMetrics } from "../type/enums";
-import { StatusCode } from "@muhammednajinnprosphere/common";
-import grpcPaymentClient from "../grpc/grpcPaymentClient";
+import { AuthRouteConfig } from "src/@Types/interface";
 
 export const setupProxies = (app: Application, routes: AuthRouteConfig[]) => {
     routes.forEach(route => {
@@ -12,8 +9,8 @@ export const setupProxies = (app: Application, routes: AuthRouteConfig[]) => {
         const proxyMiddleware: RequestHandler = createProxyMiddleware({
             target: route.proxy.target,
             changeOrigin: route.proxy.changeOrigin,
-            timeout: 50000,
-            proxyTimeout: 50000,
+            timeout: 10000,
+            proxyTimeout: 10000,
             
             on: {
                 proxyReq: (proxyReq, req: any, res: any) => {

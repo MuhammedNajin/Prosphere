@@ -1,27 +1,60 @@
-const authDomain = process.env.authDomain || "http://localhost:7000";
-const userDomain = process.env.profileDomain || "http://localhost:3002";
-const jobDomain = process.env.jobDomain || "http://localhost:5000";
-const companyDomain = process.env.companyDomain || "http://localhost:3003";
-const chatDomain = process.env.chatDomain || "http://localhost:8080";
-const paymentDomain = process.env.paymentDomain || "http://localhost:3005";
-const notificationDomain = process.env.notificationDomain || "http://localhost:4000";
+const authService = process.env.authService || "http://localhost:3002";
+const userService = process.env.userService || "http://localhost:3003";
+const jobService = process.env.jobService || "http://localhost:5000";
+const companyService = process.env.companyService || "http://localhost:3004";
+const chatService = process.env.chatService || "http://localhost:8080";
+const paymentService = process.env.paymentService || "http://localhost:3005";
+const notificationService = process.env.notificationService || "http://localhost:4000";
 
-console.log("dhfddddd", userDomain, authDomain, jobDomain);
+console.log("dhfddddd", userService, authService, jobService);
 
 export const ROUTES = [
+
   {
-    url: "/api/v1/admin/company/",
+    url: "/api/v1/admin/job",
     auth: "admin",
     proxy: {
-      target: `${companyDomain}/api/v1/admin/company`,
+      target: `${jobService}/api/v1/admin/job`,
       changeOrigin: true,
     },
   },
+
+
+  {
+    url: "/api/v1/auth",
+    auth: "",
+    proxy: {
+      target: `${authService}/api/v1/auth`,
+      changeOrigin: true,
+    },
+  },
+
+   {
+    url: "/api/v1/users/companies",
+    auth: "user",
+    proxy: {
+      target: `${companyService}/api/v1/users/companies`,
+      changeOrigin: true,
+    },
+  },
+
+  
+  
+
+  {
+    url: "/api/v1/admin/companies/",
+    auth: "admin",
+    proxy: {
+      target: `${companyService}/api/v1/admin/companies`,
+      changeOrigin: true,
+    },
+  },
+ 
   {
     url: "/api/v1/admin",
     auth: "admin",
     proxy: {
-      target: `${authDomain}/api/v1/admin`,
+      target: `${authService}/api/v1/admin`,
       changeOrigin: true,
       pathRewrite: {
         "^/api/v1/admin": "",
@@ -29,21 +62,14 @@ export const ROUTES = [
     },
   },
 
-  {
-    url: "/api/v1/auth",
-    auth: "",
-    proxy: {
-      target: `${authDomain}/api/v1/auth`,
-      changeOrigin: true,
-    },
-  },
+  
 
 
   {
-    url: "/api/v1/user/company",
+    url: "/api/v1/companies/user",
     auth: "user",
     proxy: {
-      target: `${companyDomain}/api/v1/user/company`,
+      target: `${companyService}/api/v1/companies/user`,
       changeOrigin: true,
     },
   },
@@ -52,16 +78,17 @@ export const ROUTES = [
   //     url: '/api/v1/user/company/token',
   //     auth: 'user',
   //     proxy: {
-  //         target: `${companyDomain}/api/v1/user/company/token`,
+  //         target: `${companyService}/api/v1/user/company/token`,
   //         changeOrigin: true,
   //     }
   // },
 
+
   {
-    url: "/api/v1/profile",
+    url: "/api/v1/users",
     auth: "user",
     proxy: {
-      target: `${userDomain}/api/v1/profile`,
+      target: `${userService}/api/v1/users`,
       changeOrigin: true,
     },
   },
@@ -71,7 +98,7 @@ export const ROUTES = [
     url: "/api/v1/job/company",
     auth: "company",
     proxy: {
-      target: `${jobDomain}/api/v1/job/company`,
+      target: `${jobService}/api/v1/job/company`,
       changeOrigin: true,
     },
   },
@@ -80,7 +107,7 @@ export const ROUTES = [
     url: "/api/v1/job/company/jobs",
     auth: "subscription",
     proxy: {
-      target: `${jobDomain}/api/v1/job/company`,
+      target: `${jobService}/api/v1/job/company`,
       changeOrigin: true,
     },
   },
@@ -89,25 +116,28 @@ export const ROUTES = [
     url: "/api/v1/job/public",
     auth: "",
     proxy: {
-      target: `${jobDomain}/api/v1/job/public`,
+      target: `${jobService}/api/v1/job/public`,
       changeOrigin: true,
     },
   },
+  
+  
 
   {
     url: "/api/v1/job",
     auth: "user",
     proxy: {
-      target: `${jobDomain}/api/v1/job`,
+      target: `${jobService}/api/v1/job`,
       changeOrigin: true,
     },
   },
+  
 
   {
-    url: "/api/v1/company",
+    url: "/api/v1/companies",
     auth: "company",
     proxy: {
-      target: `${companyDomain}/api/v1/company`,
+      target: `${companyService}/api/v1/companies`,
       changeOrigin: true,
     },
   },
@@ -116,7 +146,7 @@ export const ROUTES = [
     url: "/api/v1/chat",
     auth: "",
     proxy: {
-      target: `${chatDomain}/api/v1/chat`,
+      target: `${chatService}/api/v1/chat`,
       changeOrigin: true,
     },
   },
@@ -125,7 +155,7 @@ export const ROUTES = [
     url: "/api/v1/payment",
     auth: "",
     proxy: {
-      target: `${paymentDomain}/api/v1/payment`,
+      target: `${paymentService}/api/v1/payment`,
       changeOrigin: true,
     },
   },
@@ -134,7 +164,7 @@ export const ROUTES = [
     url: "/api/v1/notifications",
     auth: "",
     proxy: {
-      target: `${notificationDomain}/api/v1/notifications`,
+      target: `${notificationService}/api/v1/notifications`,
       changeOrigin: true,
     },
   },

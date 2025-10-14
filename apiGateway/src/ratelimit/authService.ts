@@ -1,5 +1,4 @@
-import { RateLimitConfig } from "../type/interface";
-
+import { RateLimitConfig } from "src/@Types/interface";
 
 export const authRoutes: RateLimitConfig[] = [
 

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import grpcPaymentClient from "../grpc/grpcPaymentClient";
 import { customLogger } from "../logger/morgan";
-import { Feature_Limit, URL, UsageMetrics } from "../type/enums";
+import { Feature_Limit, URL, UsageMetrics } from "../@Types/enums";
 import { ResponseUtil, StatusCode } from "@muhammednajinnprosphere/common";
 
 

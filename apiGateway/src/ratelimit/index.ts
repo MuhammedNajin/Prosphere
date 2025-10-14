@@ -3,7 +3,8 @@ import { customLogger } from "../logger/morgan"
 import express, { Express, Request } from "express"
 import { authRoutes } from "./authService";
 import { rateLimit } from 'express-rate-limit'
-import { RateLimitConfig } from "../type/interface";
+import { RateLimitConfig } from "src/@Types/interface";
+
 
 const app = express();
 

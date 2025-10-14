@@ -1,27 +1,22 @@
 import { Application } from "express";
-import { AuthRouteConfig } from "../type/interface";
-import { requireAuth, requireAdmin, curentUser, currentAdmin, currentCompany, NotAuthorizedError } from '@muhammednajinnprosphere/common'
-import { ROLE } from "../type/enums";
-import jwt, { JsonWebTokenError } from "jsonwebtoken";
+import { ROLE } from "../@Types/enums";
+import { authenticateUser, currentCompany } from "../middleware/protect-route";
+import { requireAdmin, requireUser } from "../middleware/require-auth";
+import { AuthRouteConfig } from "src/@Types/interface";
 
-
-interface CompanyPayload {
-    id: string,
-    name: string
-    owner: string
-    verified: boolean
-    status: "pending" | 'uploaded' | 'verified' | 'reject';
-    role : 'owner'
-  }
-  
 export const setupAuth = (app: Application, route: AuthRouteConfig[]) => {
-    route.forEach((route: AuthRouteConfig)  => {
-        if(route.auth === ROLE.ADMIN) {
-            app.use(route.url, currentAdmin, requireAdmin);
-        } else if(route.auth === ROLE.USER) {
-            app.use(route.url, curentUser, requireAuth);
-        } else if(route.auth === ROLE.COMPANY) {
-            app.use(route.url,  curentUser, requireAuth, currentCompany)
+
+
+    route.forEach((route: AuthRouteConfig) => {
+        console.log(`Setting up auth for: ${route.url} with auth: ${route.auth}`);
+        if (route.auth === ROLE.ADMIN) {
+            app.use(route.url, authenticateUser, requireAdmin);
+        } else if (route.auth === ROLE.USER) {
+            app.use(route.url, authenticateUser, requireUser);
+        } else if (route.auth === ROLE.COMPANY) {
+            app.use(route.url, authenticateUser, requireUser, currentCompany);
+        } else if (route.auth === "subscription") {
+            app.use(route.url, authenticateUser, requireUser, currentCompany);
         }
-    })
+    });
 }
