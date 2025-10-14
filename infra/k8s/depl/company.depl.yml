@@ -21,68 +21,100 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: MONGO_URL
+
             - name: NODE_ENV
               valueFrom:
-                configMapKeyRef:
-                  name: app-config
+                secretKeyRef:
+                  name: app-secrets
                   key: NODE_ENV
+
             - name: MESSAGE_BROKERS
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: MESSAGE_BROKERS
-            - name: GRPC_PORT
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: GRPC_PORT
-            - name: PROTO_URL
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: PROTO_URL
+
             - name: COMPANY_ACCESS_SECRET
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: COMPANY_ACCESS_SECRET
+
             - name: BUCKET_NAME
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: BUCKET_NAME
+                  key: COMPANY_BUCKET_NAME
+
             - name: BUCKET_REGION
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: BUCKET_REGION
+                  key: COMPANY_BUCKET_REGION
+
             - name: SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: SECRET_KEY
+                  key: COMPANY_SECRET_KEY
+
             - name: ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: ACCESS_KEY
+                  key: COMPANY_ACCESS_KEY
+
             - name: PROD_FRONTEND_DOMAIN
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: PROD_FRONTEND_DOMAIN
-            - name: port
+
+            - name: PORT
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: COMPANY_PORT
+
             - name: ADMIN_SECRECT
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: ADMIN_SECRECT
+
+            - name: JWT_ACCESS_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: COMPANY_JWT_ACCESS_TOKEN_SECRET
+
+            - name: JWT_ACCESS_TOKEN_EXPIRY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: COMPANY_JWT_ACCESS_TOKEN_EXPIRY
+
+            - name: COMPANY_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: COMPANY_TOKEN_SECRET
+
+            - name: COMPANY_TOKEN_EXPIRY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: COMPANY_TOKEN_EXPIRY
+
+            - name: SERVICE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: COMPANY_SERVICE_NAME
+
           ports:
-            - containerPort: 3003
+            - containerPort: 3004
+
 ---
 apiVersion: v1
 kind: Service
@@ -94,5 +126,5 @@ spec:
     app: company
   ports:
     - protocol: TCP
-      port: 3003
-      targetPort: 3003
+      port: 3004
+      targetPort: 3004

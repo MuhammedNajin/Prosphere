@@ -41,6 +41,11 @@ spec:
                secretKeyRef:
                  name: app-secrets
                  key: PROD_FRONTEND_DOMAIN      
+           - name: PAYMENT_GRPC_DOMAIN
+             valueFrom:
+               secretKeyRef:
+                 name: app-secrets
+                 key: PAYMENT_GRPC_DOMAIN      
   
          ports:
            - containerPort: 5000

@@ -7,19 +7,23 @@ metadata:
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
     nginx.ingress.kubernetes.io/proxy-buffer-size: '16m'
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/cors-allow-origin: "https://prosphere.vercel.app"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
-    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
 spec:
   ingressClassName: nginx
   tls:
     - hosts:
-        - muhammednajin.site
+        - prosphere.muhammednajin.site
       secretName: my-tls-secret
   rules:
-    - host: muhammednajin.site
+    - host: prosphere.muhammednajin.site
       http:
         paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: client-srv
+              port:
+                number: 3000
         - path: /api/v1/payment/webhook
           pathType: Prefix
           backend:

@@ -3,18 +3,48 @@ kind: Ingress
 metadata:
   name: ingress-srv
   annotations:
+    # This annotation tells cert-manager to automatically obtain an SSL certificate
+    # using the Let's Encrypt production environment. Think of this like telling
+    # a service to automatically get official documentation for your new address.
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    
+    # This increases the maximum request body size to 20MB, which is important
+    # for applications that handle file uploads or large API requests.
+    # Without this, large requests would be rejected at the ingress level.
     nginx.ingress.kubernetes.io/proxy-body-size: 20m
 spec:
+  # Specifies which Ingress Controller should handle this configuration.
+  # In your case, you're using the NGINX Ingress Controller, which acts like
+  # a sophisticated traffic director for your Kubernetes applications.
   ingressClassName: nginx
+  
+  # TLS configuration section - this is where we define SSL/HTTPS settings
   tls:
   - hosts:
-    - mesfashion.shop
+    # CHANGED: Updated from muhammednajin.site to prosphere.muhammednajin.site
+    # This tells cert-manager to obtain an SSL certificate specifically for
+    # your new subdomain. The certificate will be automatically renewed
+    # before it expires, so you don't need to worry about manual renewals.
+    - prosphere.muhammednajin.site
+    
+    # The Kubernetes secret where the SSL certificate will be stored.
+    # cert-manager will create this secret automatically and populate it
+    # with the certificate and private key from Let's Encrypt.
     secretName: prosphere-tls
+  
+  # Routing rules section - this is where we define how different URLs
+  # should be handled and which backend services should process them
   rules:
-  - host: mesfashion.shop
+  # CHANGED: Updated the host from muhammednajin.site to prosphere.muhammednajin.site
+  # This is crucial - it tells the Ingress Controller to only process requests
+  # that come with this specific hostname. Requests to other domains will be
+  # ignored or handled by default backend.
+  - host: prosphere.muhammednajin.site
     http:
       paths:
+      # Payment webhook endpoint - this needs to be first because it's more specific
+      # The order matters in Kubernetes Ingress routing. More specific paths
+      # should come before more general ones to ensure proper matching.
       - path: /api/v1/payment/webhook
         pathType: Prefix
         backend:
@@ -22,6 +52,9 @@ spec:
             name: payment-srv
             port:
               number: 3005
+      
+      # General API endpoints - this catches all /api/* requests except the
+      # payment webhook which is handled by the more specific rule above
       - path: /api
         pathType: Prefix
         backend:
@@ -29,13 +62,10 @@ spec:
             name: api-gateway-srv
             port:
               number: 6002
-      - path: /auth-socket
-        pathType: Prefix
-        backend:
-          service:
-            name: auth-srv
-            port:
-              number: 7000
+      
+      # WebSocket endpoint for notifications - WebSocket connections are persistent
+      # connections that allow real-time communication between client and server.
+      # This is likely used for live notifications in your application.
       - path: /notification-socket
         pathType: Prefix
         backend:
@@ -43,6 +73,11 @@ spec:
             name: notification-srv
             port:
               number: 4000
+      
+      # WebSocket endpoint for chat functionality - similar to notifications,
+      # this handles real-time chat messages between users in your application.
+      # Having separate services for different WebSocket functionalities allows
+      # for better scaling and maintenance.
       - path: /chat-socket
         pathType: Prefix
         backend:
@@ -50,3 +85,28 @@ spec:
             name: chat-srv
             port:
               number: 8080
+
+# Additional Configuration Notes:
+# 
+# 1. Path Priority: The order of paths in this configuration matters. Kubernetes
+#    processes them from top to bottom, so more specific paths (like the payment
+#    webhook) should be listed before more general ones (like /api).
+#
+# 2. PathType Explanation: "Prefix" means that the path specified will match
+#    that path and any subpaths. For example, /api will match /api, /api/users,
+#    /api/products, etc.
+#
+# 3. Service Communication: Each backend service listed here must exist as a
+#    Kubernetes Service in the same namespace as this Ingress. The Ingress
+#    Controller will forward requests to these services, which then distribute
+#    them to the appropriate pods.
+#
+# 4. Load Balancer Integration: This Ingress works in conjunction with your
+#    AWS Load Balancer. The flow is: DNS -> AWS Load Balancer -> Kubernetes
+#    Ingress Controller -> Backend Services -> Application Pods.
+#
+# 5. Certificate Management: Once you apply this configuration, cert-manager
+#    will automatically detect the new hostname and request an SSL certificate
+#    from Let's Encrypt. You can monitor this process using:
+#    kubectl describe certificate prosphere-tls
+#    kubectl get certificaterequests

@@ -14,95 +14,166 @@ spec:
     spec:
       containers:
         - name: auth
-          image: najinn675943/prosphere_auth_service:v1.0.3
+          image: najinn675943/prosphere_auth_service:v1.0.5
           env:
+            # Database and External Service Configuration
             - name: MONGO_URL
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: MONGO_URL
-            - name: SENDER_MAIL
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: SENDER_MAIL
-            - name: PASS
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: PASS
-            - name: TOKEN_SECRECT
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: TOKEN_SECRECT
-            - name: URL
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: URL
-            - name: ADMIN_EMAIL
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: ADMIN_EMAIL
-            - name: ADMIN_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: ADMIN_PASS
-            - name: ADMIN_SECRECT
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: ADMIN_SECRECT
-            - name: ADMIN_REFRESH_SECRECT
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: ADMIN_REFRESH_SECRECT
-            - name: REFRESH_SECRECT
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: REFRESH_SECRECT
-            - name: PORT
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: AUTH_PORT
-            - name: MESSAGE_BROKERS
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: MESSAGE_BROKERS
-            - name: AUTH_CLIENT_ID
-              valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: AUTH_CLIENT_ID
+
             - name: REDIS_URL
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: REDIS_URL
+
+            - name: MESSAGE_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MESSAGE_BROKERS
+
+            # Email Service Configuration
+            - name: SENDER_MAIL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: SENDER_MAIL
+
+            - name: PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: PASS
+
+            # JWT Token Configuration
+            - name: JWT_ACCESS_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_ACCESS_TOKEN_SECRET
+
+            - name: JWT_REFRESH_TOKEN_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_REFRESH_TOKEN_SECRET
+
+            - name: JWT_ACCESS_TOKEN_EXPIRY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_ACCESS_TOKEN_EXPIRY
+
+            - name: JWT_REFRESH_TOKEN_EXPIRY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: JWT_REFRESH_TOKEN_EXPIRY
+
+            # Service Identity Configuration
+            - name: SERVICE_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: AUTH_SERVICE_NAME
+
+            # Application URLs and Domains
+            - name: URL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: URL
+
             - name: PROD_FRONTEND_DOMAIN
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: PROD_FRONTEND_DOMAIN        
-            - name: USER_GRPC_DOMAIN
+                  key: PROD_FRONTEND_DOMAIN
+
+            - name: FRONTEND_URL
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: USER_GRPC_DOMAIN
-            - name: NODE_ENV
+                  key: FRONTEND_URL
+
+            # Company Configuration
+            - name: COMPANY_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: COMPANY_NAME
+
+            - name: COMPANY_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: COMPANY_DOMAIN
+
+            # Admin Account Configuration
+            - name: ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_EMAIL
+
+            - name: ADMIN_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_PASS
+
+            - name: ADMIN_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_SECRECT
+
+            - name: ADMIN_REFRESH_SECRECT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: ADMIN_REFRESH_SECRECT
+
+            # Service Port Configuration
+            - name: PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: AUTH_PORT
+
+            # OAuth Configuration
+            - name: AUTH_CLIENT_ID
               valueFrom:
                 configMapKeyRef:
                   name: app-config
-                  key: NODE_ENV             
+                  key: AUTH_CLIENT_ID
+
+            # Environment Configuration
+            - name: NODE_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: NODE_ENV
+
+            # SMTP Config
+            - name: SMTP_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: SMTP_HOST
+
+            - name: SMTP_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: SMTP_PORT
+
           ports:
-            - containerPort: 7000
+            - containerPort: 3002
+
 ---
 apiVersion: v1
 kind: Service
@@ -114,5 +185,5 @@ spec:
     app: auth
   ports:
     - protocol: TCP
-      port: 7000
-      targetPort: 7000
+      port: 3002
+      targetPort: 3002

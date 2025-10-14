@@ -104,31 +104,25 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: BUCKET_NAME
+                  key: USER_BUCKET_NAME
 
             - name: BUCKET_REGION
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: BUCKET_REGION
+                  key: USER_BUCKET_REGION
 
             - name: SECRET_KEY
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: SECRET_KEY
+                  key: USER_SECRET_KEY
 
             - name: ACCESS_KEY
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: ACCESS_KEY      
-
-            - name: USER_CLIENT_ID
-              valueFrom:
-                configMapKeyRef:
-                  name: app-config
-                  key: USER_CLIENT_ID
+                  key: USER_ACCESS_KEY      
 
             - name: PROD_FRONTEND_DOMAIN
               valueFrom:
@@ -143,8 +137,7 @@ spec:
                   key: USER_PORT     
 
           ports:
-            - containerPort: 3002
-            - containerPort: 50051
+            - containerPort: 3003
 
 ---
 apiVersion: v1
@@ -158,10 +151,5 @@ spec:
   ports:
     - name: http
       protocol: TCP
-      port: 3002
-      targetPort: 3002
-
-    - name: grpc
-      protocol: TCP
-      port: 50051
-      targetPort: 50051
+      port: 3003
+      targetPort: 3003

@@ -25,7 +25,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
-                  key: PROTO_URL
+                  key: PAYMENT_PROTO_URL
             - name: SECRET_KEY
               valueFrom:
                 secretKeyRef:
@@ -56,16 +56,16 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: POSTGRES_DB_PASSWORD
-            - name: MESSAGE_BROKERS
-              valueFrom:
-                secretKeyRef:
-                  name: app-secrets
-                  key: MESSAGE_BROKERS
             - name: DB_HOST
               valueFrom:
                 secretKeyRef:
                   name: app-secrets
                   key: POSTGRES_DB_HOST
+            - name: MESSAGE_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: MESSAGE_BROKERS
             - name: PROD_FRONTEND_DOMAIN
               valueFrom:
                 secretKeyRef:
@@ -76,9 +76,14 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: PROD_FRONTEND_DOMAIN
+            - name: PAYMENT_GRPC_PATH
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: PAYMENT_GRPC_PATH
           ports:
-            - containerPort: 3005 
-            - containerPort: 50052
+            - containerPort: 3005   # REST API
+            - containerPort: 50052  # gRPC
 ---
 apiVersion: v1
 kind: Service

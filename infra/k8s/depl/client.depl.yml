@@ -46,6 +46,11 @@ spec:
                 secretKeyRef:
                   name: app-secrets
                   key: VITE_STRIPE_PUBLISHABLE_KEY
+            - name: VITE_MAPBOX_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: app-secrets
+                  key: VITE_MAPBOX_API_KEY
             
           ports:
             - containerPort: 1573
@@ -61,5 +66,5 @@ spec:
     app: client
   ports:
     - protocol: TCP
-      port: 1573
+      port: 3000
       targetPort: 1573
