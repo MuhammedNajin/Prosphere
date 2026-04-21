@@ -4,6 +4,8 @@ import { Message } from "@/types/company";
 
 var baseURL = import.meta.env.VITE_URL as string;
 
+console.log("base url !!!!!!!!!!!!!!!!!!!!!", baseURL);
+
 interface AlertStore {
   isLogout?: boolean;
   isOpen: boolean;
@@ -34,7 +36,6 @@ const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 console.log("baseURL", baseURL);
 
-// Create separate axios instance for refresh token calls to avoid interceptor loops
 const refreshAxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_URL as string,
   withCredentials: true,
@@ -47,7 +48,6 @@ const axiosInstance = axios.create({
   timeout: 10000,
 });
 
-// Track ongoing refresh attempts to prevent multiple simultaneous refreshes
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value?: any) => void;
@@ -81,7 +81,6 @@ axiosInstance.interceptors.response.use(
 
     request._retryCount = request._retryCount ?? 0;
 
-    // Handle rate limiting
     if (error.response?.status === HttpStatusCode.TooManyRequests) {
       const retryAfter = parseInt(
         error.response.headers["retry-after"] || "60"
@@ -100,7 +99,6 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle network errors with retry
     if (
       !error.response ||
       error.code === "ECONNABORTED" ||
@@ -132,18 +130,16 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle 401 Unauthorized - Token refresh logic
     if (
       error.response?.status === HttpStatusCode.Unauthorized &&
       !request._authRetry
     ) {
-      // Check if this is a refresh token endpoint to prevent recursion
+  
       const isRefreshTokenRequest = 
         originalRequest.url?.includes('/refresh-token') ||
         originalRequest.url?.includes('/logout');
       
       if (isRefreshTokenRequest) {
-        // If refresh token request itself fails, force logout
         console.log("Refresh token request failed, logging out");
         useAlertStore.getState().logout();
         return Promise.reject(error);
@@ -151,7 +147,6 @@ axiosInstance.interceptors.response.use(
 
       request._authRetry = true;
 
-      // Handle access denied immediately
       if (error.response?.data?.message === Message.denied) {
         useAlertStore.getState().showAlert({
           title: "Access Denied",
@@ -161,7 +156,6 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
       }
 
-      // If already refreshing, queue this request
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -175,7 +169,7 @@ axiosInstance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Determine if this is an admin or user request
+      
         const isAdminRequest = 
           error.response.config.baseURL?.includes("/api/v1/admin") || 
           error.response.config.url?.includes("/api/v1/admin");
@@ -194,11 +188,10 @@ axiosInstance.interceptors.response.use(
           console.log("User refresh successful", refreshResponse.status);
         }
 
-        // Process queued requests
         processQueue(null);
         isRefreshing = false;
 
-        // Retry original request
+
         return axiosInstance(request);
         
       } catch (refreshError: unknown) {

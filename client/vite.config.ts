@@ -3,14 +3,20 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react()], 
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
   server: {
-    host: true,
-    port: 1573
+    host: "0.0.0.0",
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://api-gateway:3000',  // service name for Docker
+        changeOrigin: true,
+      }
+    }
   }
 })

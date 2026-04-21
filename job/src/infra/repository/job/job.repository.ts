@@ -10,6 +10,8 @@ import { GetJobDetailsRepository } from "./getJobDetails.repository";
 import { JobListingQueryParams } from '@/shared/types/interface'
 import { JobSeenRepository } from "./jobSeen.repository";
 import { GetJobStatsRepository } from "./getjobStats.repository";
+
+
 export class JobRepository {
    private PostJobRepo = PostJobRepository;
    private GetJobRepo = GetJobsRepository;

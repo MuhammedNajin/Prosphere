@@ -92,6 +92,7 @@ class DatabaseConnection {
 
         try {
             const mongoUrl = MONGO_URL;
+            console.log('mongoUrl', mongoUrl);
             if (!mongoUrl) {
                 throw new AppError(
                     'MongoDB URL is not defined in environment variables.',

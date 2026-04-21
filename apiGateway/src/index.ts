@@ -16,7 +16,7 @@ dotenv.config();
 
 const app = express();
 const server = createServer(app);
-const port = process.env.PORT || 6002;
+const port = process.env.PORT || 3000;
 
 // Frontend domains for CORS
 const frontendDomain = process.env.DEV_FRONTEND_DOMAIN || process.env.PROD_FRONTEND_DOMAIN;
@@ -27,6 +27,13 @@ app.use(
     credentials: true,
   })
 );
+
+app.use((req, res) => {
+   res.json({
+      "status": "okay",
+      "message": "running"
+   })
+})
 
 app.use(cookieParser());
 app.use(loggerMiddleware);

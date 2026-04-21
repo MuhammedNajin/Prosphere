@@ -1,31 +1,30 @@
-# Build stage
 FROM node:22-alpine3.19 AS builder
-
 WORKDIR /app
-
-# Install dependencies
-COPY package*.json ./
+COPY package*.json ./       
 RUN npm install
-
-# Copy all project files
 COPY . .
 
-# Build the app (no TS check, only transpile/build)
+ARG VITE_URL
+ARG VITE_API_URL
+ARG VITE_STRIPE_PUBLISHABLE_KEY
+ARG VITE_MAPBOX_API_KEY
+ARG VITE_API_AUTH
+ARG VITE_API_CHAT
+ARG VITE_API_NOTIFICATION
+
+ENV VITE_URL=$VITE_URL
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_STRIPE_PUBLISHABLE_KEY=$VITE_STRIPE_PUBLISHABLE_KEY
+ENV VITE_MAPBOX_API_KEY=$VITE_MAPBOX_API_KEY
+ENV VITE_API_AUTH=$VITE_API_AUTH
+ENV VITE_API_CHAT=$VITE_API_CHAT
+ENV VITE_API_NOTIFICATION=$VITE_API_NOTIFICATION
+
 RUN npm run build
 
-# Production stage
 FROM node:22-alpine3.19
-
 WORKDIR /app
-
-# Install 'serve' globally to serve static files
 RUN npm install -g serve
-
-# Copy only built files from builder
 COPY --from=builder /app/dist .
-
-# Expose port 1573 for the static server
-EXPOSE 1573
-
-# Serve the build output
-CMD ["serve", "-s", ".", "-l", "1573"]
+EXPOSE 5173
+CMD ["serve", "-s", ".", "-l", "5173"]
