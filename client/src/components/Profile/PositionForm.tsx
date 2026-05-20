@@ -116,7 +116,7 @@ function PositionForm({
   onClose, 
   mode = experience ? 'edit' : 'create' 
 }: PositionFormProps) {
-  const { user } = useSelector((state: any) => state.auth);
+   const user = useCurrentUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
