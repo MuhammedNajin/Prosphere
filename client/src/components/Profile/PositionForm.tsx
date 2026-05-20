@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { UserApi } from "@/api/user.api";
-import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -41,6 +40,7 @@ import { AxiosError, HttpStatusCode } from 'axios';
 import { ApiErrorResponse } from '@/api';
 import LocationSearch from '../common/LocationField/LocationField';
 import { IExperience, ILocation } from '@/types/user';
+import { useCurrentUser } from '@/hooks/useSelectors';
 
 interface PositionFormProps {
   experience?: IExperience | null;
