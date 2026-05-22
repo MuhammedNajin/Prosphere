@@ -50,6 +50,7 @@ const SignUp: React.FC = () => {
     },
     onError: (err: AxiosError<ApiErrorResponse>) => {
       if (err.status === HttpStatusCode.BadRequest) {
+        console.log(err)
         toast({
           variant: "destructive",
           duration: 3000,
